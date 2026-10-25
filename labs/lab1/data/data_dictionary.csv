@@ -1,0 +1,9 @@
+column,type,meaning,when_recorded,notes
+customer_id,text,Customer account number.,At signup,Should be unique: one row per customer.
+age,integer,"Age of the account holder, in years.",At signup,Customers must be 18 or older.
+contract,text,Contract type: monthly or yearly.,"At signup, updated at renewal",
+tenure_months,integer,Months since the customer joined.,Monthly,The company opened in January 2015. The snapshot date is 30 June 2026.
+monthly_spend,integer,"Average monthly bill, in HK$.",Monthly,
+support_calls_90d,integer,Calls to customer support in the last 90 days.,Monthly,
+cancellation_fee_charged,0/1,1 if a cancellation fee was charged.,When the account is closed,
+churned,0/1,1 if the customer left within 3 months after the snapshot.,3 months after the snapshot,This is the target.
