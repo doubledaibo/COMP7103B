@@ -1,0 +1,6 @@
+reviews.csv: 500 sentences sampled from amazon_cells_labelled.txt in
+Kotzias, D. (2015). Sentiment Labelled Sentences [Dataset]. UCI Machine Learning Repository.
+https://doi.org/10.24432/C57604. Licence: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/).
+Changes: exact duplicates removed; 250 positive and 250 negative sentences sampled; review_id added.
+review_embeddings.npy and query_embeddings.npy: sentence-transformers/all-MiniLM-L6-v2, 384 numbers per text, unit length.
+sentiment: 1 = positive, 0 = negative (from the source).

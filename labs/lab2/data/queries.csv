@@ -1,0 +1,6 @@
+query_id,query,relevant_if
+1,battery dies too quickly,The review complains about the battery.
+2,easy to set up,"The review says the product is easy to set up, pair or use."
+3,broke after a few days,The review says the product broke or stopped working.
+4,not worth the money,"The review says the product is not worth its price, a waste of money, or asks for a refund."
+5,Nokia,The review mentions a Nokia phone.
