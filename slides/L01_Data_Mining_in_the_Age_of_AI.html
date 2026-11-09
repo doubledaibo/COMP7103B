@@ -1,0 +1,2181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Data Mining in the Age of AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&family=Unbounded:wght@600;700;800&display=swap">
+<style>
+/* Layout: a lecture rail on the left, one long column of numbered "boards" on the right; each board is one slide's idea, made interactive. */
+:root{
+  --bg:#F3F8F9; --surface:#FFFFFF; --surface-2:#E3F0F3; --ink:#0E2228; --muted:#4D666E; --line:#CBDDE2;
+  --accent:#04617B; --accent-2:#1489B0; --good:#0B8466; --signal:#BF2A2F; --warn:#B26A00;
+  --c1:#04617B; --c2:#1489B0; --c3:#0B8466; --c4:#BF2A2F; --c5:#7A5BB5;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#09161B; --surface:#0F2129; --surface-2:#153039; --ink:#E2F0F3; --muted:#92ADB5; --line:#244049;
+  --accent:#43C3DB; --accent-2:#8AD9EA; --good:#3FD69B; --signal:#FF6F6A; --warn:#F2B04A;
+  --c1:#43C3DB; --c2:#8AD9EA; --c3:#3FD69B; --c4:#FF6F6A; --c5:#B79BFF; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#09161B; --surface:#0F2129; --surface-2:#153039; --ink:#E2F0F3; --muted:#92ADB5; --line:#244049;
+  --accent:#43C3DB; --accent-2:#8AD9EA; --good:#3FD69B; --signal:#FF6F6A; --warn:#F2B04A;
+  --c1:#43C3DB; --c2:#8AD9EA; --c3:#3FD69B; --c4:#FF6F6A; --c5:#B79BFF; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;margin:0}
+.page{display:grid;grid-template-columns:210px minmax(0,1fr);gap:48px;max-width:1260px;margin:0 auto;padding-inline:24px;padding-block:28px 80px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.02;font-weight:700}
+h2{font-size:clamp(1.6rem,3vw,2.15rem);line-height:1.1;font-weight:700}
+h3{font-size:1.15rem;font-weight:600;line-height:1.25}
+p{margin:0}
+.lead{font-size:1.12rem;color:var(--muted);max-width:62ch}
+.mono{font-family:var(--mono)}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+
+/* rail */
+.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;max-height:calc(100vh - 48px);overflow:auto;font-size:.88rem}
+.rail .course{font-family:var(--mono);font-size:.75rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.rail .ltitle{font-family:var(--display);font-weight:700;font-size:1.05rem;line-height:1.2;margin:4px 0 18px}
+.rail ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.rail .part{font-family:var(--mono);font-size:.7rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin:14px 0 4px}
+.rail a{display:block;color:var(--muted);text-decoration:none;padding:4px 10px;border-radius:6px;border-left:2px solid transparent}
+.rail a:hover{color:var(--ink);background:var(--surface-2)}
+.rail a.on{color:var(--ink);background:var(--surface-2);font-weight:600}
+.rail .keys{margin-top:18px;color:var(--muted);font-size:.78rem}
+kbd{font-family:var(--mono);font-size:.75rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--surface)}
+
+main{min-width:0;display:grid;gap:88px}
+section.board{scroll-margin-top:24px;display:grid;gap:22px}
+.part-break{padding:26px 0 0;border-top:1px solid var(--line);display:grid;gap:6px}
+.part-break .n{font-family:var(--display);font-size:clamp(3rem,7vw,5rem);line-height:.9;color:var(--accent);font-weight:700}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:28px;align-items:center}
+.hero .meta{display:grid;gap:16px}
+.stage-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;cursor:pointer;font-size:.92rem}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"],.chip[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.scene{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:var(--r);background:radial-gradient(120% 90% at 30% 20%,var(--surface) 0%,var(--surface-2) 100%);overflow:hidden;touch-action:none}
+.scene canvas{display:block;width:100%!important;height:100%!important}
+.scene .hint{position:absolute;right:12px;bottom:10px;font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.scene .legend{position:absolute;left:12px;top:10px;font-family:var(--mono);font-size:.72rem;color:var(--muted);display:grid;gap:2px}
+.caption{min-height:4.8em;border-left:3px solid var(--accent);padding-left:14px}
+.caption b{font-weight:600}
+
+/* generic */
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:grid;gap:8px;align-content:start;min-width:0}
+.card .tag{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase}
+.card p{color:var(--muted)}
+.card.bad{background:color-mix(in srgb,var(--signal) 7%,var(--surface));border-color:color-mix(in srgb,var(--signal) 30%,var(--line))}
+.card.good{background:color-mix(in srgb,var(--good) 8%,var(--surface));border-color:color-mix(in srgb,var(--good) 30%,var(--line))}
+ul.clean{margin:0;padding-left:1.1em;display:grid;gap:6px}
+.note{font-size:.85rem;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;min-width:0}
+
+/* roadmap */
+.phases{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.phase{display:grid;gap:6px;align-content:start}
+.phase .pn{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-bottom:4px;border-bottom:2px solid var(--pc)}
+.wk{display:flex;gap:10px;align-items:baseline;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:.88rem;line-height:1.3}
+.wk .num{font-family:var(--mono);font-size:.8rem;color:var(--pc);font-weight:500;min-width:1.4em}
+.wk:hover{border-color:var(--pc)}
+.wk[aria-pressed="true"]{background:var(--surface-2);border-color:var(--pc);font-weight:600}
+.wkdetail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.wkdetail h4{margin:0 0 4px;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+/* assessment */
+.bars{display:grid;gap:14px}
+.barrow{display:grid;grid-template-columns:5.5em minmax(0,1fr);gap:12px;align-items:center}
+.barrow .lbl{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.bar{display:flex;height:54px;border-radius:8px;overflow:hidden;background:var(--surface-2)}
+.seg{display:flex;flex-direction:column;justify-content:center;padding:0 10px;color:#fff;font-size:.82rem;line-height:1.15;white-space:nowrap;overflow:hidden;transition:flex-basis .6s ease}
+.seg b{font-family:var(--mono);font-size:.95rem}
+.seg.ai{background:var(--c1)} .seg.ai2{background:var(--c3)} .seg.ex{background:#5B6F76}
+.legend-row{display:flex;gap:18px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* quiz */
+.quiz{display:grid;gap:12px}
+.q{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.q .opts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.q .opts button{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:6px 10px;font-size:.82rem;cursor:pointer}
+.q .opts button:hover{border-color:var(--accent)}
+.q .fb{grid-column:1/-1;font-size:.88rem;display:none}
+.q.done .fb{display:block}
+.q.right{border-color:var(--good)} .q.wrong{border-color:var(--signal)}
+.q.right .fb b{color:var(--good)} .q.wrong .fb b{color:var(--signal)}
+.q button.picked{background:var(--surface-2);font-weight:600}
+.score{font-family:var(--mono);font-size:.9rem;color:var(--muted)}
+
+/* playground */
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.play{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;align-items:start}
+.cv{width:100%;aspect-ratio:3/2;max-width:100%;display:block;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);touch-action:none;cursor:crosshair}
+.side{display:grid;gap:14px;min-width:0}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.stat .k{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stat .v{font-family:var(--mono);font-size:1.35rem;font-variant-numeric:tabular-nums}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--bg);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:.9rem;font-weight:500}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:hover{filter:brightness(1.08)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.items{display:flex;gap:6px;flex-wrap:wrap}
+.items button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:.85rem;cursor:pointer}
+.items button.a{background:var(--c1);border-color:var(--c1);color:var(--bg)}
+.items button.c{background:var(--c4);border-color:var(--c4);color:var(--bg)}
+.tx{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;font-family:var(--mono);font-size:.8rem}
+.tx div{border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--surface);color:var(--muted)}
+.tx div.hitA{border-color:var(--c1);color:var(--ink)}
+.tx div.hit{border-color:var(--c4);background:color-mix(in srgb,var(--c4) 10%,var(--surface));color:var(--ink)}
+.tx-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+
+/* kdd */
+.stage-panel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.stage-panel h4{margin:0 0 6px;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stage-panel .fail{color:var(--signal)}
+.scene.wide{aspect-ratio:16/7}
+
+/* stepper */
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.steps button{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 12px;cursor:pointer;display:grid;gap:2px}
+.steps button .s{font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.steps button[aria-selected="true"]{border-color:var(--accent);background:var(--surface-2)}
+.exflow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+
+/* case */
+.case{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.agent{font-family:var(--mono);font-size:.92rem;background:var(--surface-2);border-radius:8px;padding:14px 16px;line-height:1.5}
+.feat{display:grid;gap:8px}
+.feat label{display:flex;gap:10px;align-items:center;cursor:pointer;font-family:var(--mono);font-size:.88rem}
+.feat input{accent-color:var(--accent);width:18px;height:18px}
+.meter{height:12px;border-radius:6px;background:var(--surface-2);position:relative;overflow:hidden}
+.meter i{position:absolute;inset:0 auto 0 0;background:var(--accent);transition:width .5s ease}
+.meter .base{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.verdict{border-radius:8px;padding:12px 14px;font-size:.92rem}
+.verdict.leak{background:color-mix(in srgb,var(--signal) 12%,var(--surface));color:var(--ink);border:1px solid var(--signal)}
+.verdict.meh{background:color-mix(in srgb,var(--warn) 12%,var(--surface));border:1px solid var(--warn)}
+.verdict.ok{background:color-mix(in srgb,var(--good) 10%,var(--surface));border:1px solid var(--good)}
+
+/* table */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:.92rem;background:var(--surface)}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface-2)}
+td:first-child{font-weight:600}
+tr:last-child td{border-bottom:none}
+
+/* checklist */
+.checks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.check{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--good);margin-top:3px}
+.check:has(input:checked){border-color:var(--good);background:color-mix(in srgb,var(--good) 7%,var(--surface))}
+.check b{display:block;margin-bottom:2px}
+.check span{color:var(--muted);font-size:.92rem}
+.progress{font-family:var(--mono);font-size:.9rem;color:var(--muted)}
+
+.lab{counter-reset:s;display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.lab li{display:grid;grid-template-columns:2.4em minmax(0,1fr);gap:12px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.lab li::before{counter-increment:s;content:counter(s);font-family:var(--display);font-weight:700;font-size:1.5rem;color:var(--accent)}
+.lab li.key::before{color:var(--signal)}
+.next{background:var(--accent);color:var(--bg);border-radius:var(--r);padding:20px 22px;display:grid;gap:4px}
+.next .eyebrow{color:var(--bg);opacity:.8}
+
+@media (max-width:980px){
+  .page{grid-template-columns:minmax(0,1fr);gap:24px;padding-inline:16px}
+  .rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);max-height:none;padding-block:8px;border-bottom:1px solid var(--line);margin-inline:-16px;padding-inline:16px}
+  .rail .course,.rail .ltitle,.rail .part,.rail .keys{display:none}
+  .rail ol{display:flex;overflow-x:auto;gap:4px;scrollbar-width:none}
+  .rail a{white-space:nowrap}
+  .hero,.play,.case,.tx-wrap{grid-template-columns:minmax(0,1fr)}
+  .phases{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid4,.checks{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stage-panel,.wkdetail,.exflow{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:620px){
+  .grid3,.grid2,.grid4,.checks,.phases,.steps{grid-template-columns:minmax(0,1fr)}
+  .q{grid-template-columns:minmax(0,1fr)} .q .opts{justify-content:flex-start}
+  .scene.wide{aspect-ratio:4/3}
+  main{gap:64px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---- chapter 1 ---- */
+main a{color:var(--accent)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.lab-s{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);min-width:4.6em}
+.chip.sm{padding:4px 11px;font-size:.84rem}
+table.sm{min-width:0;font-size:.86rem}
+table.sm th,table.sm td{padding:7px 10px}
+table.sm td:first-child{font-weight:400}
+table.num td{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+table.num th{text-align:right}
+table.num td:first-child,table.num th:first-child{text-align:left}
+table .hl{background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
+table tr.tot td{font-weight:600;background:var(--surface-2)}
+.formula{background:var(--surface-2);border-radius:8px;padding:12px 16px;overflow-x:auto;font-size:1.05rem}
+.formula math{font-size:1.1em}
+.quote{border-left:3px solid var(--accent);padding-left:14px;font-size:1.05rem}
+.ill{width:100%;height:100%;display:block}
+.ill text{font-family:var(--mono);font-size:11px;fill:var(--muted);text-anchor:middle}
+.ill .ln{stroke:var(--muted);stroke-width:1.6;fill:none}
+.ill .ink{stroke:var(--ink);stroke-width:1.4;fill:var(--surface)}
+.ill .f1{fill:var(--c1)} .ill .f2{fill:var(--c2)} .ill .f3{fill:var(--c3)} .ill .f4{fill:var(--c4)} .ill .fw{fill:var(--warn)} .ill .fs{fill:var(--surface-2)}
+.ill .k{transition:opacity .4s}
+.ill .k.dim{opacity:.28}
+.ill .k.cur .ln{stroke:var(--accent);stroke-width:2.6}
+.ill .k.cur text{fill:var(--ink);font-weight:600}
+.ill .lane{font-size:10px;letter-spacing:.08em;text-anchor:start;fill:var(--accent)}
+.ill .mk{fill:var(--muted)}
+.ladder{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;align-items:end}
+.ladder div{border-radius:8px;padding:8px 10px;color:var(--bg);font-size:.86rem;line-height:1.25;font-weight:500}
+.axisrow{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.74rem;color:var(--muted);border-top:2px solid var(--line);padding-top:4px;margin-top:6px}
+.bar button.seg{border:0;cursor:pointer;text-align:left;font:inherit;color:var(--bg)}
+.mob{display:none}
+.bar button.seg[aria-pressed="true"]{box-shadow:inset 0 -5px 0 rgba(0,0,0,.35)}
+.tl{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:6px}
+.tl button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:0 0 8px;cursor:pointer;display:grid;gap:4px;overflow:hidden;font-size:.82rem}
+.tl button i{display:block;height:6px;background:var(--pc)}
+.tl button b{font-family:var(--mono);font-size:.95rem;color:var(--pc)}
+.tl button[aria-pressed="true"]{border-color:var(--pc);background:var(--surface-2)}
+.tl button .t{color:var(--muted);font-size:.72rem;line-height:1.2;padding:0 4px}
+.wkdetail h4,.flowtxt h4{margin:0 0 4px;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.steps.s5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.steps.s7{grid-template-columns:repeat(7,minmax(0,1fr))}
+.pane{display:grid;gap:14px}
+.strike{text-decoration:line-through;opacity:.5}
+.tok{display:inline-block;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 11px;font-family:var(--mono);font-size:.82rem;margin:2px}
+.tok.on{border-color:var(--accent);background:var(--accent);color:var(--bg)}
+.arrow{font-family:var(--mono);color:var(--accent);padding:0 6px}
+#clsBoard[data-show="ind"] .ci,#clsBoard[data-show="cls"] .cc{background:color-mix(in srgb,var(--accent) 16%,var(--surface))}
+#clsBoard[data-show="train"] #tTrain,#clsBoard[data-show="test"] #tTest{outline:3px solid var(--accent);outline-offset:-1px}
+.cc{color:var(--signal);font-weight:600}
+.lbl3{position:absolute;left:0;top:0;font-family:var(--mono);font-size:.72rem;color:var(--muted);pointer-events:none;white-space:nowrap;transform:translate(-50%,-50%)}
+.lbl3.t{color:var(--accent);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase}
+.flowwrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.flow{width:100%;min-width:560px;height:auto;display:block}
+.flow text{font-family:var(--mono);font-size:12px;fill:var(--muted);text-anchor:middle}
+.flow .nd rect,.flow .nd circle,.flow .nd path{fill:var(--surface);stroke:var(--accent-2);stroke-width:1.5;transition:fill .3s}
+.flow .nd text{fill:var(--ink)}
+.flow .nd.hi rect,.flow .nd.hi circle,.flow .nd.hi path{fill:color-mix(in srgb,var(--warn) 35%,var(--surface));stroke:var(--warn)}
+.flow .ed path{fill:none;stroke:var(--muted);stroke-width:1.6}
+.flow .ed.hi path{stroke:var(--warn);stroke-width:3.2}
+.flow .ed.hi text{fill:var(--signal);font-weight:600}
+.flow .rf path{stroke:var(--accent-2);stroke-width:1;opacity:.45;fill:none}
+.flow .rf.hi path{opacity:1;stroke-width:2;stroke:var(--signal)}
+.flow .mk{fill:var(--muted)}
+.flowtxt{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:980px){.ladder{grid-template-columns:minmax(0,1fr)} .ladder div{margin:0!important} .axisrow{display:none} .mob{display:block} .tl{grid-template-columns:repeat(6,minmax(0,1fr))} .steps.s7{grid-template-columns:repeat(4,minmax(0,1fr))} .flowtxt{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){.steps.s5,.steps.s7{grid-template-columns:repeat(3,minmax(0,1fr))} .steps.s5 button,.steps.s7 button{padding:8px} .tl{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* ---------- presentation mode: one board per screen, like slides ---------- */
+.present-btn{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 14px);z-index:20;display:inline-flex;gap:8px;align-items:center;border:1px solid var(--accent);background:var(--accent);color:var(--bg);border-radius:999px;padding:8px 16px 8px 13px;font:500 .9rem var(--body);cursor:pointer;box-shadow:0 2px 12px color-mix(in srgb,var(--ink) 18%,transparent)}
+.present-btn:hover{filter:brightness(1.08)}
+.present-btn svg,.deck-bar svg{width:18px;height:18px;display:block}
+html:not(.presenting) .deck-ui{display:none!important}
+html.presenting .present-btn{display:none}
+html.presenting,html.presenting body{height:100%;overflow:hidden}
+html.presenting .rail{display:none}
+html.presenting .page{display:block;max-width:none;padding:0;margin:0}
+html.presenting main{position:fixed;inset:0;display:block;background:var(--bg);overflow-x:hidden;overflow-y:auto;z-index:10;padding:0}
+html.presenting main > section.board,html.presenting main > .part-break{display:none}
+html.presenting main > section.board.is-current,html.presenting main > .part-break.is-current{display:grid;position:absolute;left:50%;top:var(--deck-top,24px);width:var(--deck-w,1180px);margin:0;transform-origin:top center;transform:translateX(-50%) scale(var(--deck-s,1))}
+html.presenting main > .part-break.is-current{border-top:none;padding:0;gap:14px}
+html.presenting main > .part-break.is-current .n{font-size:8rem}
+html.presenting main > .part-break.is-current h2{font-size:3.4rem}
+.deck-bar{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);z-index:30;display:flex;gap:2px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;box-shadow:0 2px 14px color-mix(in srgb,var(--ink) 14%,transparent);opacity:.45;transition:opacity .2s}
+.deck-bar:hover,.deck-bar:focus-within{opacity:1}
+.deck-bar button{border:none;background:transparent;color:var(--ink);border-radius:999px;width:38px;height:38px;display:grid;place-items:center;cursor:pointer}
+.deck-bar button:hover{background:var(--surface-2)}
+.deck-bar button:disabled{opacity:.3;cursor:default;background:transparent}
+.deck-count{font-family:var(--mono);font-size:.8rem;color:var(--muted);padding:0 10px;white-space:nowrap;max-width:46vw;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.deck-side{position:fixed;top:0;bottom:0;width:64px;z-index:25;border:none;background:transparent;cursor:pointer;color:var(--muted);display:grid;place-items:center;opacity:0;transition:opacity .2s}
+.deck-side svg{width:34px;height:34px}
+.deck-side.prev{left:0}
+.deck-side.next{right:0}
+.deck-side:hover,.deck-side:focus-visible{opacity:1}
+.deck-side:disabled{display:none}
+.deck-spacer{position:absolute;left:0;width:1px;height:1px;pointer-events:none}
+.deck-progress{position:fixed;left:0;top:0;height:3px;background:var(--accent);z-index:30;transition:width .3s ease}
+@media (max-width:700px){.deck-side{display:none!important}.present-btn{padding:7px 12px}}
+@media (prefers-reduced-motion:reduce){.deck-progress,.deck-bar,.deck-side{transition:none}}
+
+/* ================= "sticker pop" theme layer (chapter 1) =================
+   Layout stays the same. Bold ink outlines, hard offset shadows, sticker labels,
+   marker-pen headings and a dotted notebook background. */
+:root{
+  --bg:#F3EFFF; --surface:#FFFFFF; --surface-2:#ECE5FF; --ink:#17132B; --muted:#585074; --line:#D6CCF5;
+  --accent:#6A35FF; --accent-2:#E8307F; --good:#0E9A6E; --signal:#E5372B; --warn:#FFB703;
+  --c1:#6A35FF; --c2:#E8307F; --c3:#0C946C; --c4:#E8590C; --c5:#1883CC;
+  --edge:#17132B; --shadow:#17132B; --dot:#CFC4F2; --marker:#FFD54A; --sticker:#FFD54A; --sticker-ink:#17132B;
+  --display:"Unbounded", "Arial Black", "Segoe UI", system-ui, sans-serif;
+  --body:"Rubik", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"Space Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:16px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#110D22; --surface:#1C1736; --surface-2:#28214D; --ink:#F4F0FF; --muted:#B3A8DB; --line:#3A3166;
+  --accent:#A68BFF; --accent-2:#FF6AAE; --good:#33E0A1; --signal:#FF6B63; --warn:#FFC93D;
+  --c1:#A68BFF; --c2:#FF6AAE; --c3:#33E0A1; --c4:#FF9F55; --c5:#55C8FF;
+  --edge:#7B67D6; --shadow:#05030C; --dot:#2A2350; --marker:#7A4FE0; --sticker:#FFC93D; --sticker-ink:#17132B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#110D22; --surface:#1C1736; --surface-2:#28214D; --ink:#F4F0FF; --muted:#B3A8DB; --line:#3A3166;
+  --accent:#A68BFF; --accent-2:#FF6AAE; --good:#33E0A1; --signal:#FF6B63; --warn:#FFC93D;
+  --c1:#A68BFF; --c2:#FF6AAE; --c3:#33E0A1; --c4:#FF9F55; --c5:#55C8FF;
+  --edge:#7B67D6; --shadow:#05030C; --dot:#2A2350; --marker:#7A4FE0; --sticker:#FFC93D; --sticker-ink:#17132B; color-scheme:dark}
+
+body{background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.3px,transparent 1.5px);background-size:22px 22px;font-size:17.5px}
+h1{font-size:clamp(2rem,4.4vw,3.1rem);font-weight:800;letter-spacing:-.02em;line-height:1.08}
+h2{font-size:clamp(1.35rem,2.6vw,1.85rem);font-weight:700;letter-spacing:-.015em;line-height:1.2;
+   text-decoration:underline;text-decoration-color:var(--marker);text-decoration-thickness:.32em;text-underline-offset:-.12em;text-decoration-skip-ink:none}
+h3{font-family:var(--body);font-weight:600;font-size:1.12rem}
+.lead{color:var(--muted)}
+
+/* sticker labels */
+.eyebrow{display:inline-block;justify-self:start;width:fit-content;background:var(--sticker);color:var(--sticker-ink);border:2px solid var(--edge);border-radius:8px;padding:3px 10px 2px;font-weight:700;font-size:.72rem;letter-spacing:.06em;transform:rotate(-1.5deg);box-shadow:2px 2px 0 var(--shadow)}
+section.board:nth-of-type(even) .eyebrow{transform:rotate(1.2deg)}
+.card .tag{font-weight:700}
+
+/* hero squiggle */
+.hero h1::after,.hero-title h1::after{content:"";display:block;width:150px;height:16px;margin-top:12px;background:var(--accent-2);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 16'%3E%3Cpath d='M3 10c12-10 22 8 34 0s22-10 34 0 22 8 34 0 22-10 34 0' fill='none' stroke='black' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 16'%3E%3Cpath d='M3 10c12-10 22 8 34 0s22-10 34 0 22 8 34 0 22-10 34 0' fill='none' stroke='black' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
+
+/* chunky outlined surfaces */
+.card,.panel,.stat,.q,.check,.lab li,.tbl-wrap,.flowwrap,.tl button,.wk,.steps button{border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow)}
+.card,.panel{border-radius:var(--r)}
+.card.bad{border-color:var(--signal);box-shadow:4px 4px 0 var(--signal)}
+.card.good{border-color:var(--good);box-shadow:4px 4px 0 var(--good)}
+.stat{border-radius:12px}
+.stat .v{font-weight:700}
+.scene,.cv{border:2px solid var(--edge);box-shadow:6px 6px 0 var(--accent-2);border-radius:var(--r)}
+.scene{background:radial-gradient(120% 90% at 30% 20%,var(--surface) 0%,var(--surface-2) 100%)}
+.formula{border:2px dashed var(--accent);background:var(--surface)}
+.quote{border-left:5px solid var(--accent-2)}
+.caption{border-left:5px solid var(--accent-2)}
+table{background:var(--surface)}
+th{background:var(--accent);color:#FFFFFF;font-weight:700}
+.tbl-wrap{border-radius:12px}
+.tok{border:2px solid var(--edge)}
+.tok.on{background:var(--accent-2);border-color:var(--edge);color:#FFFFFF}
+
+/* buttons that feel pressable */
+.chip,.btn,.items button,.q .opts button{border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);font-weight:500;transition:transform .12s ease,box-shadow .12s ease,background .15s}
+.chip:hover,.btn:hover,.items button:hover,.q .opts button:hover{transform:translate(-1px,-1px) rotate(-1deg);box-shadow:4px 4px 0 var(--shadow);filter:none}
+.chip:active,.btn:active,.items button:active,.q .opts button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--shadow)}
+.chip[aria-pressed="true"],.chip[aria-selected="true"]{background:var(--accent-2);border-color:var(--edge);color:#FFFFFF}
+.btn{background:var(--accent);color:#FFFFFF;border-color:var(--edge)}
+.btn.ghost{background:var(--surface);color:var(--ink)}
+.steps button[aria-selected="true"],.wk[aria-pressed="true"],.tl button[aria-pressed="true"]{background:var(--marker);border-color:var(--edge);color:var(--sticker-ink)}
+.steps button[aria-selected="true"] .s,.tl button[aria-pressed="true"] .t{color:var(--sticker-ink)}
+.q.right{border-color:var(--good);box-shadow:4px 4px 0 var(--good)}
+.q.wrong{border-color:var(--signal);box-shadow:4px 4px 0 var(--signal)}
+.check:has(input:checked){box-shadow:4px 4px 0 var(--good)}
+
+/* bars and ladder */
+.bar{border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow);border-radius:12px}
+.ladder div{border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);border-radius:10px;color:#FFFFFF;font-weight:600}
+
+/* part dividers: outlined giant numbers */
+.part-break{border-top:3px dashed var(--edge)}
+.part-break .n{color:var(--surface);-webkit-text-stroke:3px var(--edge);text-shadow:7px 7px 0 var(--accent-2);font-weight:800;font-size:clamp(3.4rem,8vw,6rem)}
+.part-break:nth-of-type(2n) .n{text-shadow:7px 7px 0 var(--c3)}
+
+/* rail */
+.rail .ltitle{font-weight:800;font-size:1rem}
+.rail a{border-radius:999px;border:2px solid transparent;padding:4px 12px}
+.rail a:hover{background:var(--surface);border-color:var(--edge)}
+.rail a.on{background:var(--accent);color:#FFFFFF;border-color:var(--edge);box-shadow:2px 2px 0 var(--shadow)}
+.rail .part{color:var(--accent-2);font-weight:700}
+
+/* next block */
+.next{border:2px solid var(--edge);box-shadow:6px 6px 0 var(--accent-2);background:var(--accent);color:#FFFFFF}
+.next .eyebrow{color:var(--sticker-ink)}
+
+/* presentation controls */
+.present-btn{background:var(--accent-2);color:#FFFFFF;border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);font-weight:600}
+.present-btn:hover{transform:translate(-1px,-1px) rotate(-2deg)}
+.deck-bar{border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);opacity:.6}
+.deck-progress{height:5px;background:var(--accent-2)}
+html.presenting main > .part-break.is-current .n{font-size:9rem;-webkit-text-stroke:4px var(--edge);text-shadow:10px 10px 0 var(--accent-2)}
+html.presenting main > .part-break.is-current h2{font-size:3rem}
+
+@media (prefers-reduced-motion:reduce){.chip:hover,.btn:hover,.items button:hover,.q .opts button:hover,.present-btn:hover{transform:none}}
+html.presenting main{background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.3px,transparent 1.5px);background-size:22px 22px}
+
+.steps button{min-width:0}
+.steps button b{overflow-wrap:anywhere;hyphens:auto}
+@media (max-width:620px){.steps button b{font-size:.8rem!important}}
+
+/* ===== green palette variant: overrides the sticker-pop colours only ===== */
+:root{--bg:#EDF8F0; --surface:#FFFFFF; --surface-2:#DFF2E5; --ink:#10241A; --muted:#4C6656; --line:#C6E6CF; --accent:#0B8A4F; --accent-2:#8BD100; --good:#0B8A4F; --signal:#E5372B; --warn:#FFB703; --c1:#0B8A4F; --c2:#5FA800; --c3:#0F8C8C; --c4:#E8590C; --c5:#6A35FF; --edge:#10241A; --shadow:#10241A; --dot:#BCE0C6; --marker:#FFD54A; --sticker:#FFD54A; --sticker-ink:#10241A; --on-accent:#FFFFFF; --on-accent-2:#10241A;}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0A1912; --surface:#12271C; --surface-2:#1A3727; --ink:#ECFBF1; --muted:#9DC4AB; --line:#2A4D38; --accent:#3EDB8A; --accent-2:#B6F23C; --good:#3EDB8A; --signal:#FF6B63; --warn:#FFC93D; --c1:#3EDB8A; --c2:#B6F23C; --c3:#3FD4D4; --c4:#FF9F55; --c5:#A68BFF; --edge:#3E9E6A; --shadow:#020805; --dot:#173323; --marker:#2E8F55; --sticker:#FFC93D; --sticker-ink:#10241A; --on-accent:#0A1912; --on-accent-2:#0A1912; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0A1912; --surface:#12271C; --surface-2:#1A3727; --ink:#ECFBF1; --muted:#9DC4AB; --line:#2A4D38; --accent:#3EDB8A; --accent-2:#B6F23C; --good:#3EDB8A; --signal:#FF6B63; --warn:#FFC93D; --c1:#3EDB8A; --c2:#B6F23C; --c3:#3FD4D4; --c4:#FF9F55; --c5:#A68BFF; --edge:#3E9E6A; --shadow:#020805; --dot:#173323; --marker:#2E8F55; --sticker:#FFC93D; --sticker-ink:#10241A; --on-accent:#0A1912; --on-accent-2:#0A1912; color-scheme:dark}
+.btn,.rail a.on,div.next,div.next h3,div.next p,th{color:var(--on-accent)}
+.chip[aria-pressed="true"],.chip[aria-selected="true"],.tok.on,.present-btn{color:var(--on-accent-2)}
+</style>
+<style>
+/* ===== Lecture 1 additions: block schedule, AI checks, lab audit form (green tokens only) ===== */
+.blk{display:grid;grid-template-columns:4.6em repeat(5,minmax(0,1fr));gap:8px;align-items:stretch}
+.blk .dh{font-family:var(--mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;font-weight:700}
+.blk .wl{font-family:var(--mono);font-size:.78rem;font-weight:700;color:var(--accent);display:grid;align-content:center}
+.blk .cell{min-width:0;display:grid}
+.blk .lec{display:grid;gap:3px;align-content:start;text-align:left;border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);background:var(--surface);border-radius:12px;padding:8px 10px;cursor:pointer;font-size:.8rem;line-height:1.25;min-height:92px;transition:transform .12s ease,box-shadow .12s ease}
+.blk .lec:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--shadow)}
+.blk .lec b{font-family:var(--mono);font-size:.95rem;color:var(--accent)}
+.blk .lec .t{color:var(--ink)}
+.blk .lec .d{display:none;font-family:var(--mono);font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.blk .lec[aria-pressed="true"]{background:var(--marker);color:var(--sticker-ink)}
+.blk .lec[aria-pressed="true"] b,.blk .lec[aria-pressed="true"] .t,.blk .lec[aria-pressed="true"] .d{color:var(--sticker-ink)}
+.blk .ev{justify-self:start;font-family:var(--mono);font-size:.64rem;font-weight:700;letter-spacing:.03em;background:var(--sticker);color:var(--sticker-ink);border:1.5px solid var(--edge);border-radius:6px;padding:1px 6px;margin-top:2px}
+.blk .free{display:grid;place-items:center;text-align:center;border:2px dashed var(--line);border-radius:12px;padding:8px;font-size:.78rem;color:var(--muted);min-height:92px;background:color-mix(in srgb,var(--surface) 55%,transparent)}
+.blk .free .d{display:none}
+.aichk{font-size:.92rem;color:var(--ink)!important;border-top:2px dashed var(--line);padding-top:8px;margin-top:2px}
+.aichk b{display:block;font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--c3)}
+.labgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+.labgrid .claims{grid-template-columns:repeat(2,minmax(0,1fr))}
+html.presenting .labgrid{grid-template-columns:minmax(0,.8fr) minmax(0,1.5fr)}
+html.presenting .labgrid .claims{grid-template-columns:minmax(0,1fr)}
+.claims{display:grid;gap:8px;margin-top:8px}
+.claims button{display:grid;gap:2px;text-align:left;font:inherit;font-family:var(--body);font-size:.86rem;line-height:1.35;color:var(--ink);background:var(--surface);border:2px solid var(--edge);border-radius:10px;padding:7px 10px;cursor:pointer;box-shadow:2px 2px 0 var(--shadow)}
+.claims button:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--shadow)}
+.claims button[disabled]{opacity:.45;cursor:default;transform:none;box-shadow:none}
+.claims .hint{display:none;font-size:.78rem;color:var(--c3);font-family:var(--mono)}
+.claims.showhints .hint{display:block}
+table.audit{min-width:620px;font-size:.88rem}
+table.audit td{padding:8px;vertical-align:top}
+table.audit td:first-child{font-family:var(--mono);color:var(--muted);width:2.2em;padding-top:14px}
+table.audit textarea,table.audit select{width:100%;font:inherit;font-size:.86rem;color:var(--ink);background:var(--bg);border:2px solid var(--edge);border-radius:8px;padding:6px 8px;resize:vertical}
+table.audit textarea{min-height:3.6em}
+table.audit select{cursor:pointer;min-width:8.5em}
+table.audit td.claim{font-size:.95rem;line-height:1.45;color:var(--ink);padding-top:12px}
+table.audit .step{font-family:var(--mono);font-size:.72rem;color:var(--muted);white-space:nowrap}
+table.audit .vchips{display:flex;flex-wrap:nowrap;gap:6px;width:max-content;padding-right:4px}
+table.audit .vchips .chip{white-space:nowrap}
+table.audit .vchips .chip{font-size:.8rem;padding:4px 10px}
+table.audit tr[data-v="unk"] td{background:color-mix(in srgb,var(--c5) 12%,var(--surface))}
+table.audit tr[data-v="ok"] td{background:color-mix(in srgb,var(--good) 12%,var(--surface))}
+table.audit tr[data-v="part"] td{background:color-mix(in srgb,var(--warn) 16%,var(--surface))}
+table.audit tr[data-v="wrong"] td{background:color-mix(in srgb,var(--signal) 12%,var(--surface))}
+.pf{display:inline-flex;gap:6px;align-items:center;font-size:.88rem;cursor:pointer}
+.pf input{width:18px;height:18px;accent-color:var(--accent)}
+@media (max-width:980px){html.presenting .labgrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){.labgrid .claims{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){
+  .blk{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .blk .dh,.blk .corner{display:none}
+  .blk .wl{grid-column:1/-1;margin-top:6px}
+  .blk .lec .d,.blk .free .d{display:block}
+  .blk .lec,.blk .free{min-height:0}
+}
+/* fix: classification table headers stay readable when a column is highlighted (inherited from Ch1) */
+#clsBoard th.ci,#clsBoard th.cc{color:var(--on-accent)}
+#clsBoard[data-show="ind"] th.ci,#clsBoard[data-show="cls"] th.cc{color:var(--ink)}
+/* segmented bars: truncate labels in narrow segments */
+.bar button.seg span{overflow:hidden;text-overflow:ellipsis}
+/* "new this year" additions and replaced lines */
+.add{border:2px dashed var(--c3);border-radius:var(--r);padding:14px 16px;display:grid;gap:10px;background:color-mix(in srgb,var(--c3) 5%,transparent)}
+.add .addt{font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--c3)}
+.panel .add{margin-top:14px}
+.was del{color:var(--muted);text-decoration-thickness:1.5px}
+.repl{display:inline-block;font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.03em;color:var(--sticker-ink);background:var(--sticker);border:1.5px solid var(--edge);border-radius:6px;padding:0 6px;margin-top:2px}
+
+/* hero: data -> pattern -> knowledge (2D) */
+#aiHeroScene canvas{cursor:crosshair}
+#aiHeroScene .hint{top:8px;bottom:auto}
+.hero-rule{position:absolute;display:grid;gap:3px;background:var(--surface);border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow);border-radius:12px;padding:10px 14px;font-size:.95rem;line-height:1.35}
+.hero-rule .k{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.hero-rule b{color:var(--accent)}
+.hero-rule .n{font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+.hero-tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-family:var(--mono);font-size:.74rem;padding:4px 8px;border-radius:6px;white-space:nowrap}
+
+.hero-title .instructor{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin:0}
+.hero-title .instructor .k{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.hero-title .instructor .name{font-weight:600;font-size:1.05rem;color:var(--ink);border:2px var(--muted);border-radius:8px;padding:2px 10px}
+
+.title-board{padding-block:10vh 8vh}
+.hero-title{display:grid;justify-items:center;text-align:center;gap:20px;max-width:920px;margin:0 auto}
+.hero-title .eyebrow{justify-self:center}
+.hero-title h1{font-size:clamp(2.4rem,6.2vw,4.6rem)}
+.hero-title h1::after{margin-left:auto;margin-right:auto}
+.hero-title .lead{max-width:52ch}
+.hero-title .instructor{justify-content:center;margin-top:6px}
+</style>
+
+<div class="page">
+<nav class="rail" aria-label="Lecture sections">
+  <div class="course">COMP7103 Data Mining</div>
+  <div class="ltitle">Lecture 1 · Data mining in the age of AI</div>
+  <ol id="toc"></ol>
+  <p class="keys">Press <kbd>←</kbd> <kbd>→</kbd> to step through boards while lecturing.</p>
+</nav>
+
+<main>
+<!-- ============ OPENING ============ -->
+<!-- source: lecture1.html hero (3D data, pattern, knowledge) -->
+<section class="board title-board" id="opening" data-part="Opening" data-nav="Title">
+  <div class="hero-title">
+    <span class="eyebrow">COMP7103B Data Mining · Lecture 1</span>
+    <h1>Data Mining <br/> in the Age of AI</h1>
+    <p class="lead">How raw records become knowledge, <br/> and how AI tools now take part in every step.</p>
+    <p class="instructor"><span class="name">Prof. Bo Dai</span></p>
+    <p class="instructor"><span class="name">School of Computing and Data Science, The University of Hong Kong</span></p>
+  </div>
+</section>
+
+<!-- source: lecture1.html hero, redrawn in 2D -->
+<section class="board" id="dpk" data-part="Opening" data-nav="Data, pattern, knowledge">
+  <div class="hero">
+    <div class="meta">
+      <span class="eyebrow">Warm-up · step through</span>
+      <h2>Data, Pattern, Knowledge</h2>
+      <p class="lead">Six hundred children's records, looked at three ways. Step through the three stages.</p>
+      <div class="stage-tabs" role="group" aria-label="Hero stage" id="aiHeroTabs">
+        <button class="chip" aria-pressed="true">1 · Data</button>
+        <button class="chip" aria-pressed="false">2 · Pattern</button>
+        <button class="chip" aria-pressed="false">3 · Knowledge</button>
+      </div>
+      <p class="caption" id="aiHeroCap"></p>
+    </div>
+    <div class="scene" id="aiHeroScene">
+      <canvas id="aiHeroCv" aria-label="600 children's records: as a table, as age against weight, and with the rule age under 3 means weight under 40 lb"></canvas>
+      <div class="hero-rule" id="aiHeroRule" hidden></div>
+      <div class="hero-tip" id="aiHeroTip" hidden></div>
+      <span class="hint">hover a dot to see its row</span>
+    </div>
+  </div>
+</section>
+
+<!-- source: new (session format from the spec) -->
+<section class="board" id="plan" data-part="Opening" data-nav="Today's plan">
+  <span class="eyebrow">One 2.5-hour session</span>
+  <h2>Today's plan</h2>
+  <p class="lead">Every lecture in the block has the same shape. Click a part of the bar.</p>
+  <div class="bar" id="planBar">
+    <button class="seg" style="flex-basis:43.3%;background:var(--c1)" aria-pressed="true"><b>~65 min</b><span>Classical core</span></button>
+    <button class="seg" style="flex-basis:20%;background:var(--c3)" aria-pressed="false"><b>~30 min</b><span>AI layer</span></button>
+    <button class="seg" style="flex-basis:6.7%;background:var(--muted);padding:0 5px" aria-pressed="false"><b>10</b><span>Break</span></button>
+    <button class="seg" style="flex-basis:30%;background:var(--c4)" aria-pressed="false"><b>~45 min</b><span>Lab</span></button>
+  </div>
+  <div class="panel" id="planDetail"></div>
+  <div class="grid3">
+    <a class="card" href="#course" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c1)">Part 1</span><h3>Course information</h3><p>Staff, objectives, assessment, textbook, the block schedule and the AI-use policy.</p></a>
+    <a class="card" href="#mine" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c2)">Part 2</span><h3>Data Mining and Knowledge Discovery</h3><p>Data, patterns and knowledge. DSS, data warehousing and OLAP.</p></a>
+    <a class="card" href="#classification" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c3)">Part 3</span><h3>Data mining tasks</h3><p>Classification, association analysis, cluster analysis.</p></a>
+    <a class="card" href="#kddflow" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c4)">Part 4</span><h3>The KDD process</h3><p>Nine steps, from goal identification to knowledge consolidation.</p></a>
+    <a class="card" href="#roles" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c5)">Part 5 · AI layer</span><h3>The KDD process meets AI</h3><p>Where AI helps at each step, and where it fails.</p></a>
+    <a class="card" href="#labbrief" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c3)">Part 6 · Lab</span><h3>Audit an AI analyst</h3><p>An agent explores a dataset. You check its claims.</p></a>
+  </div>
+</section>
+
+<!-- ============ PART 1 ============ -->
+<div class="part-break"><span class="n">01</span><span class="eyebrow">Part 1</span><h2>Course Information</h2></div>
+
+<!-- source: new (spec "Block schedule") -->
+<!-- source: Ch1 (course_info slides 1-4), weekly line replaced by the block -->
+<section class="board" id="course" data-part="Part 1 · Course information" data-nav="About the course">
+  <span class="eyebrow">COMP 7103B · 2026-27 Semester 1</span>
+  <h2>COMP 7103B Data Mining</h2>
+  <div class="grid2">
+    <div class="card"><h3>About the course</h3>
+      <ul class="clean">
+        <li>Instructor: Prof. Bo Dai (bdai@hku.hk)</li>
+        <li>Tutors: Link Chen (link-chen@hku.hk), <br/> Yuxuan Jiang (jyx24@connect.hku.hk)</li>
+      </ul></div>
+    <div class="card"><h3>Basic information</h3>
+      <ul class="clean">
+        <li>Lectures and labs: a three-week block of 12 sessions, 2.5 hours each, on Monday, Tuesday, Thursday and Friday (see the block schedule)</li>
+      </ul></div>
+  </div>
+  <div class="add"><span class="addt">Block format</span><p>Each session: classical core about 65 min, AI layer about 30 min, a 10-minute break, and a lab of about 45 min.</p></div>
+  <div class="panel">
+    <div class="ladder">
+      <div style="background:var(--warn)">Data Mining</div>
+      <div style="background:var(--c4);margin-bottom:14px">Computational Intelligence and Machine Learning</div>
+      <div style="background:var(--c1);margin-bottom:28px">NLP · Deep Learning</div>
+      <div style="background:var(--c3);margin-bottom:42px">AI of Things</div>
+      <div style="background:var(--c5);margin-bottom:56px">ML in Trading and Finance</div>
+    </div>
+    <div class="axisrow"><span>Basic</span><span>Advanced</span></div>
+    <p class="note mob" style="margin-top:8px">From basic (top) to advanced (bottom).</p>
+    <p class="note" style="margin-top:10px">Related course: <b>Legal Issues in AI and Data Science</b>.</p>
+  </div>
+</section>
+
+<!-- source: new (spec block schedule; replaces Ch1's week-by-week topics and tutorials) -->
+<section class="board" id="schedule" data-part="Part 1 · Course information" data-nav="Block schedule">
+  <span class="eyebrow">Three-week block</span>
+  <h2>Twelve lectures in three weeks</h2>
+  <p class="lead">Monday, Tuesday, Thursday and Friday. Wednesdays are free for self-study, consultation and assignment work. Click a lecture.</p>
+  <div class="blk" id="blk"></div>
+  <div class="panel">
+    <h3 id="blkTitle"></h3>
+    <div class="wkdetail" style="margin-top:12px">
+      <div style="grid-column:span 2"><h4>Topic</h4><p id="blkTopic"></p></div>
+      <div><h4>Assessment event</h4><p id="blkEvent"></p></div>
+    </div>
+  </div>
+  <div class="add"><span class="addt">Assessment</span><div class="grid4"><div class="card"><span class="tag" style="color:var(--c1)">Assignment 1 · 20%</span><p>Lectures 1–4, by hand. Out Friday of week 1, due Monday of week 2, 23:59.</p></div><div class="card"><span class="tag" style="color:var(--c1)">Assignment 2 · 20%</span><p>Lectures 5–8, by hand. Out Friday of week 2, due Monday of week 3, 23:59.</p></div><div class="card"><span class="tag" style="color:var(--c3)">Midterm · 10%</span><p>Lectures 1–6, closed-book. Thursday of week 2, first 60 minutes of L7.</p></div><div class="card"><span class="tag" style="color:var(--c5)">Final exam · 50%</span><p>All 12 lectures, closed-book, 2 hours. In the exam period after the block.</p></div></div></div>
+  <p class="note"><b>After the block:</b> The final exam is in the exam period. Exact dates depend on the faculty exam calendar.</p>
+</section>
+
+<!-- source: Ch1 (course_info slides 5-6) -->
+<section class="board" id="objectives" data-part="Part 1 · Course information" data-nav="Objectives: big data">
+  <span class="eyebrow">Course objectives (1)</span>
+  <h2>Big Data Analysis</h2>
+  <div class="row">
+    <span class="tok">Web data</span><span class="tok">Sensor data</span><span class="tok">Scientific and medical data</span><span class="tok">Document data</span><span class="tok">Social Network data</span><span class="tok">Customer data</span><span class="tok">Financial data</span><span class="tok">Computing system data</span><span class="tok">Location/GPS data</span><span class="tok">Image/video data</span><span class="tok">Knowledge bases</span><span class="tok">…</span>
+  </div>
+  <div class="panel tabset" style="display:grid;gap:14px">
+    <h3>Web data · click a branch</h3>
+    <div class="tabs" role="tablist">
+      <button class="chip" role="tab" data-tab="wc">Web pages (content)</button>
+      <button class="chip" role="tab" data-tab="ws">Hyperlinks (structure)</button>
+      <button class="chip" role="tab" data-tab="wu">Page visits (usage)</button>
+    </div>
+    <div data-pane="wc"><p>Large and important source of knowledge.</p><ul class="clean" style="margin-top:6px"><li>Wikipedia</li><li>News</li><li>Social media</li><li>Forum discussion; sentiment analysis</li></ul></div>
+    <div data-pane="ws"><p>How web pages connect via hyperlinks.</p><ul class="clean" style="margin-top:6px"><li>Which webpages are "authoritative"?</li></ul></div>
+    <div data-pane="wu"><p>Log analysis.</p><ul class="clean" style="margin-top:6px"><li>What are the page access patterns?</li><li>What are the popular searches?</li></ul></div>
+    <p class="note">Question: how big is the web?</p>
+  </div>
+</section>
+
+<!-- source: Ch1 (course_info slides 7-8) -->
+<section class="board" id="modeling" data-part="Part 1 · Course information" data-nav="Objectives: modeling">
+  <span class="eyebrow">Course objectives (2) and (3)</span>
+  <h2>Modeling</h2>
+  <p class="lead">We analyze data for pattern discovery, model construction, and prediction.</p>
+  <div class="row" style="font-family:var(--mono);font-size:.9rem"><span class="tok">Data</span><span class="arrow">→</span><span class="tok">Patterns</span><span class="arrow">→</span><span class="tok">Knowledge or Model</span><span class="arrow">→</span><span class="tok">Apps</span></div>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c3)">Pattern discovery</span><p>Frequently occurring events and observations.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c4)">Model construction</span><p>A set of math functions/rules that generally summarize the observations.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Prediction</span><p>Predict the outcomes of previously unseen cases.</p></div>
+  </div>
+  <div class="card"><h3>After taking this course, you should be able to</h3>
+    <ul class="clean"><li>learn data mining methods for analyzing large scale data of different domains</li><li>apply these methods given some available data</li><li>preprocess data in an appropriate way in order to apply the desired data mining task</li><li>post-process data mining results and understand their values</li></ul></div>
+</section>
+
+<!-- source: Ch1 assessment bar, content from the spec -->
+<section class="board" id="assessment" data-part="Part 1 · Course information" data-nav="Assessment">
+  <span class="eyebrow">Assessment (tentative)</span>
+  <h2>Assignments, Midterm and Final</h2>
+  <p class="lead">Click a part of the bar.</p>
+  <div class="bar" id="asBar">
+    <button class="seg" style="flex-basis:40%;background:var(--c1)" aria-pressed="true" data-a="0"><b>40%</b><span>2 Assignments</span></button>
+    <button class="seg" style="flex-basis:10%;background:var(--c3)" aria-pressed="false" data-a="1"><b>10%</b><span>Midterm</span></button>
+    <button class="seg" style="flex-basis:50%;background:var(--c5)" aria-pressed="false" data-a="2"><b>50%</b><span>Final examination</span></button>
+  </div>
+  <div class="panel" id="asDetail"></div>
+  <div class="add"><span class="addt">AI rule</span><div class="grid2"><div class="card good"><span class="tag" style="color:var(--good)">AI allowed</span><p style="color:var(--ink)">Labs and revision: an AI tool may write lab code, explain a concept or quiz you. Check what it says against the lecture notes.</p></div><div class="card bad"><span class="tag" style="color:var(--signal)">No AI</span><p style="color:var(--ink)">Assignments are written exercises: show your own working by hand. The midterm and final are closed-book: no notes or devices except a non-programmable calculator.</p></div></div></div>
+</section>
+
+<!-- source: lecture1.html policy quiz, scenarios updated for the block format -->
+<section class="board" id="policy" data-part="Part 1 · Course information" data-nav="AI-use policy">
+  <span class="eyebrow">AI-use policy · check yourself</span>
+  <h2>Is this allowed?</h2>
+  <p class="lead">Use of AI is neither rewarded nor penalised.</p>
+  <div class="quiz" id="policyQ"></div>
+  <p class="score" id="policyScore"></p>
+</section>
+
+<!-- source: Ch1 resources + lecture1.html tools, updated -->
+<section class="board" id="resources" data-part="Part 1 · Course information" data-nav="Textbook and resources">
+  <span class="eyebrow">Textbook, resources, notes</span>
+  <h2>What you need</h2>
+  <div class="grid3">
+    <div class="card"><h3>Textbook</h3><p>Course material based on the textbook: <i>Introduction to data mining</i>, P.-N. Tan, M. Steinbach, V. Kumar, Addison Wesley.</p><p>Another good reference book: <i>Data Mining: Concepts and Techniques</i>, Han, Kamber, Pei, Morgan Kaufmann.</p></div>
+    <div class="card"><h3>Other resources</h3><ul class="clean"><li>Data mining community website: <span class="mono" style="font-size:.8rem">http://www.kdnuggets.com/</span></li><li>Data mining research conferences: ACM SIGKDD, IEEE ICDM, ACM CIKM</li></ul></div>
+    <div class="card"><h3>Notes</h3><p>This course does not require prior knowledge in data mining.</p><p>Background needed:</p><ul class="clean"><li>linear algebra</li><li>statistics</li><li>probability theory</li><li>algorithms</li><li>programming</li></ul></div>
+  </div>
+  <div class="add"><span class="addt">Tools</span><ul class="clean"><li>Python 3 in Jupyter notebooks, run in Google Colab, for the labs.</li><li>Labs use prepared notebooks with small datasets.</li></ul></div>
+</section>
+
+<!-- source: Ch1 (course_info slide 14) -->
+<section class="board" id="plagiarism" data-part="Part 1 · Course information" data-nav="Plagiarism">
+  <span class="eyebrow">Plagiarism</span>
+  <h2>Departmental guideline</h2>
+  <p class="note mono" style="word-break:break-all">http://intranet.cs.hku.hk/csintranet/contents/general/shared/plagiar.jsp</p>
+  <div class="grid2">
+    <div class="card bad"><span class="tag" style="color:var(--signal)">First attempt</span><p style="color:var(--ink)">Students who admit committing plagiarism for the first time shall be warned in writing and receive a zero mark for the component concerned. For those who do not confess, the case would be referred to the Program Director for consideration.</p></div>
+    <div class="card bad"><span class="tag" style="color:var(--signal)">Second attempt</span><p style="color:var(--ink)">If students commit plagiarism more than once during the course of studies, the case shall be referred to the Program Director for consideration. The Program Director will investigate the case and consider referring it to the University Disciplinary Committee, which may impose any of the following penalties: a published reprimand, suspension of study for a period of time, fine, or expulsion from the University.</p></div>
+  </div>
+</section>
+
+<!-- ============ PART 2 ============ -->
+<div class="part-break"><span class="n">02</span><span class="eyebrow">Part 2</span><h2>Data Mining and Knowledge Discovery</h2></div>
+
+<!-- source: Ch1 (introduction slides 3-6: diamond-mine analogy, KDD vs data mining) -->
+<section class="board" id="mine" data-part="Part 2 · Data mining and KDD" data-nav="Diamond-mine analogy">
+  <span class="eyebrow">Introduction · step through</span>
+  <h2>Mining Diamonds and Mining Data</h2>
+  <div class="hero">
+    <div class="meta">
+      <p class="lead">Step through the analogy: mining diamonds and mining data.</p>
+      <div class="stage-tabs" role="group" aria-label="Analogy step" id="mineTabs">
+        <button class="chip" aria-pressed="true">1 · Locate</button>
+        <button class="chip" aria-pressed="false">2 · Dig</button>
+        <button class="chip" aria-pressed="false">3 · Craft</button>
+      </div>
+      <p class="caption" id="mineCap"></p>
+    </div>
+    <div class="scene" id="mineScene">
+      <svg class="ill" id="mineSvg" viewBox="0 0 560 390" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Diamond mine and KDD analogy">
+        <defs><marker id="ha" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" class="mk"/></marker></defs>
+        <text class="lane" x="16" y="26">TO CRAFT A DIAMOND RING</text>
+        <g class="k" data-i="0"><circle cx="62" cy="100" r="30" class="f2" opacity=".85"/><ellipse cx="62" cy="100" rx="12" ry="30" class="ln"/><path d="M32,100H92M38,84H86M38,116H86" class="ln"/></g>
+        <g class="k" data-i="1"><path d="M106,100H160" class="ln" marker-end="url(#ha)"/><text x="133" y="88">Locate</text></g>
+        <g class="k" data-i="1"><ellipse cx="205" cy="100" rx="40" ry="26" class="fw" opacity=".3"/><ellipse cx="205" cy="100" rx="40" ry="26" class="ln"/><ellipse cx="205" cy="102" rx="29" ry="18" class="ln"/><ellipse cx="205" cy="104" rx="18" ry="11" class="ln"/><ellipse cx="205" cy="106" rx="8" ry="5" class="fw"/><text x="205" y="148">Catoca Diamond Mine</text></g>
+        <g class="k" data-i="2"><path d="M250,100H304" class="ln" marker-end="url(#ha)"/><text x="277" y="78">Use tools</text><text x="277" y="91">to dig</text></g>
+        <g class="k" data-i="2"><path d="M322,92L336,76L360,74L376,90L368,116L344,126L326,114Z" class="ink"/><path d="M336,76L346,96L360,74M346,96L326,114M346,96L368,116M346,96L344,126" class="ln" opacity=".6"/><text x="348" y="148">crude diamond</text></g>
+        <g class="k" data-i="3"><path d="M393,100H447" class="ln" marker-end="url(#ha)"/><text x="420" y="88">Craft</text></g>
+        <g class="k" data-i="3"><circle cx="491" cy="112" r="20" fill="none" stroke-width="5" class="ln"/><path d="M480,90L491,77L502,90L491,98Z" class="f2"/><text x="491" y="148">To craft a</text><text x="491" y="161">diamond ring</text></g>
+        <path d="M16,195H544" class="ln" stroke-dasharray="4 6" opacity=".5"/>
+        <text class="lane" x="16" y="222">DATA MINING AND KDD</text>
+        <g class="k" data-i="0"><rect x="34" y="240" width="56" height="54" class="ink"/><path d="M42,250h8v8h-8zM58,250h8v8h-8zM74,250h8v8h-8zM42,266h8v8h-8zM58,266h8v8h-8zM74,266h8v8h-8z" class="f2"/><rect x="56" y="280" width="12" height="14" class="fs"/><text x="62" y="314">Business</text><text x="62" y="327">organization</text></g>
+        <g class="k" data-i="1"><path d="M106,267H164" class="ln" marker-end="url(#ha)"/><text x="135" y="255">Locate data</text></g>
+        <g class="k" data-i="1"><rect x="180" y="250" width="22" height="36" class="ink"/><ellipse cx="191" cy="250" rx="11" ry="4" class="ink"/><path d="M180,286A11,4 0 0 0 202,286" class="ink"/><rect x="208" y="256" width="22" height="30" class="ink"/><ellipse cx="219" cy="256" rx="11" ry="4" class="ink"/><path d="M208,286A11,4 0 0 0 230,286" class="ink"/><text x="205" y="314">Databases</text></g>
+        <g class="k" data-i="2"><path d="M246,267H304" class="ln" marker-end="url(#ha)"/><text x="276" y="243">Run DM</text><text x="276" y="256">algos</text></g>
+        <g class="k" data-i="2"><rect x="318" y="242" width="60" height="50" class="ink"/><circle cx="330" cy="282" r="2.5" class="f1"/><circle cx="337" cy="276" r="2.5" class="f1"/><circle cx="342" cy="279" r="2.5" class="f1"/><circle cx="350" cy="266" r="2.5" class="f1"/><circle cx="356" cy="268" r="2.5" class="f1"/><circle cx="364" cy="256" r="2.5" class="f1"/><circle cx="368" cy="252" r="2.5" class="f1"/><path d="M326,286L372,250" stroke-width="1.6" class="ln" style="stroke:var(--c4)"/><text x="348" y="314">Statistical</text><text x="348" y="327">patterns</text></g>
+        <g class="k" data-i="3"><path d="M391,267H447" class="ln" marker-end="url(#ha)"/><text x="420" y="290">Interpretation</text></g>
+        <g class="k" data-i="3"><ellipse cx="491" cy="266" rx="26" ry="9" class="ln" style="stroke:var(--c5)"/><ellipse cx="491" cy="266" rx="26" ry="9" class="ln" style="stroke:var(--c5)" transform="rotate(60 491 266)"/><ellipse cx="491" cy="266" rx="26" ry="9" class="ln" style="stroke:var(--c5)" transform="rotate(120 491 266)"/><circle cx="491" cy="266" r="4" class="f4"/><text x="491" y="314">Business intelligence</text><text x="491" y="327">and knowledge</text></g>
+      </svg>
+      <span class="hint">click the steps</span>
+    </div>
+  </div>
+</section>
+
+<!-- source: Ch1 (introduction slides 7-8) -->
+<section class="board" id="knowledge" data-part="Part 2 · Data mining and KDD" data-nav="From data to knowledge">
+  <span class="eyebrow">Data and knowledge · try it</span>
+  <h2>From Data to Knowledge</h2>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">Data</span><p>A collection of facts about certain group of objects.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Pattern</span><p>Certain characteristics of data that are frequently observed.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Knowledge</span><p>Some general rules about the objects.</p></div>
+  </div>
+  <div class="play">
+    <canvas class="cv" id="cvDK" aria-label="Age against weight for the table rows"></canvas>
+    <div class="side">
+      <div class="tbl-wrap"><table class="sm num" id="dkTbl"><thead><tr><th>Age</th><th>Height / m</th><th>Weight / lb</th><th>Sex</th></tr></thead><tbody></tbody></table></div>
+      <label for="dkAge" class="note">Drag the line or the slider: rows younger than <b id="dkA">3</b></label>
+      <input type="range" id="dkAge" min="1" max="21" value="3">
+      <div class="stats"><div class="stat"><div class="k">Rows selected</div><div class="v" id="dkN">–</div></div><div class="stat"><div class="k">Weigh &lt; 40 lb</div><div class="v" id="dkK">–</div></div></div>
+    </div>
+  </div>
+  <div class="panel" style="background:var(--accent);color:var(--bg);border-color:var(--accent)"><p style="font-size:1.1rem"><b>A rule:</b> a person younger than 3 usually weighs &lt; 40 lbs.</p></div>
+</section>
+
+<!-- source: Ch1 (introduction slides 9-10) + AI checks from lecture1.html -->
+<section class="board" id="kdddef" data-part="Part 2 · Data mining and KDD" data-nav="KDD is a process">
+  <span class="eyebrow">Definitions</span>
+  <h2>KDD is a <i>Process</i></h2>
+  <div class="panel" style="background:var(--accent);color:var(--bg);border-color:var(--accent)">
+    <p style="font-size:1.12rem;max-width:70ch">KDD stands for <b>Knowledge Discovery in Databases</b>. It is the process of identifying <b>valid</b>, <b>novel</b>, <b>potentially useful</b>, <b>understandable</b> patterns in data and deriving knowledge from them.</p>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Data mining</h3><p>A <i>step</i> in the whole KDD process in which a specific algorithm is applied to the data for extracting certain specific (interesting) <i>patterns</i> in the data.</p><p>Usually, a user has to decide what kinds of patterns he is interested in and to pick a particular data mining algorithm to extract such patterns.</p></div>
+    <div class="card"><h3>One more time</h3><ul class="clean"><li><b>KDD</b>: the discovery of knowledge from data (much human involvement)</li><li><b>Data mining</b>: the discovery of patterns (mechanical, less human involvement)</li></ul></div>
+  </div>
+  <div class="add"><div class="grid4"><div class="card"><span class="tag" style="color:var(--c1)">Valid</span><p>Holds on new data, not just the sample.</p></div><div class="card"><span class="tag" style="color:var(--c1)">Novel</span><p>Not already known or trivially obvious.</p></div><div class="card"><span class="tag" style="color:var(--c1)">Potentially useful</span><p>Leads to a decision or an action.</p></div><div class="card"><span class="tag" style="color:var(--c1)">Understandable</span><p>A person can interpret and explain it.</p></div></div></div>
+</section>
+
+<!-- source: Ch1 (introduction slides 45-59) -->
+<section class="board" id="kddflow" data-part="Part 2 · Data mining and KDD" data-nav="Nine steps">
+  <span class="eyebrow">KDD process · click a step</span>
+  <h2>The Process of Discovering Knowledge from Databases</h2>
+  <p class="lead">It involves a few steps. The process is typically interactive and iterative.</p>
+  <div class="steps s7" role="tablist" id="kSteps"></div>
+  <div class="flowwrap"><svg class="flow" id="flow" viewBox="0 0 720 440" role="img" aria-label="KDD process diagram"></svg></div>
+  <div class="btnrow"><button class="btn ghost" id="kRefine" aria-pressed="false">Not satisfied: refine!</button></div>
+  <div class="panel flowtxt"><div><h4 id="kNum"></h4><h3 id="kTitle"></h3></div><div id="kText"></div></div>
+</section>
+
+<!-- source: Ch1 (introduction slides 60-62) -->
+<section class="board" id="challenges" data-part="Part 2 · Data mining and KDD" data-nav="Challenges, privacy">
+  <span class="eyebrow">Challenges in Data Mining</span>
+  <h2>Challenges</h2>
+  <div class="grid4">
+    <div class="card"><span class="tag" style="color:var(--c4)">Technical challenges</span><ul class="clean"><li>scalability (need fast algo to handle large amounts of data)</li><li>dimensionality</li><li>data stream</li></ul></div>
+    <div class="card"><span class="tag" style="color:var(--c1)">Data challenges</span><ul class="clean"><li>complex and heterogeneous data</li><li>data collection</li><li>data quality</li></ul></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Legal challenges</span><ul class="clean"><li>data ownership and distribution</li><li>privacy protection and regulations (e.g., GDPR)</li><li>algorithmic biases</li></ul></div>
+    <div class="card"><span class="tag" style="color:var(--c5)">Results</span><ul class="clean"><li>interpretation of patterns</li><li>explainability</li></ul></div>
+  </div>
+  <div class="panel"><span class="eyebrow">Privacy · the "fair information practice"</span><p class="quote" style="margin-top:10px">"The primary purpose of the collection must be clearly understood by the consumer and identified at the time of the collection. Data mining, however, is a secondary, future use. As such it requires the explicit consent of the data subjects."</p></div>
+</section>
+
+<!-- source: Ch1 (introduction slides 11-18) -->
+<section class="board" id="example" data-part="Part 2 · Data mining and KDD" data-nav="Supermarket example">
+  <span class="eyebrow">The KDD process (example) · step through</span>
+  <h2>A Chain-store Supermarket</h2>
+  <p class="lead">A chain-store supermarket may collect millions of point-of-sale records every day. Each record consists of the items that are purchased together by a customer. What knowledge can we extract from such a database?</p>
+  <div class="tabset" style="display:grid;gap:16px">
+    <div class="steps s5" role="tablist">
+      <button role="tab" data-tab="x1"><span class="s">Step 1</span><b>Goal setting</b></button>
+      <button role="tab" data-tab="x2"><span class="s">Step 2</span><b>Data collection</b></button>
+      <button role="tab" data-tab="x3"><span class="s">Step 3</span><b>Data transformation</b></button>
+      <button role="tab" data-tab="x4"><span class="s">Step 4</span><b>Data mining</b></button>
+      <button role="tab" data-tab="x5"><span class="s">Step 5</span><b>Result interpretation</b></button>
+    </div>
+    <div class="pane" data-pane="x1"><div class="card"><p style="color:var(--ink)">If you were the manager of the supermarket, first ask yourself what kind of knowledge you would like to learn from your data.</p><p class="quote">"Hmmm … I am wondering … are there any special groups of items that people usually purchase together in a trip to the supermarket?"</p></div></div>
+    <div class="pane" data-pane="x2"><div class="grid2"><div class="card"><p style="color:var(--ink)">To achieve the goal, the manager needs the point-of-sale records generated from the different stores be collected into a database.</p><p>Market basket data / transactional records.</p></div>
+      <div class="tbl-wrap"><table class="sm"><thead><tr><th>Tid</th><th>Items</th></tr></thead><tbody><tr><td>1</td><td>milk, bread, coke</td></tr><tr><td>2</td><td>milk, rice, orange, apple</td></tr><tr><td>3</td><td>sausage, ham, …</td></tr><tr><td>4</td><td>…</td></tr><tr><td>5</td><td>…</td></tr><tr><td>6</td><td>…</td></tr><tr><td>…</td><td>…</td></tr></tbody></table></div></div></div>
+    <div class="pane" data-pane="x3"><p>To apply an algorithm on the data to discover interesting patterns, we need to transform the data into certain format that is convenient for an algorithm to work on.</p>
+      <div class="grid2">
+        <div class="card"><h3>How shall we identify the products?</h3><p>We might want to transform the data so that a single id is used for the same kind of products, regardless of their brands and packaging.</p><div class="row"><span class="tok" id="p1">coke, can</span><span class="tok" id="p2">coke, pack of cans</span><span class="arrow" id="pArr" hidden>→</span><span class="tok on" id="pId" hidden>coke</span></div><div class="btnrow"><button class="btn" id="pBtn">Use a single id</button></div></div>
+        <div class="card"><h3>Not all the data is useful</h3><p>Filter away those that are not needed. Examples:</p><div class="row" id="fFields"><span class="tok">cash register id</span><span class="tok">payment method</span><span class="tok">membership number</span><span class="tok">date/time</span></div><div class="btnrow"><button class="btn" id="fBtn">Filter away</button></div></div>
+      </div></div>
+    <div class="pane" data-pane="x4"><p>Apply an algorithm on the data to determine which items are most likely purchased together.</p><div class="grid2"><div class="card good"><span class="tag" style="color:var(--good)">Example 1</span><p style="color:var(--ink)">Customers who buy diapers often buy beer as well.</p></div><div class="card good"><span class="tag" style="color:var(--good)">Example 2</span><p style="color:var(--ink)">Customers who buy shampoo often buy conditioner as well.</p></div></div></div>
+    <div class="pane" data-pane="x5"><p>The manager sifts through the results obtained from the data mining step and selects those that are <i>actionable</i>, i.e., those that can be translated into knowledge that works to the advantage of the business.</p><div class="feat"><label><input type="checkbox" checked> Diapers &amp; beer</label><label><input type="checkbox"> Shampoo &amp; conditioner</label></div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">Iterative</span><p>The result obtained from one run through an iteration of the KDD process may not get what you want. Very often, some steps of the process need to be refined, and then the whole process be repeated.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Interactive</span><p>Certain amount of human involvement is needed to monitor and to fine tune the steps (such as <i>feature selection</i> and <i>parameter tuning</i>).</p></div>
+  </div>
+</section>
+
+<!-- source: Ch1 (introduction slides 19-21) -->
+<section class="board" id="notdm" data-part="Part 2 · Data mining and KDD" data-nav="Traditional databases">
+  <span class="eyebrow">Traditional database systems</span>
+  <h2>Don't confuse Data Mining with a traditional Database</h2>
+  <div class="grid2">
+    <div class="card"><p>Again, <b>KDD</b> is for <i>knowledge</i> discovery; <b>data mining</b> is for interesting <i>patterns</i> discovery (with which knowledge may be derived).</p></div>
+    <div class="card"><p>A traditional DB usually only provides the functions of <i>storing</i> and <i>retrieving facts</i>.</p></div>
+  </div>
+  <div class="quiz" id="dmQ"></div>
+  <div class="card"><span class="tag" style="color:var(--c1)">Prediction and description</span><p style="color:var(--ink)">Why simple aggregation is not DM? The knowledge resulting from KDD and data mining should carry certain degree of <i>predictive</i> ability or <i>descriptive</i> (explanatory) ability (or both).</p></div>
+  <div class="add"><span class="addt">AI note</span><p style="color:var(--ink)">Also not data mining: an AI assistant's fluent summary of a table, with no validated pattern behind it.</p></div>
+</section>
+
+<!-- source: Ch1 (introduction slides 22-23) -->
+<section class="board" id="preddesc" data-part="Part 2 · Data mining and KDD" data-nav="Prediction, description">
+  <span class="eyebrow">Prediction and description</span>
+  <h2>Two kinds of Ability</h2>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">Prediction</span><p style="color:var(--ink)">Prediction involves using the database records that describe information about past behavior to automatically generate a model (or rule) that can <i>predict future behavior</i>.</p><p>Example (predictive ability): the association between milk and bread can be used to predict that there is a high probability that the next customer buying milk would also buy bread.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Description</span><p style="color:var(--ink)">Description involves deriving patterns that <i>summarize</i> the underlying <i>relationships in data</i> and to describe the characteristics of data.</p><p>Example (descriptive ability): a set of documents could be partitioned into <i>clusters</i> such that documents in each cluster are highly similar. From each cluster, we can identify the most frequently occurring words, which can be interpreted as keywords for a given topic.</p></div>
+  </div>
+  <div class="panel tabset" style="display:grid;gap:12px">
+    <h3>A collection of news articles · click a cluster</h3>
+    <div class="tabs" role="tablist"><button class="chip" role="tab" data-tab="nf">Cluster 1</button><button class="chip" role="tab" data-tab="nt">Cluster 2</button><button class="chip" role="tab" data-tab="ns">Cluster 3</button></div>
+    <div data-pane="nf"><b>financial news</b><div class="row" style="margin-top:6px"><span class="tok">stocks</span><span class="tok">market</span><span class="tok">revenue</span><span class="tok">price</span><span class="tok">earning</span></div></div>
+    <div data-pane="nt"><b>tech news</b><div class="row" style="margin-top:6px"><span class="tok">smart phone</span><span class="tok">GPU</span><span class="tok">digital</span><span class="tok">AI</span><span class="tok">blockchain</span></div></div>
+    <div data-pane="ns"><b>sports news</b><div class="row" style="margin-top:6px"><span class="tok">games</span><span class="tok">scores</span><span class="tok">Olympics</span><span class="tok">tournament</span></div></div>
+    
+  </div>
+</section>
+
+<!-- source: Ch1 (introduction slides 24-28), DSS + warehouse + OLAP condensed to one board -->
+<section class="board" id="dss" data-part="Part 2 · Data mining and KDD" data-nav="DSS and data warehouse">
+  <span class="eyebrow">DSS and data warehouse</span>
+  <h2>Decision Support and the Data Warehouse</h2>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">DSS</span><p>A <i>decision-support system</i> (DSS) is a system that assists decision makers to make important decisions for an organization or business.</p><p>KDD and data mining are important components in many DSS's.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Data warehousing</span><ul class="clean"><li>A data warehouse is an integration of various departmental databases so that accesses to organization-wide data is possible.</li><li>A convenient place where KDD and data mining applications are performed.</li><li>Can also support other DSS tools. For example, On-Line Analytical Processing (OLAP).</li></ul></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Why a warehouse</span><p>To be effective, a data mining application must have access to organization-wide data. We can integrate departmental databases together into a <i>Data Warehouse</i>.</p></div>
+  </div>
+</section>
+
+<!-- source: Ch1 (introduction slides 26-28) -->
+<section class="board" id="olap" data-part="Part 2 · Data mining and KDD" data-nav="OLAP data cube">
+  <span class="eyebrow">OLAP · try it</span>
+  <h2>OLAP and the Data Cube</h2>
+  <p class="lead">The OLAP approach allows users to view data in a multi-dimensional model (a <i>Data Cube</i>), supporting fast aggregation and summarization operations.</p>
+  <div class="grid2">
+    <div class="card"><h3>Example OLAP queries</h3><ul class="clean"><li>"What are the <i>total sale</i> figures of <i>blue-colored cars</i> for <i>each dealer</i> in <i>California</i>?"</li><li>"<i>How many</i> computers are sold in the <i>first quarter of 2000</i> in <i>each state of the U.S.</i>?"</li></ul><p class="mono" style="color:var(--accent)">Selection → Group-by → Summarization</p>
+      <div class="tbl-wrap"><table class="sm"><thead><tr><th colspan="6">A sale record</th></tr></thead><tbody><tr><td>Toyota</td><td>Corolla</td><td>Blue</td><td>$170K</td><td>Dealer A</td><td>1/1/2018</td></tr></tbody></table></div></div>
+    <div class="card"><h3>Multi-dimensional array</h3><p>Dimensions: Store-id, Product id, Time-id. Each entry in the array stores the number of units sold for a particular &lt;store-id, p-id, time-id&gt; combination.</p></div>
+  </div>
+  <div class="play">
+    <div class="scene" id="olapScene"><div class="legend" id="olapTip">hover a cell</div><span class="hint">drag to rotate</span></div>
+    <div class="side">
+      <div class="row" id="olapPre"></div>
+      <div id="olapDims" style="display:grid;gap:6px"></div>
+      <div class="row" id="olapG"><span class="lab-s">Group-by</span></div>
+      <p class="note" id="olapSel"></p>
+      <div class="tbl-wrap"><table class="sm num" id="olapTbl"></table></div>
+      <p class="verdict ok small" id="olapMatch" style="font-size:.88rem"></p>
+    </div>
+  </div>
+  <p class="note">Quarterly figures are illustrative. Summing over all four quarters gives the colours × dealers totals.</p>
+</section>
+
+<!-- ============ PART 3 ============ -->
+<div class="part-break"><span class="n">03</span><span class="eyebrow">Part 3</span><h2>Data Mining Tasks</h2></div>
+
+<!-- source: Ch1 (introduction slides 29-31) -->
+<section class="board" id="classification" data-part="Part 3 · Data mining tasks" data-nav="Classification">
+  <span class="eyebrow">Data mining tasks: classification, clustering, association analysis, regression analysis</span>
+  <h2>Classification: Definition</h2>
+  <div class="card"><ul class="clean">
+    <li>Given a collection of records (<i>training set</i>). Each record contains a set of <i>attributes</i>, one of the attributes is the <i>class</i> (or the <i>label</i>, <i>dependent variable</i>).</li>
+    <li>Find a <i>model</i> that describes the class attribute as a function of the values of other attributes (<i>independent variables</i>).</li>
+    <li>Goal: derive a model such that previously unseen records should be <i>assigned a class</i> by the model as accurately as possible. A training set is used to build the model, and a test set is used to evaluate the accuracy of the model.</li></ul></div>
+  <div id="clsBoard" data-show="ind" class="tabset" style="display:grid;gap:14px">
+    <div class="tabs" role="tablist">
+      <button class="chip" role="tab" data-tab="ind">Independent attributes</button>
+      <button class="chip" role="tab" data-tab="cls">Class attribute</button>
+      <button class="chip" role="tab" data-tab="train">Training set</button>
+      <button class="chip" role="tab" data-tab="test">Test set</button>
+    </div>
+    <div class="grid2">
+      <div><p class="note" style="margin-bottom:6px">Credit card holder data</p><div class="tbl-wrap" id="tTrain"><table class="sm" id="trainTbl"></table></div></div>
+      <div><p class="note" style="margin-bottom:6px">Test set</p><div class="tbl-wrap" id="tTest"><table class="sm" id="testTbl"></table></div></div>
+    </div>
+    <div class="panel">
+      <p data-pane="ind">Gender, Marital Status and Taxable Income are the <b>independent attributes</b>.</p>
+      <p data-pane="cls">Default Payment is the <b>class attribute</b> (label, dependent variable).</p>
+      <p data-pane="train">Training Set <span class="arrow">→</span> learn a classifier (<i>supervised learning</i>) <span class="arrow">→</span> Model.</p>
+      <p data-pane="test">Test Set <span class="arrow">→</span> Model. The model predicts "Loan Default" based on a record's independent attribute values.</p>
+    </div>
+  </div>
+</section>
+
+<!-- source: Ch1 (introduction slide 32) -->
+<section class="board" id="clsapp" data-part="Part 3 · Data mining tasks" data-nav="Classification: application">
+  <span class="eyebrow">Classification: application</span>
+  <h2>Direct Marketing</h2>
+  <div class="grid2">
+    <div class="card"><ul class="clean">
+      <li><b>Goal:</b> Reduce cost of mailing by <i>targeting</i> a set of consumers likely to buy a new cell-phone product.</li>
+      <li><b>Approach:</b> Use the data for a similar product introduced before.</li>
+      <li>We know which customers decided to buy and which decided otherwise for the previous product. This {buy, don't buy} decision forms the <i>class attribute</i>.</li>
+      <li>Collect various demographic, lifestyle, and company-interaction related information about all such customers: occupation, where they live, how much they earn, gender, age, etc.</li>
+      <li>Use this information as input attributes to learn a classifier model.</li></ul>
+      <p class="note">From [Berry &amp; Linoff] Data Mining Techniques, 1997</p></div>
+    <div class="tbl-wrap" style="align-self:start"><table class="sm"><thead><tr><th>Occupation</th><th>Income</th><th>Age</th><th>…</th><th>Buy?</th></tr></thead><tbody><tr><td></td><td></td><td></td><td></td><td class="cc">Y</td></tr><tr><td></td><td></td><td></td><td></td><td class="cc">N</td></tr><tr><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td></tr></tbody></table></div>
+  </div>
+</section>
+
+<!-- source: Ch1 (introduction slides 33-37) -->
+<section class="board" id="regression" data-part="Part 3 · Data mining tasks" data-nav="Regression">
+  <span class="eyebrow">Regression · try it</span>
+  <h2>Regression: Definition</h2>
+  <div class="grid2">
+    <div class="card"><p style="color:var(--ink)">Predict a value of a <i>numerical variable</i> based on the values of other variables. Extensively studied in statistics.</p></div>
+    <div class="card"><p>Examples: predicting sales amounts of a new product based on advertising expenditure; predicting wind velocities as a function of temperature, humidity, air pressure, etc.</p></div>
+  </div>
+  <div class="play">
+    <canvas class="cv" id="cvReg" aria-label="Linear regression plot"></canvas>
+    <div class="side">
+      <p class="note">"Hmmm … looks like X and Y are linearly correlated." Click the plot to add a point. Red segments are the prediction errors e<sub>i</sub> between actual and predicted values.</p>
+      <div class="tabs" role="group" id="regMode"><button class="chip" aria-pressed="true" data-m="ls">Least squares</button><button class="chip" aria-pressed="false" data-m="own">Your line</button></div>
+      <div id="regOwn" hidden style="display:grid;gap:6px">
+        <label class="note" for="b0">β<sub>0</sub> = <b id="b0v"></b></label><input type="range" id="b0" min="-60" max="160" step="1" value="100">
+        <label class="note" for="b1">β<sub>1</sub> = <b id="b1v"></b></label><input type="range" id="b1" min="0" max="5" step="0.05" value="1">
+      </div>
+      <div class="stats"><div class="stat"><div class="k">β0</div><div class="v" id="rB0">–</div></div><div class="stat"><div class="k">β1</div><div class="v" id="rB1">–</div></div><div class="stat"><div class="k">SSE of this line</div><div class="v" id="rSSE">–</div></div><div class="stat"><div class="k">Least-squares SSE</div><div class="v" id="rMin">–</div></div></div>
+      <div class="btnrow"><button class="btn ghost" id="regReset">Reset data</button></div>
+      <p class="note">Points are generated for illustration.</p>
+    </div>
+  </div>
+</section>
+
+<section class="board" id="regression-ls" data-part="Part 3 · Data mining tasks" data-nav="Linear regression">
+  <span class="eyebrow">Regression</span>
+  <h2>Linear Regression and Least squares</h2>
+  <div class="grid2">
+    <div class="card"><h3>Linear regression</h3><p>The goal of (simple) linear regression is to model the relationship between a dependent variable y and an independent variable x using a straight line:</p>
+      <div class="formula"><math display="block"><mi>y</mi><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mi>x</mi></math></div>
+      <p>To find the best-fitting line, we minimize the cost function (SSE), where (x<sub>i</sub>, y<sub>i</sub>) is the i-th data point in the dataset:</p>
+      <div class="formula"><math display="block"><mi>SSE</mi><mo>=</mo><munder><mo>∑</mo><mi>i</mi></munder><msup><mrow><mo>(</mo><msub><mi>y</mi><mi>i</mi></msub><mo>−</mo><mo>(</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mi>x</mi><mi>i</mi></msub><mo>)</mo><mo>)</mo></mrow><mn>2</mn></msup><mo>=</mo><munder><mo>∑</mo><mi>i</mi></munder><msubsup><mi>e</mi><mi>i</mi><mn>2</mn></msubsup></math></div></div>
+    <div class="card"><h3>Least squares</h3><p>With the least squares method, the optimal values of β<sub>0</sub> and β<sub>1</sub> are:</p>
+      <div class="formula"><math display="block"><msub><mi>β</mi><mn>1</mn></msub><mo>=</mo><mfrac><mrow><mo>∑</mo><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><mover><mi>x</mi><mo>¯</mo></mover><mo>)</mo><mo>(</mo><msub><mi>y</mi><mi>i</mi></msub><mo>−</mo><mover><mi>y</mi><mo>¯</mo></mover><mo>)</mo></mrow><mrow><mo>∑</mo><msup><mrow><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><mover><mi>x</mi><mo>¯</mo></mover><mo>)</mo></mrow><mn>2</mn></msup></mrow></mfrac><mo>=</mo><mfrac><mrow><mi>Cov</mi><mo>(</mo><mi>X</mi><mo>,</mo><mi>Y</mi><mo>)</mo></mrow><mrow><mi>Var</mi><mo>(</mo><mi>X</mi><mo>)</mo></mrow></mfrac></math></div>
+      <div class="formula"><math display="block"><msub><mi>β</mi><mn>0</mn></msub><mo>=</mo><mover><mi>y</mi><mo>¯</mo></mover><mo>−</mo><msub><mi>β</mi><mn>1</mn></msub><mover><mi>x</mi><mo>¯</mo></mover></math></div>
+      <p>x̄, ȳ: means of X, Y.</p>
+      <p class="mono" id="regCalc" style="font-size:.84rem;color:var(--ink)"></p></div>
+  </div>
+</section>
+
+<!-- source: Ch1 (introduction slides 38-41) -->
+<section class="board" id="clustering" data-part="Part 3 · Data mining tasks" data-nav="Clustering">
+  <span class="eyebrow">Clustering · try it</span>
+  <h2>Clustering: Definition</h2>
+  <div class="card"><ul class="clean">
+    <li>Given (1) a set of data objects, each having a set of attributes, and (2) a similarity measure among them, find clusters such that objects in the same cluster are more similar to one another, and objects in separate clusters are less similar to one another.</li>
+    <li>Typically, cluster analysis requires a user to define a similarity measure between records. Clustering is then performed based on the principle of maximizing the intra-cluster similarity and minimizing the inter-cluster similarity (<i>distance-based clustering</i>).</li>
+    <li>Unsupervised learning.</li></ul></div>
+  <div class="play">
+    <canvas class="cv" id="cvClu" aria-label="Three clusters with intra- and inter-cluster distances"></canvas>
+    <div class="side">
+      <h3>Illustrating clustering</h3>
+      <p class="note">Intra-cluster distances are minimized. Inter-cluster distances are maximized. Drag a cluster and watch both numbers.</p>
+      <div class="stats"><div class="stat"><div class="k">Mean intra-cluster</div><div class="v" id="cIntra">–</div></div><div class="stat"><div class="k">Mean inter-cluster</div><div class="v" id="cInter">–</div></div></div>
+      <p class="note">Intra: mean distance from a point to its cluster centre. Inter: mean distance between cluster centres. Points are illustrative.</p>
+      <div class="btnrow"><button class="btn ghost" id="cluReset">Reset</button></div>
+    </div>
+  </div>
+</section>
+
+<section class="board" id="clustering-app" data-part="Part 3 · Data mining tasks" data-nav="Clustering: application">
+  <span class="eyebrow">Clustering</span>
+  <h2>Clustering: Applications</h2>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">Clustering: application</span><h3>Document clustering</h3><p><b>Goal:</b> To find groups of documents that are similar to each other based on the important terms they contain.</p><p><b>Approach:</b> Identify frequently occurring terms in each document. Form a similarity measure based on the frequencies of different terms. Apply a clustering algorithm.</p><p><b>Applications:</b> Discover topics of interests. Recommend relevant documents (e.g., Google Now news feeds). Query recommendation.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Query recommendation</span><p>Helps users discover relevant information by suggesting related queries. User queries are often:</p><ul class="clean"><li>vague without clear intents</li><li>too general</li><li>ambiguous (homonyms and synonyms)</li><li>poorly formulated (non-expert users often don't know the correct search expression)</li></ul></div>
+  </div>
+</section>
+
+<!-- source: Ch1 (introduction slides 42-44) -->
+<section class="board" id="association" data-part="Part 3 · Data mining tasks" data-nav="Association rules">
+  <span class="eyebrow">Association rule discovery · try it</span>
+  <h2>Association Rule Discovery: Definition and Applications</h2>
+  <p class="lead">Given a set of records each of which contains some items from a given collection, discover dependency rules which predict occurrence of some items based on the occurrences of other items.</p>
+  <div class="tx-wrap">
+    <div class="side"><div class="tx" id="arTx" style="grid-template-columns:minmax(0,1fr)"></div></div>
+    <div class="side">
+      <div class="row" id="arRules"><span class="lab-s">Rules discovered</span></div>
+      <p class="note">Or build a rule: click an item once for the <b style="color:var(--c1)">left</b> side, twice for the <b style="color:var(--c4)">right</b> side, three times to clear.</p>
+      <div class="items" id="arItems"></div>
+      <p class="mono" id="arRule" style="font-size:1.05rem"></p>
+      <p id="arText"></p>
+    </div>
+  </div>
+  <div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Application: marketing and sales promotion</span><p>Let the rule discovered be {Bagels, Mayonnaise} → {Potato Chips}.</p><ul class="clean"><li><i>Potato Chips as consequent</i> ⇒ can be used to determine what should be done to boost its sales.</li><li><i>Bagels in the antecedent</i> ⇒ can be used to see which products would be affected if the store discontinues selling bagels.</li></ul></div>
+  </div>
+</section>
+
+<section class="board" id="sequence" data-part="Part 3 · Data mining tasks" data-nav="Sequence analysis">
+  <span class="eyebrow">Data mining tasks</span>
+  <h2>Sequence Analysis: Definition and Applications</h2>
+  <p class="lead">A sequence database contains sequences of events. Sequence analysis is about finding interesting, frequently occurring (sub)sequences to predict future behavior.</p>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c5)">Examples</span><ul class="clean"><li>Renting movies</li><li>Buying habits</li><li>Web surfing behavior</li><li>Web log analysis</li></ul></div>
+    <div class="card"><span class="tag" style="color:var(--c5)">Web sessions (illustrative)</span>
+      <ul class="clean mono" style="font-size:.86rem">
+        <li>S1: home → <b>search → product → cart</b> → pay</li>
+        <li>S2: <b>search → product</b> → home → <b>cart</b></li>
+        <li>S3: home → news → home</li>
+        <li>S4: <b>search</b> → search → <b>product → cart</b> → pay</li>
+      </ul>
+      <p style="margin-top:8px">Frequent subsequence: <span class="mono"><b>search → product → cart</b></span>, found in 3 of 4 sessions. The order of the events matters.</p></div>
+  </div>
+</section>
+
+<!-- source: Ch1 (review of introduction slides 12-44) -->
+<section class="board" id="taskquiz" data-part="Part 3 · Data mining tasks" data-nav="Which task is this?">
+  <span class="eyebrow">Check yourself</span>
+  <h2>Which task is this?</h2>
+  <p class="lead">Ten new examples. Pick the task for each.</p>
+  <div class="quiz" id="taskQ"></div>
+  <p class="score" id="taskScore"></p>
+</section>
+
+<!-- ============ PART 4 ============ -->
+<div class="part-break"><span class="n">05</span><span class="eyebrow">Part 4 · AI layer</span><h2>When KDD Process meets AI</h2></div>
+
+<!-- source: lecture1.html (three roles) -->
+<section class="board" id="roles" data-part="Part 4 · The KDD process meets AI" data-nav="Three roles of AI">
+  <span class="eyebrow">Why the course changed</span>
+  <h2>AI is now part of the data miner's toolkit</h2>
+  <p class="lead">This course teaches AI in three roles, woven through every lecture. Each AI method comes with a classical baseline.</p>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">Role 1</span><h3>AI as a tool</h3><p>Assistants and agents that write code, clean data and draft reports. You learn to direct them and to check their work.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Role 2</span><h3>AI as a method</h3><p>Embeddings, LLMs and foundation models used as mining techniques, always next to a classical baseline.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c4)">Role 3</span><h3>AI as a subject</h3><p>Mining data made by or for AI: model outputs and user–AI logs. Auditing models for drift and bias.</p></div>
+  </div>
+</section>
+
+<!-- source: lecture1.html (KDD pipeline three.js) -->
+<section class="board" id="aikdd" data-part="Part 4 · The KDD process meets AI" data-nav="KDD pipeline with AI">
+  <span class="eyebrow">Iterative and interactive · click a stage</span>
+  <h2>The KDD process, with AI at every step</h2>
+  <p class="lead">Records flow left to right. Some come back from evaluation for another pass. Click a stage to see how AI helps there, and how it fails.</p>
+  <div class="scene wide" id="aiKddScene"><span class="hint">click a stage</span></div>
+  <div class="tabs" role="tablist" id="aiKddTabs"></div>
+  <div class="panel">
+    <div class="stage-panel">
+      <div><h4>Classic steps</h4><p id="aiKStep"></p></div>
+      <div><h4>How AI helps</h4><p id="aiKHelp"></p></div>
+      <div><h4>Failure to watch for</h4><p id="aiKFail" class="fail"></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: lecture1.html (supermarket with an assistant), extended to Ch1's five steps -->
+<section class="board" id="aiexample" data-part="Part 4 · The KDD process meets AI" data-nav="Supermarket with an assistant">
+  <span class="eyebrow">Worked example, replayed · step through</span>
+  <h2>The supermarket chain, with an AI assistant</h2>
+  <p class="lead">The same five steps as Part 2. At each step: what the assistant did, and what the analyst checked.</p>
+  <div class="steps s5" role="tablist" id="aiExSteps"></div>
+  <div class="exflow">
+    <div class="card"><span class="tag" style="color:var(--muted)">The task</span><p id="aiExTask" style="color:var(--ink)"></p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">AI assistant</span><p id="aiExAI" style="color:var(--ink)"></p></div>
+    <div class="card good"><span class="tag" style="color:var(--good)">Analyst checks</span><p id="aiExCheck" style="color:var(--ink)"></p></div>
+  </div>
+  <p class="note">Illustrative replay. The assistant's actions and errors are examples, not records of a real tool.</p>
+</section>
+
+<!-- source: lecture1.html (does well / does badly) -->
+<section class="board" id="strengths" data-part="Part 4 · The KDD process meets AI" data-nav="Does well, does badly">
+  <span class="eyebrow">Calibrating trust</span>
+  <h2>What today's AI tools do Well, and Badly</h2>
+  <div class="grid2">
+    <div class="card good"><h3>Does well</h3><ul class="clean"><li>Writing routine pandas and scikit-learn code quickly</li><li>Explaining an algorithm or an error message</li><li>Turning free text into structured fields</li><li>Labelling text with no training data (zero-shot)</li><li>Summarising long outputs such as rule lists</li></ul></div>
+    <div class="card bad"><h3>Does badly</h3><ul class="clean"><li>Reporting numbers it never computed</li><li>Choosing a validation split that leaks the answer</li><li>Processing millions of records one model call at a time (slow and costly)</li><li>Explaining reliably why it made a decision</li><li>Knowing your business context and data quirks</li></ul></div>
+  </div>
+</section>
+
+<!-- source: lecture1.html (leakage case, computed in the browser) -->
+<section class="board" id="leak" data-part="Part 4 · The KDD process meets AI" data-nav="The 98% model">
+  <span class="eyebrow">Cautionary case · try it</span>
+  <h2>The 98% Accuracy Model</h2>
+  <p class="lead">An agent trains a churn model on 2,000 customers. Choose which columns it may use, and see what accuracy it reports.</p>
+  <div class="case">
+    <div class="side">
+      <div class="feat" id="lkFeats">
+        <label><input type="checkbox" id="lkTenure" checked> tenure_months</label>
+        <label><input type="checkbox" id="lkTickets" checked> support_tickets_90d</label>
+        <label><input type="checkbox" id="lkSpend"> monthly_spend</label>
+        <label><input type="checkbox" id="lkClosed" checked> account_closed_date</label>
+      </div>
+      <div class="agent" id="lkAgent"></div>
+      <p class="note">Synthetic data generated in your browser. Illustrative scenario, not a real incident.</p>
+    </div>
+    <div class="side">
+      <div class="stats"><div class="stat"><div class="k">Test accuracy</div><div class="v" id="lkAcc">–</div></div><div class="stat"><div class="k">Baseline: "nobody leaves"</div><div class="v" id="lkBase">–</div></div></div>
+      <div class="meter" aria-hidden="true"><i id="lkMeter"></i><span class="base" id="lkBaseMark"></span></div>
+      <div class="verdict" id="lkVerdict"></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: lecture1.html (one task, three approaches) -->
+<section class="board" id="approaches" data-part="Part 4 · The KDD process meets AI" data-nav="One task, three approaches">
+  <span class="eyebrow">The course's comparison habit</span>
+  <h2>One Task, Three Approaches</h2>
+  <p class="lead">Task: label 100,000 customer reviews as complaint or not. Rule of the course: no AI method without a classical baseline next to it.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Criterion</th><th>Classical: TF-IDF + logistic regression</th><th>LLM zero-shot: prompt only</th><th>Hybrid: LLM labels a sample, small model learns</th></tr></thead>
+    <tbody>
+      <tr><td>Labelled data needed</td><td>Thousands of examples</td><td>None</td><td>A few hundred, labelled by the LLM and spot-checked</td></tr>
+      <tr><td>Cost at 100k reviews</td><td>Very low</td><td>Highest: one model call per review</td><td>Low after the labelling step</td></tr>
+      <tr><td>Interpretability</td><td>High: inspect word weights</td><td>Low</td><td>Medium</td></tr>
+      <tr><td>Main risk</td><td>Misses nuance and sarcasm</td><td>Inconsistent labels; data leaves your control</td><td>Inherits the LLM's label errors</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">You will measure these trade-offs yourself in the Lecture 6 lab.</p>
+</section>
+
+<!-- source: lecture1.html (verify checklist) -->
+<section class="board" id="verify" data-part="Part 4 · The KDD process meets AI" data-nav="Verify, don't trust">
+  <span class="eyebrow">Checklist</span>
+  <h2>Verify, don't Trust</h2>
+  <p class="lead">Use this list in every lab, and whenever you use an AI tool.</p>
+  <div class="checks" id="vChecks">
+    <label class="check"><input type="checkbox"><div><b>Recompute</b><span>Re-run the key numbers. Never copy a metric the AI only stated.</span></div></label>
+    <label class="check"><input type="checkbox"><div><b>Read the code</b><span>Which rows were dropped? How were missing values filled? How was the data split?</span></div></label>
+    <label class="check"><input type="checkbox"><div><b>Compare to a baseline</b><span>Majority class, a simple tree, last year's method. Is the gain real?</span></div></label>
+    <label class="check"><input type="checkbox"><div><b>Hunt for leakage</b><span>Could any feature only be known after the outcome?</span></div></label>
+    <label class="check"><input type="checkbox"><div><b>Ask for evidence</b><span>Every claim should point to a table, plot or test you can inspect.</span></div></label>
+    <label class="check"><input type="checkbox"><div><b>Mind the data</b><span>Are you allowed to send this data to an external AI service?</span></div></label>
+  </div>
+  <p class="progress" id="vProg">0 of 6 checks done</p>
+</section>
+
+<!-- ============ PART 6 ============ -->
+<div class="part-break"><span class="n">06</span><span class="eyebrow">Part 6 · Lab, 45 minutes</span><h2>Audit an AI analyst</h2></div>
+
+<!-- source: new (spec lab) + lecture1.html lab steps -->
+<section class="board" id="labbrief" data-part="Part 6 · Lab" data-nav="Lab brief">
+  <span class="eyebrow">Lab 1 · ungraded practice</span>
+  <h2>Let an agent explore, then audit it</h2>
+  <p class="lead">An AI agent explores a small customer dataset and reports its findings. The dataset hides three planted problems. Your job is to check the agent's claims, not to redo its work.</p>
+  <div class="bar" id="labBar">
+    <button class="seg" style="flex-basis:11.1%;background:var(--c1)" aria-pressed="true"><b>5 min</b><span>Brief</span></button>
+    <button class="seg" style="flex-basis:66.7%;background:var(--c3)" aria-pressed="false"><b>30 min</b><span>Guided work: audit 5 claims</span></button>
+    <button class="seg" style="flex-basis:22.2%;background:var(--c4)" aria-pressed="false"><b>10 min</b><span>Share-out</span></button>
+  </div>
+  <div class="panel" id="labDetail"></div>
+  <div class="grid3">
+    <div class="card bad"><span class="tag" style="color:var(--signal)">Planted problem 1</span><h3>Duplicates</h3><p>Some customers appear more than once. Counts and averages are off.</p></div>
+    <div class="card bad"><span class="tag" style="color:var(--signal)">Planted problem 2</span><h3>Impossible values</h3><p>Values that cannot be true, such as a negative age or a tenure longer than the company has existed.</p></div>
+    <div class="card bad"><span class="tag" style="color:var(--signal)">Planted problem 3</span><h3>A leaky column</h3><p>A column only known after the outcome. It makes any model look excellent.</p></div>
+  </div>
+</section>
+
+<!-- source: new (lab setup: Google Colab) -->
+<section class="board" id="labsetup" data-part="Part 6 · Lab" data-nav="Open the notebook in Colab">
+  <span class="eyebrow">Lab 1 · getting started</span>
+  <h2>Open the notebook in Google Colab</h2>
+  <p class="lead">Colab runs Python notebooks in your web browser. There is nothing to install. You need a Google account.</p>
+  <div class="grid2">
+    <ol class="lab">
+      <li><div><b>Download the Lab 1 from Github.</b> Read the report first. </div></li>
+      <li><div><b>Open the notebook in Google Colab.</b></div></li>
+      <li><div><b>File → Save a copy in Drive.</b> Work in your copy. Changes to the shared notebook are not saved.</div></li>
+      <li><div><b>Run the cells from top to bottom.</b> Click a cell and press <kbd>Shift</kbd> + <kbd>Enter</kbd>, or click ▶. If Colab warns that the notebook was not authored by Google, choose <b>Run anyway</b>.</div></li>
+      <li><div><b>Fill in the blanks.</b> Replace each <span class="mono">___</span> with your own code, then run the cell again.</div></li>
+    </ol>
+    <div style="display:grid;gap:12px;align-content:start">
+      <div class="card"><span class="tag" style="color:var(--c1)">Two kinds of cell</span><p>Text cells explain the task. Code cells run Python. The number next to a code cell shows the order in which it ran.</p></div>
+      <div class="card"><span class="tag" style="color:var(--c4)">Something broke?</span><p>Choose <b>Runtime → Restart session</b>, then run the cells again from the top. After a long idle time Colab disconnects: your code is kept, but you need to re-run the cells.</p></div>
+      <div class="card"><span class="tag" style="color:var(--c3)">No Google account?</span><p>Download the Lab 1 from Github and open the notebook in Jupyter (for example, through Anaconda) or VS Code. Keep the data folder next to the notebook.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: new (interactive audit table) -->
+<section class="board" id="labtable" data-part="Part 6 · Lab" data-nav="Claim, check, verdict">
+  <span class="eyebrow">Lab 1 · verdicts</span>
+  <h2>Claim, Check, Verdict</h2>
+  <p class="lead">The agent's 5 claims. Check each one in your notebook, then choose a verdict.</p>
+  <div class="tbl-wrap"><table class="audit" id="auditTbl"><thead><tr><th>#</th><th>Agent's claim</th><th>Verdict</th></tr></thead><tbody></tbody></table></div>
+  <div class="row" id="plantFound"><span class="lab-s">Found</span>
+    <label class="pf"><input type="checkbox" value="dup"> duplicates</label>
+    <label class="pf"><input type="checkbox" value="imp"> impossible values</label>
+    <label class="pf"><input type="checkbox" value="leak"> leaky column</label>
+  </div>
+  <p class="progress" id="auditSum"></p>
+  <div class="btnrow"><button class="btn ghost" id="auditClear">Clear verdicts</button></div>
+  <p class="note">The full report, with the agent's log, is in your lab notebook and in agent_report.pdf.</p>
+</section>
+
+<!-- ============ SUMMARY ============ -->
+<!-- source: new (spec learning outcomes, key readings, exam-relevant) -->
+<section class="board" id="summary" data-part="Summary" data-nav="Summary">
+  <span class="eyebrow">Summary</span>
+  <h2>Summary</h2>
+  <div class="grid3">
+    <div class="card"><p style="color:var(--ink)">Data Mining aims at finding non-trivial and useful patterns from large-scale data.</p></div>
+    <div class="card"><p style="color:var(--ink)">Data Mining is part of a larger process called "Knowledge Discovery in Databases (KDD)". Other parts include data preprocessing, integration, selection, cleaning, and also interpretation of mined patterns.</p></div>
+    <div class="card"><p style="color:var(--ink)">Several data mining tasks: classification, clustering, association analysis, etc.</p></div>
+  </div>
+  <p class="lab-s" style="color:var(--c3);font-weight:700">What you can do after today</p>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">Define</span><p style="color:var(--ink)">Define KDD and data mining. Name the four core tasks (classification, regression, clustering, association) with an example of each.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Describe</span><p style="color:var(--ink)">Describe the nine-step KDD process, from goal identification to knowledge consolidation, and why it is iterative.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c4)">Judge</span><p style="color:var(--ink)">Say where AI tools help in each step and where they typically fail. Verify, don't trust.</p></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">Key readings</span><p style="color:var(--ink)">Tan, chapter 1. The course AI-use policy.</p></div>
+    <div class="card"><span class="tag" style="color:var(--signal)">Exam-relevant</span><p style="color:var(--ink)">The KDD definition and steps, the core tasks, why aggregation is not mining, and prediction vs description.</p></div>
+  </div>
+  <div class="next"><span class="eyebrow">Next</span><h3>Lecture 2 · Data and representation (Tuesday)</h3><p>Attribute types, documents and graphs, similarity, and the path from bag-of-words to embeddings.</p></div>
+</section>
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+"use strict";
+// ===== shared lecture kit: utilities, nav, theme hooks, three.js + canvas helpers =====
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const themeHooks = [];
+function onTheme(f){ themeHooks.push(f); }
+function fireTheme(){ themeHooks.forEach(f => { try { f(); } catch(e){} }); }
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", fireTheme);
+new MutationObserver(fireTheme).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
+
+// seeded RNG so every class sees the same data
+function rng(seed){ let s = seed >>> 0; return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function gauss(r){ let u = 0, v = 0; while(!u) u = r(); while(!v) v = r(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+
+/* ---------------- navigation ---------------- */
+const boards = $$("section.board");
+const toc = $("#toc");
+let lastPart = "";
+boards.forEach(b => {
+  if (b.dataset.part !== lastPart){ lastPart = b.dataset.part; const li = document.createElement("li"); li.className = "part"; li.textContent = lastPart; toc.appendChild(li); }
+  const li = document.createElement("li"); const a = document.createElement("a");
+  a.href = "#" + b.id; a.textContent = b.dataset.nav; a.dataset.id = b.id; li.appendChild(a); toc.appendChild(li);
+});
+const links = $$("#toc a");
+let current = 0;
+const io = new IntersectionObserver(es => {
+  es.forEach(e => { if (e.isIntersecting){ current = boards.indexOf(e.target); links.forEach(l => l.classList.toggle("on", l.dataset.id === e.target.id)); const on = links[current]; if (on && innerWidth < 980) on.scrollIntoView({block:"nearest", inline:"center"}); } });
+}, {rootMargin:"-40% 0px -55% 0px"});
+boards.forEach(b => io.observe(b));
+addEventListener("keydown", e => {
+  if (e.target.closest("input,textarea,select") || e.metaKey || e.ctrlKey || e.altKey) return;
+  let n = null;
+  if (e.key === "ArrowRight" || e.key === "PageDown") n = Math.min(boards.length-1, current+1);
+  if (e.key === "ArrowLeft" || e.key === "PageUp") n = Math.max(0, current-1);
+  if (n === null) return;
+  e.preventDefault(); current = n;
+  boards[n].scrollIntoView({behavior: reduce ? "auto" : "smooth", block:"start"});
+});
+
+/* ---------------- three.js helpers ---------------- */
+const hasGL = typeof THREE !== "undefined";
+function dotTexture(){
+  const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d");
+  const grd = g.createRadialGradient(32,32,0,32,32,30); grd.addColorStop(0,"rgba(255,255,255,1)"); grd.addColorStop(.7,"rgba(255,255,255,1)"); grd.addColorStop(1,"rgba(255,255,255,0)");
+  g.fillStyle = grd; g.beginPath(); g.arc(32,32,30,0,Math.PI*2); g.fill();
+  const t = new THREE.CanvasTexture(c); return t;
+}
+function makeRenderer(host){
+  const r = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  r.setPixelRatio(Math.min(devicePixelRatio, 2)); host.prepend(r.domElement);
+  return r;
+}
+function visible(el, cb){ const o = new IntersectionObserver(es => es.forEach(e => cb(e.isIntersecting))); o.observe(el); }
+function noGL(host){ const p = document.createElement("p"); p.className = "note"; p.style.padding = "24px"; p.textContent = "This 3D view needs WebGL, which this browser has turned off."; host.appendChild(p); }
+
+/* ---------------- canvas helpers ---------------- */
+function setupCanvas(cv){
+  const ctx = cv.getContext("2d");
+  const fit = () => { const r = cv.getBoundingClientRect(); const d = Math.min(devicePixelRatio,2); cv.width = Math.max(1, r.width*d); cv.height = Math.max(1, r.height*d); ctx.setTransform(d,0,0,d,0,0); return r; };
+  return {ctx, fit};
+}
+function axes(ctx, w, h, pad, xl, yl, xt, yt){
+  ctx.strokeStyle = tok("--line"); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, h-pad.b); ctx.lineTo(w-pad.r, h-pad.b); ctx.stroke();
+  ctx.fillStyle = tok("--muted"); ctx.font = `12px ${tok("--mono")}`;
+  ctx.textAlign = "center"; ctx.fillText(xl, (pad.l + w - pad.r)/2, h-8);
+  xt.forEach(([v,x]) => ctx.fillText(v, x, h-pad.b+16));
+  ctx.textAlign = "right"; yt.forEach(([v,y]) => ctx.fillText(v, pad.l-6, y+4));
+  ctx.save(); ctx.translate(14, (pad.t + h - pad.b)/2); ctx.rotate(-Math.PI/2); ctx.textAlign = "center"; ctx.fillText(yl, 0, 0); ctx.restore();
+}
+const redraws = {};
+onTheme(() => Object.values(redraws).forEach(f => f()));
+
+
+function live(cv, key, paint){
+  const {ctx, fit} = setupCanvas(cv);
+  const draw = () => { const r = fit(); if (!r.width) return; ctx.clearRect(0,0,r.width,r.height); paint(ctx, r.width, r.height); };
+  redraws[key] = draw; new ResizeObserver(draw).observe(cv); return draw;
+}
+const at = (cv, e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+
+/* ---------------- generic tabsets ---------------- */
+$$(".tabset").forEach(root => {
+  const bs = $$("[data-tab]", root), ps = $$("[data-pane]", root);
+  const go = id => { bs.forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === id))); ps.forEach(p => p.hidden = p.dataset.pane !== id); root.dataset.show = id; };
+  bs.forEach(b => b.onclick = () => go(b.dataset.tab)); go(bs[0].dataset.tab);
+});
+
+/* ---------------- quiz helper ---------------- */
+function quiz(host, O, Q, scoreEl){
+  let answered = 0, right = 0;
+  const upd = () => { if (scoreEl) scoreEl.textContent = answered < Q.length ? `${answered} of ${Q.length} answered · ${right} correct` : `Done: ${right} of ${Q.length} correct`; };
+  Q.forEach(([q, a, why]) => {
+    const d = document.createElement("div"); d.className = "q";
+    d.innerHTML = `<p>${q}</p><div class="opts">${O.map((o,i)=>`<button data-i="${i}">${o}</button>`).join("")}</div><p class="fb"></p>`;
+    $$("button", d).forEach(b => b.onclick = () => {
+      if (d.classList.contains("done")) return;
+      const i = +b.dataset.i; b.classList.add("picked"); d.classList.add("done", i===a ? "right" : "wrong");
+      answered++; if (i===a) right++;
+      $(".fb", d).innerHTML = `<b>${i===a ? "Correct." : "Not quite: " + O[a] + "."}</b> ${why}`; upd();
+    });
+    host.appendChild(d);
+  });
+  upd();
+}
+
+/* ---------------- segmented bars (plan, assessment, lab) ---------------- */
+function segBar(bar, detail, D){
+  const bs = $$(".seg", $(bar));
+  const go = i => { bs.forEach((b,k) => b.setAttribute("aria-pressed", String(k===i))); $(detail).innerHTML = D[i]; };
+  bs.forEach((b,i) => b.onclick = () => go(i)); go(0);
+}
+
+/* ---------------- HERO: data -> pattern -> knowledge (from lecture1.html, ids renamed) ---------------- */
+(function aiHero(){
+  /* Data -> pattern -> knowledge, drawn in 2D so every stage reads at a glance.
+     Stage 1: the records as a table (each dot = one row).
+     Stage 2: the same rows plotted as age vs weight, with the average trend.
+     Stage 3: the rule "age < 3 -> weight < 40 lb", shaded and checked on the data. */
+  const host = $("#aiHeroScene"), cv = $("#aiHeroCv"), cap = $("#aiHeroCap"), tip = $("#aiHeroTip"), rule = $("#aiHeroRule");
+  const btns = $$("#aiHeroTabs .chip");
+  const {ctx, fit} = setupCanvas(cv);
+  const R = rng(7), N = 600;
+  const AGE = [0,1,2,3,4,5,6,8,10,12], CM = [50,75,86,95,102,109,115,127,138,149], LB = [7.5,21,27,31,35,40,45,56,70,88];
+  const interp = (xs, ys, x) => { for (let i = 1; i < xs.length; i++) if (x <= xs[i]) { const t = (x - xs[i-1]) / (xs[i] - xs[i-1]); return ys[i-1] + t * (ys[i] - ys[i-1]); } return ys[ys.length-1]; };
+  const rows = [];
+  for (let i = 0; i < N; i++) {
+    const age = Math.round(R() * 120) / 10;
+    const z = gauss(R);
+    rows.push({ id: i + 1, age, cm: Math.round(interp(AGE, CM, age) * (1 + z * 0.035)), lb: Math.round(interp(AGE, LB, age) * (1 + z * 0.09 + gauss(R) * 0.03)) });
+  }
+  for (let k = 0; k < 6; k++) { const r = rows[40 + k * 37]; r.age = Math.round((2 + R() * 0.95) * 10) / 10; r.cm = Math.round(interp(AGE, CM, r.age) * 1.04); r.lb = Math.round(41 + R() * 6); }
+  const young = rows.filter(r => r.age < 3), held = young.filter(r => r.lb < 40);
+  const conf = held.length / young.length;
+  const bins = []; for (let a = 0; a < 12; a++) { const b = rows.filter(r => r.age >= a && r.age < a + 1); bins.push([a + 0.5, b.reduce((s, r) => s + r.lb, 0) / b.length]); }
+
+  const caps = [
+    `<b>Data.</b> ${N} records, one row per child: age, height and weight. You can read any single row, but a table this long shows no pattern. Each dot below the table is one row.`,
+    `<b>Pattern.</b> Plot every row as a dot, age against weight. A regularity appears: weight rises with age, and the line shows the average for each year. A pattern is something frequently observed in the data.`,
+    `<b>Knowledge.</b> Turn the pattern into a statement you can check and act on: <i>a child younger than 3 usually weighs less than 40 lb.</i> In this illustrative data it holds for ${held.length} of the ${young.length} children under 3 (${Math.round(conf*100)}%), so it is a rule with exceptions, shown in orange.`
+  ];
+  rule.innerHTML = `<span class="k">Rule found in the data</span><span class="r"><b>IF</b> age &lt; 3 years <b>THEN</b> weight &lt; 40 lb</span><span class="n">${held.length} / ${young.length} children under 3 · ${Math.round(conf*100)}% hold</span>`;
+
+  let W = 0, H = 0, stage = 0, t = 1, from = null, cur = rows.map(() => ({x:0, y:0})), hover = -1;
+  const pad = {l:52, r:18, t:22, b:42};
+  const X = a => pad.l + a / 12 * (W - pad.l - pad.r);
+  const Y = lb => H - pad.b - lb / 100 * (H - pad.t - pad.b);
+  function tablePos(i){
+    const top = 30 + 8 * 19 + 22, aw = W - 40, ah = Math.max(40, H - top - 12);
+    const s = Math.min(13, Math.sqrt(aw * ah / N)), cols = Math.max(1, Math.floor(aw / s));
+    return { x: 20 + (i % cols) * s + s / 2, y: top + Math.floor(i / cols) * s + s / 2 };
+  }
+  const target = s => rows.map((r, i) => s === 0 ? tablePos(i) : { x: X(r.age), y: Y(r.lb) });
+
+  function draw(){
+    ctx.clearRect(0, 0, W, H);
+    const ink = tok("--ink"), muted = tok("--muted"), line = tok("--line"), c1 = tok("--c1"), c3 = tok("--c3"), c4 = tok("--c4"), mono = tok("--mono");
+    const e = t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+    // stage 0: the table header and first rows
+    if (stage === 0) {
+      ctx.globalAlpha = Math.min(1, e * 1.2);
+      ctx.font = `600 12px ${mono}`; ctx.fillStyle = ink; ctx.textAlign = "left";
+      const cx = [24, 84, 156, 262];
+      ["child", "age (y)", "height (cm)", "weight (lb)"].forEach((h, k) => ctx.fillText(h, cx[k], 36));
+      ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(20, 43); ctx.lineTo(Math.min(W - 20, 340), 43); ctx.stroke();
+      ctx.font = `12px ${mono}`; ctx.fillStyle = muted;
+      rows.slice(0, 7).forEach((r, j) => [`#${r.id}`, r.age.toFixed(1), r.cm, r.lb].forEach((v, k) => ctx.fillText(String(v), cx[k], 60 + j * 19)));
+      ctx.fillText(`… ${N - 7} more rows`, 24, 60 + 7 * 19);
+      ctx.globalAlpha = 1;
+    }
+    // axes for stages 1 and 2
+    if (stage > 0) {
+      ctx.globalAlpha = e;
+      ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.font = `11px ${mono}`; ctx.fillStyle = muted;
+      ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, H - pad.b); ctx.lineTo(W - pad.r, H - pad.b); ctx.stroke();
+      ctx.textAlign = "center"; for (let a = 0; a <= 12; a += 2) ctx.fillText(a, X(a), H - pad.b + 15);
+      ctx.fillText("age (years)", (pad.l + W - pad.r) / 2, H - 8);
+      ctx.textAlign = "right"; for (let w = 0; w <= 100; w += 20) ctx.fillText(w, pad.l - 7, Y(w) + 4);
+      ctx.save(); ctx.translate(13, (pad.t + H - pad.b) / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = "center"; ctx.fillText("weight (lb)", 0, 0); ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+    if (stage === 2) {
+      rule.style.left = X(3.5) + "px"; rule.style.top = Y(97) + "px"; rule.style.width = Math.max(150, X(8.6) - X(3.5)) + "px";
+      ctx.globalAlpha = e;
+      ctx.fillStyle = c1; ctx.globalAlpha = 0.10 * e; ctx.fillRect(X(0), pad.t, X(3) - X(0), H - pad.b - pad.t);
+      ctx.globalAlpha = e; ctx.strokeStyle = c1; ctx.lineWidth = 2; ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(X(3), pad.t); ctx.lineTo(X(3), H - pad.b); ctx.stroke();
+      ctx.strokeStyle = c4; ctx.setLineDash([7, 5]); ctx.beginPath(); ctx.moveTo(pad.l, Y(40)); ctx.lineTo(W - pad.r, Y(40)); ctx.stroke(); ctx.setLineDash([]);
+      ctx.font = `600 12px ${mono}`; ctx.fillStyle = c4; ctx.textAlign = "right"; ctx.fillText("40 lb", W - pad.r - 4, Y(40) - 6);
+      ctx.fillStyle = c1; ctx.textAlign = "left"; ctx.fillText("age < 3", X(0) + 6, pad.t + 14);
+      ctx.globalAlpha = 1;
+    }
+    // dots
+    for (let i = 0; i < N; i++) {
+      const r = rows[i], p = cur[i];
+      let col = muted, rad = 2.6, a = 0.75;
+      if (stage === 1) { col = c3; a = 0.8; }
+      if (stage === 2) { if (r.age < 3) { col = r.lb < 40 ? c1 : c4; a = 0.95; rad = 3.2; } else { col = muted; a = 0.28; } }
+      ctx.globalAlpha = a; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(p.x, p.y, i === hover ? rad + 2.5 : rad, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    if (stage === 1) {
+      ctx.globalAlpha = e; ctx.strokeStyle = ink; ctx.lineWidth = 2.5; ctx.beginPath();
+      bins.forEach(([a, w], k) => k ? ctx.lineTo(X(a), Y(w)) : ctx.moveTo(X(a), Y(w))); ctx.stroke();
+      ctx.font = `600 12px ${mono}`; ctx.fillStyle = ink; ctx.textAlign = "left"; ctx.beginPath(); ctx.moveTo(pad.l + 14, pad.t + 10); ctx.lineTo(pad.l + 40, pad.t + 10); ctx.stroke(); ctx.fillText("average weight for each year of age", pad.l + 48, pad.t + 14);
+      ctx.globalAlpha = 1;
+    }
+  }
+  function frame(){
+    if (t < 1) { t = Math.min(1, t + 1/45); }
+    const e = t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2, tg = target(stage);
+    cur = tg.map((q, i) => from ? { x: from[i].x + (q.x - from[i].x) * e, y: from[i].y + (q.y - from[i].y) * e } : q);
+    draw();
+    if (t < 1) requestAnimationFrame(frame);
+  }
+  function go(s){
+    stage = s; from = cur.map(p => ({...p})); t = reduce ? 1 : 0; hover = -1; tip.hidden = true;
+    cap.innerHTML = caps[s]; btns.forEach((b, k) => b.setAttribute("aria-pressed", String(k === s)));
+    rule.hidden = s !== 2;
+    requestAnimationFrame(frame);
+  }
+  function size(){ const r = fit(); W = r.width; H = r.height; from = null; t = 1; cur = target(stage); draw(); }
+  btns.forEach((b, i) => b.onclick = () => go(i));
+  cv.addEventListener("pointermove", ev => {
+    const b = cv.getBoundingClientRect(), mx = ev.clientX - b.left, my = ev.clientY - b.top;
+    let best = -1, bd = 81; cur.forEach((p, i) => { const d = (p.x - mx) ** 2 + (p.y - my) ** 2; if (d < bd) { bd = d; best = i; } });
+    if (best !== hover) { hover = best; draw(); }
+    if (best < 0) { tip.hidden = true; return; }
+    const r = rows[best]; tip.hidden = false;
+    tip.textContent = `child #${r.id} · ${r.age.toFixed(1)} y · ${r.cm} cm · ${r.lb} lb`;
+    tip.style.left = Math.min(mx + 12, b.width - 190) + "px"; tip.style.top = Math.max(my - 34, 4) + "px";
+  });
+  cv.addEventListener("pointerleave", () => { hover = -1; tip.hidden = true; draw(); });
+  new ResizeObserver(size).observe(cv);
+  onTheme(draw);
+  cap.innerHTML = caps[0]; rule.hidden = true; size();
+})();
+
+/* ---------------- today's plan ---------------- */
+segBar("#planBar", "#planDetail", [
+  "<h3>Classical core · about 65 minutes</h3><p style='margin-top:6px'>Today: course information, data mining and KDD, the core data mining tasks, and the nine-step KDD process.</p>",
+  "<h3>AI layer · about 30 minutes</h3><p style='margin-top:6px'>AI in three roles: as a tool, a method and a subject. Today: where AI helps and fails at each KDD step, the supermarket replayed with an assistant, a leakage case, and the verify-don't-trust checklist.</p>",
+  "<h3>Break · 10 minutes</h3><p style='margin-top:6px'>A 10-minute break mid-session, every session.</p>",
+  "<h3>Lab · about 45 minutes</h3><p style='margin-top:6px'>A guided notebook: a 5-minute brief, 30 minutes of guided work and a 10-minute share-out. Today: audit an AI analyst. Labs are ungraded practice.</p>"
+]);
+
+/* ---------------- block schedule ---------------- */
+(function sched(){
+  const L = [
+    [1,1,"L1","Data mining in the age of AI","KDD, the core mining tasks, and where AI tools help and fail at each step.","",""],
+    [1,2,"L2","Data and representation","Attribute types; documents, transactions and graphs; similarity measures; embeddings vs TF-IDF.","",""],
+    [1,4,"L3","Data quality and preprocessing","Noise, outliers, missing values, sampling, PCA and normalisation; LLM-assisted cleaning with a measured error rate.","",""],
+    [1,5,"L4","Classification I: trees and evaluation","Decision trees, the confusion matrix, ROC and cross-validation; leakage and benchmark contamination.","Assignment 1 (20%) released: Lectures 1–4, written exercises by hand","A1 out"],
+    [2,1,"L5","Classification II: models and ensembles","kNN, naive Bayes, SVM, logistic regression and ensembles; testing an AI assistant's model suggestion.","Assignment 1 (20%) due 23:59","A1 due"],
+    [2,2,"L6","Neural and foundation models for mining","MLPs, foundation models, and choosing between prompting, embeddings and fine-tuning.","",""],
+    [2,4,"L7","Association analysis I","Support, confidence, Apriori, closed and maximal itemsets; item embeddings vs rules. A shorter lecture after the midterm.","Midterm (10%), first 60 min (covers L1–L6, closed-book)","Midterm"],
+    [2,5,"L8","Association analysis II","FP-growth, lift, quantitative rules and sequential patterns; checking LLM summaries of rule sets.","Assignment 2 (20%) released: Lectures 5–8, written exercises by hand","A2 out"],
+    [3,1,"L9","Cluster analysis","K-means, hierarchical clustering, silhouette and DBSCAN; clustering text with embeddings.","Assignment 2 (20%) due 23:59","A2 due"],
+    [3,2,"L10","Text and unstructured data with LLMs","Extraction to tables, similarity search, BM25 vs dense retrieval, and retrieval-augmented generation.","",""],
+    [3,4,"L11","Graphs and recommender systems","PageRank, communities, collaborative filtering and matrix factorisation.","",""],
+    [3,5,"L12","Anomalies, drift and responsible data mining","Anomaly detection, drift, privacy, fairness and AI agents.","Course review, last 20 min","Review"],
+  ];
+  const FREE = {1:"Self-study", 2:"Self-study, midterm revision", 3:"Self-study"};
+  const DAYS = ["Mon","Tue","Wed","Thu","Fri"], host = $("#blk"), bs = [];
+  let h = `<div class="corner"></div>` + DAYS.map(d => `<div class="dh">${d}</div>`).join("");
+  host.innerHTML = h;
+  [1,2,3].forEach(w => {
+    host.insertAdjacentHTML("beforeend", `<div class="wl">Week ${w}</div>`);
+    [1,2,3,4,5].forEach(d => {
+      const c = document.createElement("div"); c.className = "cell";
+      if (d === 3){ c.innerHTML = `<div class="free"><span><span class="d">Wed</span>${FREE[w]}</span></div>`; }
+      else {
+        const i = L.findIndex(x => x[0]===w && x[1]===d), x = L[i];
+        const b = document.createElement("button"); b.className = "lec"; b.setAttribute("aria-pressed","false");
+        b.innerHTML = `<span class="d">${DAYS[d-1]}</span><b>${x[2]}</b><span class="t">${x[3].split(":")[0]}</span>${x[6] ? `<span class="ev">${x[6]}</span>` : ""}`;
+        b.onclick = () => pick(i); bs[i] = b; c.appendChild(b);
+      }
+      host.appendChild(c);
+    });
+  });
+  function pick(i){
+    const x = L[i];
+    bs.forEach((b,k) => b.setAttribute("aria-pressed", String(k===i)));
+    $("#blkTitle").textContent = `${x[2]} · ${x[3]} · ${DAYS[x[1]-1]}, week ${x[0]}`;
+    $("#blkTopic").textContent = x[4];
+    $("#blkEvent").textContent = x[5] || "None.";
+  }
+  pick(0);
+})();
+
+/* ---------------- assessment: Ch1 wording, replaced lines marked, new facts added ---------------- */
+segBar("#asBar", "#asDetail", [
+  "<h3>2 Assignments (40%)</h3><ul class='clean' style='margin-top:8px'><li>Written exercises, worked by hand.</li><li>Show your full working.</li></ul>"
+  + "<div class='add'><span class='addt'>Details</span><ul class='clean'><li><b>Assignment 1 · Preprocess and classify (20%).</b> Individual. Released Friday of week 1 (after L4), due 23:59 on Monday of week 2 (L5). Covers Lectures 1–4.</li><li><b>Assignment 2 · Classifiers and association rules (20%).</b> Individual. Released Friday of week 2 (after L8), due 23:59 on Monday of week 3 (L9). Covers Lectures 5–8.</li><li>Each consists of written exercises worked by hand: calculations and short explanations, in the style of the exam questions.</li></ul></div>",
+  "<h3>Midterm exam (10% in-class)</h3>"
+  + "<div class='add'><span class='addt'>Details</span><ul class='clean'><li>Closed-book. Thursday of week 2, the first 60 minutes of L7.</li><li>50 marks. Covers Lectures 1–6: short answers, calculations and evaluation reasoning.</li><li>No notes or devices except a non-programmable calculator.</li></ul></div>",
+  "<h3>Final examination (50%)</h3>"
+  + "<div class='add'><span class='addt'>Details</span><ul class='clean'><li>Closed-book. In the exam period after the block. 2 hours, 100 marks.</li><li>Covers all 12 lectures: about 30% on Lectures 1–6 and 70% on Lectures 7–12.</li><li>The same calculator rule as the midterm.</li></ul></div>"
+]);
+
+/* ---------------- AI-use policy quiz (scenarios from lecture1.html, updated) ---------------- */
+quiz($("#policyQ"), ["Allowed","Not allowed"], [
+  ["You use an AI assistant to write the pandas cleaning code in a lab notebook.", 0, "Labs are ungraded practice, and AI tools are welcome there. Read the code it writes and check its results."],
+  ["You ask an AI to work out the entropy and information gain in Assignment 1, and copy its working.", 1, "Assignments must show your own full working by hand. The closed-book exams test the same skills."],
+  ["In a lab, the AI says its cleaned labels are 99% correct. You report that number at the share-out.", 1, "Never report a number the AI only stated. Measure the error rate yourself against the answer key."],
+  ["You ask an AI to explain Apriori while revising.", 0, "Studying with AI is fine. Check its explanation against the lecture notes."],
+  ["You keep your phone on the desk during the closed-book midterm and final, in case you need a chatbot.", 1, "The midterm and final are closed-book. No notes or devices except a non-programmable calculator."],
+  ["You paste a classmate's notebook into an AI and ask it to rephrase the code.", 1, "This is plagiarism under the departmental guideline, whatever tool does the rewording."],
+  ["You upload customer records from your internship to a public chatbot.", 1, "Do not send confidential or personal data to an external AI service."],
+], $("#policyScore"));
+
+/* ---------------- diamond-mine analogy (from Ch1 hero, ids renamed) ---------------- */
+(function mine(){
+  const caps = [
+    "<b>Locate.</b> Find the Catoca Diamond Mine. In KDD, the business organization locates its data in databases.",
+    "<b>Dig.</b> Use tools to dig out a crude diamond. In KDD, run data mining algorithms on the data to get statistical patterns.",
+    "<b>Craft.</b> Craft the crude diamond into a diamond ring. In KDD, interpretation turns the patterns into business intelligence and knowledge."
+  ];
+  const btns = $$("#mineTabs .chip"), svg = $("#mineSvg");
+  function go(s){
+    btns.forEach((b,k) => b.setAttribute("aria-pressed", String(k===s)));
+    $$(".k", svg).forEach(el => { const i = +el.dataset.i; el.classList.toggle("dim", i > s+1); el.classList.toggle("cur", i === s+1); });
+    $("#mineCap").innerHTML = caps[s];
+  }
+  btns.forEach((b,i) => b.onclick = () => go(i)); go(0);
+})();
+
+/* ---------------- KDD pipeline with AI (three.js, from lecture1.html, ids renamed) ---------------- */
+(function aiKdd(){
+  const S = [
+    ["Goal","Step 1 · identify the goal: understand the domain and what knowledge would be useful.","Brainstorm questions and hypotheses; summarise related work.","Vague or unanswerable goals that sound convincing."],
+    ["Data","Steps 2–4 · collect and select, clean and preprocess, reduce and transform.","Write loading and cleaning code; propose features; extract fields from free text.","Silent cleaning errors, invented values, and leakage of the target."],
+    ["Mine","Steps 5–7 · choose the task, choose the algorithm, run data mining.","Suggest models; write training code; act as a zero-shot classifier.","Over-complex models where a simple baseline wins; high cost per record."],
+    ["Evaluate","Step 8 · evaluate the results. Not good enough? Go back and refine.","Compute metrics; explain results; summarise thousands of rules.","Wrong metric or split, unreported numbers, overclaiming."],
+    ["Act","Step 9 · consolidate and report the knowledge to its users.","Draft reports and dashboards.","Confident prose that misstates the findings."],
+  ];
+  const tabs = $("#aiKddTabs"); let sel = 1;
+  S.forEach((s,i) => { const b = document.createElement("button"); b.className = "chip"; b.setAttribute("role","tab"); b.textContent = `${i+1} · ${s[0]}`; b.onclick = () => pick(i); tabs.appendChild(b); });
+  let nodes = [];
+  function pick(i){ sel = i; $$(".chip", tabs).forEach((b,k) => b.setAttribute("aria-selected", String(k===i))); $("#aiKStep").textContent = S[i][1]; $("#aiKHelp").textContent = S[i][2]; $("#aiKFail").textContent = S[i][3]; }
+  pick(1);
+  const host = $("#aiKddScene");
+  if (!hasGL){ noGL(host); return; }
+  const renderer = makeRenderer(host), scene = new THREE.Scene();
+  const cam = new THREE.PerspectiveCamera(38, 16/7, .1, 100); cam.position.set(0, 1.4, 8.2); cam.lookAt(0,-.7,0);
+  scene.add(new THREE.AmbientLight(0xffffff, .65)); const dl = new THREE.DirectionalLight(0xffffff, .8); dl.position.set(3,5,6); scene.add(dl);
+  const xs = [-4.6,-2.3,0,2.3,4.6], cvars = ["--c1","--c1","--c3","--c4","--c4"];
+  xs.forEach((x,i) => { const m = new THREE.Mesh(new THREE.IcosahedronGeometry(.48,1), new THREE.MeshStandardMaterial({flatShading:true, roughness:.5, metalness:.1})); m.position.set(x,0,0); m.userData.i = i; scene.add(m); nodes.push(m); });
+  const lineMat = new THREE.LineBasicMaterial({transparent:true, opacity:.5});
+  scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-4.6,0,0), new THREE.Vector3(4.6,0,0)]), lineMat));
+  const loop = new THREE.QuadraticBezierCurve3(new THREE.Vector3(2.3,-.5,0), new THREE.Vector3(0,-3.2,.6), new THREE.Vector3(-2.3,-.5,0));
+  const loopMat = new THREE.LineDashedMaterial({dashSize:.18, gapSize:.12, transparent:true, opacity:.8});
+  const loopLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(loop.getPoints(50)), loopMat); loopLine.computeLineDistances(); scene.add(loopLine);
+  const M = 160, R = rng(3), parts = [];
+  const pg = new THREE.BufferGeometry(), pp = new Float32Array(M*3); pg.setAttribute("position", new THREE.BufferAttribute(pp,3));
+  const pm = new THREE.PointsMaterial({size:.13, map:dotTexture(), transparent:true, alphaTest:.2, depthWrite:false});
+  scene.add(new THREE.Points(pg, pm));
+  for (let i=0;i<M;i++) parts.push({path:0, t:R(), y:(R()-.5)*.35, z:(R()-.5)*.35, sp:.05+R()*.05, decided:false});
+  // stage labels under each node, projected from 3D like the OLAP cube labels
+  const labs = S.map((s,i) => { const e = document.createElement("span"); e.className = "lbl3 t"; e.textContent = `${i+1} · ${s[0]}`; host.appendChild(e); return {e, v:new THREE.Vector3(xs[i], .95, 0)}; });
+  function colors(){ nodes.forEach((n,i) => { n.material.color.set(tok(cvars[i])); n.material.emissive.set(tok(cvars[i])); }); lineMat.color.set(tok("--muted")); loopMat.color.set(tok("--c4")); pm.color.set(tok("--c3")); }
+  colors(); onTheme(colors);
+  const ray = new THREE.Raycaster(), mv = new THREE.Vector2();
+  renderer.domElement.addEventListener("click", e => { const r = renderer.domElement.getBoundingClientRect(); mv.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1); ray.setFromCamera(mv, cam); const h = ray.intersectObjects(nodes); if (h.length) pick(h[0].object.userData.i); });
+  renderer.domElement.addEventListener("pointermove", e => { const r = renderer.domElement.getBoundingClientRect(); mv.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1); ray.setFromCamera(mv, cam); renderer.domElement.style.cursor = ray.intersectObjects(nodes).length ? "pointer" : "default"; });
+  function size(){ const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return; renderer.setSize(w,h,false); cam.aspect = w/h; cam.position.z = w/h < 1.6 ? 12.5 : 8.2; cam.updateProjectionMatrix(); }
+  new ResizeObserver(size).observe(host); size();
+  let on = true, prev = performance.now(), clock = 0;
+  visible(host, v => { on = v; if (v){ prev = performance.now(); requestAnimationFrame(frame); } });
+  const pv = new THREE.Vector3();
+  function place(){
+    parts.forEach((p,i) => {
+      if (p.path===0){ pp[i*3] = -4.6 + p.t*9.2; pp[i*3+1] = p.y; pp[i*3+2] = p.z; }
+      else { const v = loop.getPoint(p.t); pp[i*3] = v.x; pp[i*3+1] = v.y + p.y*.5; pp[i*3+2] = v.z + p.z*.5; }
+    });
+    pg.attributes.position.needsUpdate = true;
+  }
+  function frame(now){
+    if (!on) return;
+    const dt = Math.min(.05, Math.max(0, (now-prev)/1000)); prev = now; clock += dt;
+    if (!reduce) parts.forEach(p => {
+      p.t += p.sp*dt*(p.path ? 1.6 : 1);
+      if (p.path===0){ if (!p.decided && p.t >= .75){ p.decided = true; if (R() < .33){ p.path = 1; p.t = 0; } } if (p.t >= 1){ p.t = 0; p.decided = false; } }
+      else if (p.t >= 1){ p.path = 0; p.t = .25; p.decided = false; }
+    });
+    place();
+    nodes.forEach((n,i) => { const s = i===sel ? 1.3 + (reduce ? 0 : Math.sin(clock*3)*.05) : 1; n.scale.setScalar(n.scale.x + (s-n.scale.x)*.15); n.material.emissiveIntensity = i===sel ? .35 : .05; n.rotation.y += reduce ? 0 : dt*.3; });
+    renderer.render(scene, cam);
+    const w = host.clientWidth, h = host.clientHeight;
+    labs.forEach((l,i) => { pv.copy(l.v).project(cam); l.e.style.left = ((pv.x+1)/2*w) + "px"; l.e.style.top = ((1-pv.y)/2*h) + "px"; l.e.style.color = i===sel ? tok("--ink") : ""; });
+    requestAnimationFrame(frame);
+  }
+  if (reduce) place();
+  requestAnimationFrame(frame);
+})();
+
+/* ---------------- supermarket with an assistant (from lecture1.html, five steps) ---------------- */
+(function aiExample(){
+  const E = [
+    ["Goal setting","Which products are bought together, so we can plan promotions?","Suggests also looking at time of day and store type.","Keeps the goal narrow enough to act on this quarter. Parks time of day for later."],
+    ["Data collection","Millions of point-of-sale records from every store.","Writes the code that merges every store's records into one table.","Compares the row count per store with the sales system, and finds one store missing."],
+    ["Data transformation","One id per product; drop the fields not needed.","Writes the cleaning script in two minutes, mapping brands and pack sizes to one id.","Reads the script and finds it silently dropped every refund. Fixes it and logs the change."],
+    ["Data mining","Find frequent itemsets and association rules.","Proposes Apriori with minimum support of 1%.","Checks the number of rules is manageable, and that rare but profitable items are not lost."],
+    ["Result interpretation","Thousands of candidate rules. Keep the actionable ones.","Summarises the 20 most interesting rules in plain language.","Recomputes support and lift for each summarised rule. Two of the 20 were misquoted."],
+  ];
+  const host = $("#aiExSteps");
+  E.forEach((e,i) => { const b = document.createElement("button"); b.setAttribute("role","tab"); b.innerHTML = `<span class="s">Step ${i+1}</span><b>${e[0]}</b>`; b.onclick = () => pick(i); host.appendChild(b); });
+  function pick(i){ $$("button", host).forEach((b,k) => b.setAttribute("aria-selected", String(k===i))); $("#aiExTask").textContent = E[i][1]; $("#aiExAI").textContent = E[i][2]; $("#aiExCheck").textContent = E[i][3]; }
+  pick(0);
+})();
+
+/* ---------------- the 98% model: leakage case (from lecture1.html, ids renamed) ---------------- */
+(function leak(){
+  const R = rng(42), N = 2000, rows = [];
+  for (let i=0;i<N;i++){
+    const tenure = Math.max(1, Math.round(6 + R()*60)), tickets = Math.max(0, Math.round(1.2 + gauss(R)*1.3)), spend = Math.round(180 + R()*400);
+    const z = -.2 - tenure*.085 + tickets*1.1 + gauss(R)*.4;
+    const churn = R() < 1/(1+Math.exp(-z));
+    const closed = churn ? (R() < .985 ? 1 : 0) : (R() < .012 ? 1 : 0);
+    rows.push({tenure, tickets, spend, closed, churn, test: R() < .3});
+  }
+  const train = rows.filter(r => !r.test), test = rows.filter(r => r.test);
+  const prior = train.filter(r => r.churn).length / train.length;
+  function stats(f, cls){ const v = train.filter(r => r.churn===cls).map(r => r[f]); const m = v.reduce((a,b)=>a+b,0)/v.length; const s = Math.sqrt(v.reduce((a,b)=>a+(b-m)**2,0)/v.length) || 1; const p = (v.filter(x=>x).length+1)/(v.length+2); return {m,s,p}; }
+  const F = ["tenure","tickets","spend","closed"], P = {};
+  F.forEach(f => P[f] = [stats(f,false), stats(f,true)]);
+  const lg = (x,{m,s}) => -Math.log(s) - (x-m)**2/(2*s*s);
+  function predict(r, fs){ let a = Math.log(1-prior), b = Math.log(prior); fs.forEach(f => { if (f==="closed"){ a += Math.log(r.closed ? P.closed[0].p : 1-P.closed[0].p); b += Math.log(r.closed ? P.closed[1].p : 1-P.closed[1].p); } else { a += lg(r[f], P[f][0]); b += lg(r[f], P[f][1]); } }); return b > a; }
+  const acc = fs => test.filter(r => predict(r, fs) === r.churn).length / test.length;
+  const base = test.filter(r => !r.churn).length / test.length;
+  const ids = {tenure:"#lkTenure", tickets:"#lkTickets", spend:"#lkSpend", closed:"#lkClosed"}, names = {tenure:"tenure_months", tickets:"support_tickets_90d", spend:"monthly_spend", closed:"account_closed_date"};
+  function run(){
+    const fs = F.filter(f => $(ids[f]).checked);
+    const a = fs.length ? acc(fs) : base;
+    let top = fs[0]; let topA = -1; fs.forEach(f => { const x = acc([f]); if (x > topA){ topA = x; top = f; } });
+    $("#lkAcc").textContent = (a*100).toFixed(1) + "%"; $("#lkBase").textContent = (base*100).toFixed(1) + "%";
+    $("#lkMeter").style.width = (a*100) + "%"; $("#lkBaseMark").style.left = (base*100) + "%";
+    $("#lkAgent").innerHTML = fs.length ? `&gt; I trained a churn model on your customer table.<br>&gt; Test accuracy: <b>${(a*100).toFixed(1)}%</b>.<br>&gt; Most important feature: <b>${names[top]}</b>.` : "&gt; No features selected. Predicting that nobody leaves.";
+    const v = $("#lkVerdict");
+    if (fs.includes("closed")){ v.className = "verdict leak"; v.innerHTML = "<b>Leak.</b> <span class='mono'>account_closed_date</span> is only filled in after a customer has already left. The model reads the answer instead of predicting it, and will be useless on new customers. Untick it."; }
+    else if (a - base < .03){ v.className = "verdict meh"; v.innerHTML = `<b>Barely beats the baseline.</b> Predicting "nobody leaves" already scores ${(base*100).toFixed(1)}%. Always report the baseline next to the model.`; }
+    else { v.className = "verdict ok"; v.innerHTML = `<b>Plausible.</b> ${((a-base)*100).toFixed(1)} points above the baseline, using only information known before the customer leaves. This is the honest number to report.`; }
+  }
+  Object.values(ids).forEach(s => $(s).addEventListener("change", run));
+  run();
+})();
+
+/* ---------------- verify checklist (from lecture1.html, ids renamed) ---------------- */
+(function checks(){
+  const cbs = $$("#vChecks input");
+  const upd = () => { const n = cbs.filter(c => c.checked).length; $("#vProg").textContent = n === cbs.length ? "All 6 checks done. This claim is ready to report." : `${n} of 6 checks done`; };
+  cbs.forEach(c => c.addEventListener("change", upd));
+})();
+
+/* ---------------- lab: phases ---------------- */
+segBar("#labBar", "#labDetail", [
+  "<h3>Brief · 5 minutes</h3><p style='margin-top:6px'>Open the prepared notebook in Google Colab (see the next page). It holds the dataset and the agent's report. The agent was asked: <span class='mono'>\"Explore this dataset and report the most important findings.\"</span></p>",
+  "<h3>Guided work · 30 minutes</h3><ol class='clean' style='margin-top:6px'><li>The agent's report has 5 claims. Check each one.</li><li>For each claim, recompute it yourself and read the code that produced it.</li><li>Mark it correct, partly correct, wrong or cannot tell yet, and say why.</li><li>Note which planted problems the agent caught, and which you caught.</li></ol>",
+  "<h3>Share-out · 10 minutes</h3><p style='margin-top:6px'>A few students present one claim each: what the agent said, the check, the verdict. Which planted problems did the agent miss? Keep the claim, check, verdict habit whenever you use an AI tool.</p>"
+]);
+
+/* ---------------- lab: claims and verdicts ---------------- */
+(function audit(){
+  const C = [
+    ["The dataset covers 3,000 customers.", "Step 1"],
+    ["No column has missing values, so no cleaning is needed.", "Step 2"],
+    ["Support calls are a strong warning sign: churn rises from 12.9% for customers with 0–1 calls to 63.9% for 4 or more calls.", "Step 5"],
+    ["Tenure ranges from 0 to 240 months. The 119 customers with more than 10 years of tenure have a churn rate of 5%: they are the most loyal group.", "Step 6"],
+    ["A gradient boosting model predicts churn with 97.7% test accuracy. The most important feature is cancellation_fee_charged, so the cancellation fee policy drives churn.", "Step 7"],
+  ];
+  const V = [["ok","Correct"],["part","Partly correct"],["wrong","Wrong"],["unk","Cannot tell yet"]];
+  const tb = $("#auditTbl tbody");
+  C.forEach(([c, step], i) => {
+    const tr = document.createElement("tr"); tr.dataset.v = "";
+    tr.innerHTML = `<td>${i+1}</td><td class="claim">${c} <span class="step">${step}</span></td><td><div class="vchips" role="group" aria-label="Verdict for claim ${i+1}">${V.map(([v,t]) => `<button class="chip" data-v="${v}" aria-pressed="false">${t}</button>`).join("")}</div></td>`;
+    tb.appendChild(tr);
+  });
+  const rows = $$("tr", tb), found = $$("#plantFound input");
+  const setV = (tr, v) => { tr.dataset.v = v; $$("button", tr).forEach(x => x.setAttribute("aria-pressed", String(v !== "" && x.dataset.v === v))); };
+  rows.forEach(tr => $$("button", tr).forEach(b => b.onclick = () => { setV(tr, tr.dataset.v === b.dataset.v ? "" : b.dataset.v); upd(); }));
+  function upd(){
+    const n = v => rows.filter(r => r.dataset.v === v).length;
+    $("#auditSum").textContent = `${rows.filter(r => r.dataset.v).length} of 5 verdicts · ${n("ok")} correct · ${n("part")} partly correct · ${n("wrong")} wrong · ${n("unk")} cannot tell yet · planted problems found: ${found.filter(f => f.checked).length} of 3`;
+  }
+  found.forEach(f => f.addEventListener("change", upd));
+  $("#auditClear").onclick = () => { rows.forEach(r => setV(r, "")); found.forEach(f => f.checked = false); upd(); };
+  upd();
+})();
+
+/* ---------------- data to knowledge ---------------- */
+(function dk(){
+  const D = [[3,.40,20,"M"],[2,.30,16,"M"],[10,1.00,60,"M"],[20,1.43,90,"F"],[15,1.33,75,"F"],[2,.28,16,"F"],[8,.71,40,"F"],[10,.90,57,"F"]];
+  $("#dkTbl tbody").innerHTML = D.map(r => `<tr><td>${r[0]}</td><td>${r[1].toFixed(2)}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join("") + "<tr><td>…</td><td>…</td><td>…</td><td>…</td></tr>";
+  const cv = $("#cvDK"), pad = {l:52,r:16,t:16,b:44}; let a = 3, W = 0, H = 0, drag = false;
+  const X = v => pad.l + v/22*(W-pad.l-pad.r), Y = v => H-pad.b - v/100*(H-pad.t-pad.b);
+  const draw = live(cv, "dk", (ctx, w, h) => {
+    W = w; H = h;
+    axes(ctx, w, h, pad, "age", "weight / lb", [0,5,10,15,20].map(v=>[v, X(v)]), [0,20,40,60,80,100].map(v=>[v, Y(v)]));
+    ctx.fillStyle = tok("--accent"); ctx.globalAlpha = .09; ctx.fillRect(X(0), pad.t, X(a)-X(0), H-pad.t-pad.b); ctx.globalAlpha = 1;
+    ctx.setLineDash([6,5]); ctx.strokeStyle = tok("--c4"); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(X(0), Y(40)); ctx.lineTo(X(22), Y(40)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font = `12px ${tok("--mono")}`; ctx.fillStyle = tok("--c4"); ctx.textAlign = "right"; ctx.fillText("40 lb", X(22)-4, Y(40)-6);
+    ctx.strokeStyle = tok("--ink"); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X(a), pad.t); ctx.lineTo(X(a), H-pad.b); ctx.stroke();
+    ctx.fillStyle = tok("--ink"); ctx.textAlign = "left"; ctx.fillText(`age < ${a}`, Math.min(X(a)+6, W-80), pad.t+14);
+    D.forEach(r => { const inR = r[0] < a; ctx.beginPath(); ctx.arc(X(r[0]), Y(r[2]), 6, 0, 7); if (inR){ ctx.fillStyle = tok(r[2] < 40 ? "--good" : "--signal"); ctx.fill(); } else { ctx.strokeStyle = tok("--c1"); ctx.lineWidth = 2; ctx.stroke(); } });
+  });
+  function upd(){
+    const inR = D.filter(r => r[0] < a), k = inR.filter(r => r[2] < 40).length;
+    $("#dkA").textContent = a; $("#dkN").textContent = inR.length; $("#dkK").textContent = inR.length ? `${k} of ${inR.length}` : "–"; $("#dkAge").value = a;
+    $$("#dkTbl tbody tr").forEach((tr,i) => tr.classList.toggle("hl", i < D.length && D[i][0] < a));
+    draw();
+  }
+  const setA = e => { const x = at(cv, e)[0]; a = Math.max(1, Math.min(21, Math.round((x-pad.l)/(W-pad.l-pad.r)*22))); upd(); };
+  cv.addEventListener("pointerdown", e => { drag = true; cv.setPointerCapture(e.pointerId); setA(e); });
+  cv.addEventListener("pointermove", e => { if (drag) setA(e); });
+  cv.addEventListener("pointerup", () => drag = false);
+  $("#dkAge").oninput = e => { a = +e.target.value; upd(); };
+  upd();
+})();
+
+/* ---------------- supermarket step 3 ---------------- */
+(function prep(){
+  let one = false, filt = false;
+  $("#pBtn").onclick = () => { one = !one; $("#p1").classList.toggle("strike", one); $("#p2").classList.toggle("strike", one); $("#pArr").hidden = $("#pId").hidden = !one; $("#pBtn").textContent = one ? "Undo" : "Use a single id"; };
+  $("#fBtn").onclick = () => { filt = !filt; $$("#fFields .tok").forEach(t => t.classList.toggle("strike", filt)); $("#fBtn").textContent = filt ? "Undo" : "Filter away"; };
+})();
+
+/* ---------------- is it data mining? ---------------- */
+quiz($("#dmQ"), ["Yes","No"], [
+  ["A software system that maintains a supermarket database may claim, \"Users can <i>mine</i> the database to <i>discover</i> the total amount of milk purchased last month.\" Do you consider the above software a data mining product?", 1,
+   "A database system that supports simple aggregation functions should not be considered as providing data mining functionality."]
+], null);
+
+/* ---------------- OLAP data cube (three.js) ---------------- */
+(function olap(){
+  const DL = ["A","B","C","D","E","F"], CL = ["1","2","3"], QL = ["Q1","Q2","Q3","Q4"];
+  const T = [[20,15,23,11,1,7],[87,45,45,29,40,2],[6,7,23,74,2,93]];
+  // reconstruct a split of each slide total over four quarters (largest remainder, seeded)
+  const R = rng(28);
+  const V = T.map(row => row.map(t => {
+    const w = [0,1,2,3].map(() => .3 + R()), s = w.reduce((a,b)=>a+b,0), raw = w.map(x => t*x/s), f = raw.map(Math.floor);
+    const left = t - f.reduce((a,b)=>a+b,0);
+    raw.map((x,i) => [x-f[i], i]).sort((p,q) => q[0]-p[0]).slice(0,left).forEach(([,i]) => f[i]++);
+    return f;
+  }));
+  const all = n => new Set([...Array(n).keys()]);
+  const S = {d:all(6), c:all(3), q:all(4), g:"cd", roll:false};
+  const NM = {d: i => "Dealer " + DL[i], c: i => "Colour " + CL[i], q: i => QL[i]};
+  const P = [["All data",{d:all(6),c:all(3),q:all(4),roll:false}],["Select Q1",{d:all(6),c:all(3),q:new Set([0]),roll:false}],["Select A–C, colours 1–2, Q1–Q2",{d:new Set([0,1,2]),c:new Set([0,1]),q:new Set([0,1]),roll:false}],["Aggregate over time",{d:all(6),c:all(3),q:all(4),roll:true,g:"cd"}]];
+  const pre = $("#olapPre");
+  P.forEach(([n,p]) => { const b = document.createElement("button"); b.className = "chip sm"; b.textContent = n; b.onclick = () => { Object.assign(S, {d:new Set(p.d), c:new Set(p.c), q:new Set(p.q), roll:p.roll}); if (p.g) S.g = p.g; sync(); }; pre.appendChild(b); });
+  const dims = $("#olapDims"), mchips = {d:[],c:[],q:[]};
+  [["d","Dealers",DL],["c","Colours",CL],["q","Time",QL]].forEach(([k,lab,L]) => {
+    const r = document.createElement("div"); r.className = "row"; r.innerHTML = `<span class="lab-s">${lab}</span>`;
+    L.forEach((x,i) => { const b = document.createElement("button"); b.className = "chip sm"; b.textContent = x; b.onclick = () => { if (S[k].has(i)){ if (S[k].size > 1) S[k].delete(i); } else S[k].add(i); sync(); }; mchips[k].push(b); r.appendChild(b); });
+    dims.appendChild(r);
+  });
+  const rb = document.createElement("button"); rb.className = "chip sm"; rb.textContent = "Collapse time in 3D"; rb.onclick = () => { S.roll = !S.roll; sync(); }; $("#olapDims").appendChild(Object.assign(document.createElement("div"), {className:"row"})).appendChild(rb);
+  const gb = [["cd","colours × dealers"],["d","dealers"],["c","colours"],["q","time"]].map(([g,n]) => { const b = document.createElement("button"); b.className = "chip sm"; b.textContent = n; b.onclick = () => { S.g = g; sync(); }; $("#olapG").appendChild(b); return [g,b]; });
+  const sorted = s => [...s].sort((a,b) => a-b);
+  function table(){
+    const cells = []; S.c.forEach(c => S.d.forEach(d => S.q.forEach(q => cells.push({d, c, q, v:V[c][d][q]}))));
+    const rk = S.g==="cd" || S.g==="c" ? "c" : null, ck = S.g==="cd" || S.g==="d" ? "d" : S.g==="q" ? "q" : null;
+    const rows = rk ? sorted(S[rk]) : [null], cols = ck ? sorted(S[ck]) : [null];
+    const sum = (r, k) => cells.filter(x => (r===null || x[rk]===r) && (k===null || x[ck]===k)).reduce((a,x) => a+x.v, 0);
+    let h = `<thead><tr><th>${rk ? "colour" : ""}${rk && ck ? " \\ " : ""}${ck ? (ck==="d" ? "dealer" : "time") : ""}</th>${cols.map(k => `<th>${k===null ? "sum" : (ck==="d" ? DL[k] : ck==="q" ? QL[k] : "")}</th>`).join("")}${cols.length > 1 ? "<th>total</th>" : ""}</tr></thead><tbody>`;
+    rows.forEach(r => { h += `<tr><td>${r===null ? "all selected" : NM.c(r)}</td>${cols.map(k => `<td>${sum(r,k)}</td>`).join("")}${cols.length > 1 ? `<td>${sum(r,null)}</td>` : ""}</tr>`; });
+    if (rows.length > 1) h += `<tr class="tot"><td>total</td>${cols.map(k => `<td>${sum(null,k)}</td>`).join("")}${cols.length > 1 ? `<td>${sum(null,null)}</td>` : ""}</tr>`;
+    $("#olapTbl").innerHTML = h + "</tbody>";
+    $("#olapSel").innerHTML = `<b>Selection:</b> ${cells.length} of 72 cells · <b>Group-by:</b> ${gb.find(x => x[0]===S.g)[1].textContent} · <b>Aggregation:</b> sum = ${sum(null,null)}`;
+    const full = S.d.size===6 && S.c.size===3 && S.q.size===4 && S.g==="cd";
+    const m = $("#olapMatch"); m.hidden = !full; m.innerHTML = "<b>Totals match.</b> Summing over all four quarters gives the colours × dealers totals.";
+  }
+  let scene3 = null;
+  function sync(){
+    ["d","c","q"].forEach(k => mchips[k].forEach((b,i) => b.setAttribute("aria-pressed", String(S[k].has(i)))));
+    gb.forEach(([g,b]) => b.setAttribute("aria-pressed", String(g===S.g))); rb.setAttribute("aria-pressed", String(S.roll));
+    table(); if (scene3) scene3();
+  }
+  sync();
+
+  const host = $("#olapScene");
+  if (!hasGL){ noGL(host); return; }
+  const renderer = makeRenderer(host), scene = new THREE.Scene();
+  const cam = new THREE.PerspectiveCamera(38, 4/3, .1, 100); cam.position.set(6.2, 4.6, 8.4);
+  const ctl = new THREE.OrbitControls(cam, renderer.domElement); ctl.enableDamping = true; ctl.enablePan = false; ctl.enableZoom = false;
+  scene.add(new THREE.AmbientLight(0xffffff, .75)); const dl = new THREE.DirectionalLight(0xffffff, .6); dl.position.set(4,6,5); scene.add(dl);
+  const px = d => d-2.5, py = c => c-1, pz = q => q-1.5;
+  const seg = [];
+  for (let y=-1.5; y<=1.5; y++) for (let z=-2; z<=2; z++) seg.push(-3,y,z, 3,y,z);
+  for (let x=-3; x<=3; x++) for (let z=-2; z<=2; z++) seg.push(x,-1.5,z, x,1.5,z);
+  for (let x=-3; x<=3; x++) for (let y=-1.5; y<=1.5; y++) seg.push(x,y,-2, x,y,2);
+  const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute(seg, 3));
+  const lm = new THREE.LineBasicMaterial({transparent:true, opacity:.55}); scene.add(new THREE.LineSegments(lg, lm));
+  const box = new THREE.BoxGeometry(1,1,1), meshes = [];
+  const maxC = Math.max(...V.flat(2)), maxT = Math.max(...T.flat());
+  const sz = (v, m) => v ? .14 + .56*Math.cbrt(v/m) : .06;
+  for (let c=0;c<3;c++) for (let d=0;d<6;d++){
+    for (let q=0;q<4;q++){ const m = new THREE.Mesh(box, new THREE.MeshStandardMaterial({transparent:true, roughness:.6})); m.position.set(px(d), py(c), pz(q)); m.userData = {d,c,q,roll:false,s:.01,o:0}; m.scale.setScalar(.01); scene.add(m); meshes.push(m); }
+    const m = new THREE.Mesh(box, new THREE.MeshStandardMaterial({transparent:true, roughness:.6})); m.position.set(px(d), py(c), 0); m.userData = {d,c,roll:true,s:.01,o:0}; m.scale.setScalar(.01); scene.add(m); meshes.push(m);
+  }
+  const CC = ["--c1","--c3","--c4"];
+  function colors(){ lm.color.set(tok("--line")); meshes.forEach(m => m.material.color.set(tok(CC[m.userData.c]))); }
+  colors(); onTheme(colors);
+  const labs = [];
+  const lab = (txt, x, y, z, cls) => { const e = document.createElement("span"); e.className = "lbl3" + (cls ? " " + cls : ""); e.textContent = txt; host.appendChild(e); labs.push({e, v:new THREE.Vector3(x,y,z)}); return e; };
+  DL.forEach((n,d) => lab(n, px(d), -1.85, 2.25)); lab("dealers", 0, -2.35, 2.6, "t");
+  CL.forEach((n,c) => lab(n, -3.35, py(c), 2.1)); lab("colours", -3.5, 1.95, 2.1, "t");
+  const qlabs = QL.map((n,q) => lab(n, 3.4, -1.85, pz(q))); const tl = lab("time", 3.7, -2.35, 0, "t");
+  scene3 = () => {
+    meshes.forEach(m => { const u = m.userData, selDC = S.d.has(u.d) && S.c.has(u.c);
+      if (u.roll){ const v = [...S.q].reduce((a,q) => a + V[u.c][u.d][q], 0); u.v = v; u.s = S.roll && selDC ? sz(v, maxT) : .01; u.o = S.roll && selDC ? .92 : 0; }
+      else { const sel = selDC && S.q.has(u.q); u.v = V[u.c][u.d][u.q]; u.s = S.roll ? .01 : sz(u.v, maxC); u.o = S.roll ? 0 : sel ? .92 : .1; u.z = S.roll ? 0 : pz(u.q); }
+    });
+    qlabs.forEach(e => e.style.opacity = S.roll ? .25 : 1); tl.textContent = S.roll ? "time (summed)" : "time";
+    if (reduce) meshes.forEach(m => { m.scale.setScalar(m.userData.s); m.material.opacity = m.userData.o; if (!m.userData.roll) m.position.z = m.userData.z; });
+  };
+  scene3();
+  const ray = new THREE.Raycaster(), mv = new THREE.Vector2(), tip = $("#olapTip");
+  renderer.domElement.addEventListener("pointermove", e => {
+    const r = renderer.domElement.getBoundingClientRect(); mv.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1); ray.setFromCamera(mv, cam);
+    const h = ray.intersectObjects(meshes.filter(m => m.userData.o > .5 && m.userData.s > .05))[0];
+    if (!h){ tip.textContent = "hover a cell"; return; }
+    const u = h.object.userData; tip.textContent = `${NM.d(u.d)} · ${NM.c(u.c)} · ${u.roll ? sorted(S.q).map(q=>QL[q]).join("+") : QL[u.q]} = ${u.v}`;
+  });
+  function size(){ const w = host.clientWidth, h = host.clientHeight; renderer.setSize(w,h,false); cam.aspect = w/h; cam.updateProjectionMatrix(); }
+  new ResizeObserver(size).observe(host); size();
+  const pv = new THREE.Vector3();
+  let on = true;
+  visible(host, v => { on = v; if (v) requestAnimationFrame(loop); });
+  function loop(){
+    if (!on) return;
+    const k = reduce ? 1 : .14;
+    meshes.forEach(m => { const u = m.userData; m.scale.setScalar(m.scale.x + (u.s-m.scale.x)*k); m.material.opacity += (u.o-m.material.opacity)*k; m.visible = m.material.opacity > .02; if (!u.roll) m.position.z += (u.z-m.position.z)*k; });
+    ctl.update(); renderer.render(scene, cam);
+    const w = host.clientWidth, h = host.clientHeight;
+    labs.forEach(l => { pv.copy(l.v).project(cam); l.e.style.left = ((pv.x+1)/2*w) + "px"; l.e.style.top = ((1-pv.y)/2*h) + "px"; });
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+
+/* ---------------- classification tables ---------------- */
+(function cls(){
+  const tr = [["M","Single","125K","No"],["M","Married","100K","No"],["M","Single","70K","No"],["F","Married","120K","No"],["F","Divorced","95K","Yes"],["F","Married","60K","No"],["M","Divorced","220K","No"],["M","Single","85K","Yes"],["F","Married","75K","No"],["M","Single","90K","Yes"]];
+  const te = [["M","Single","75K","No"],["F","Married","50K","Yes"],["F","Married","150K","Yes"],["M","Divorced","90K","Yes"],["M","Single","40K","No"],["M","Married","80K","No"]];
+  const head = tid => `<thead><tr>${tid ? "<th>Tid</th>" : ""}<th class="ci">Gender</th><th class="ci">Marital Status</th><th class="ci">Taxable Income</th><th class="cc">Default Payment</th></tr></thead>`;
+  const body = (R, tid) => "<tbody>" + R.map((r,i) => `<tr>${tid ? `<td>${i+1}</td>` : ""}<td class="ci">${r[0]}</td><td class="ci">${r[1]}</td><td class="ci">${r[2]}</td><td class="cc">${r[3]}</td></tr>`).join("") + "</tbody>";
+  $("#trainTbl").innerHTML = head(true) + body(tr, true); $("#testTbl").innerHTML = head(false) + body(te, false);
+})();
+
+/* ---------------- linear regression ---------------- */
+(function reg(){
+  const cv = $("#cvReg"), pad = {l:52,r:16,t:16,b:44}; let W = 0, H = 0, pts, mode = "ls";
+  function reset(){ const R = rng(34); pts = []; for (let i=0;i<36;i++){ const x = 24 + R()*44; pts.push({x, y: Math.max(45, Math.min(215, 28 + 2.4*x + gauss(R)*16))}); } }
+  reset();
+  const X = v => pad.l + (v-20)/55*(W-pad.l-pad.r), Y = v => H-pad.b - (v-40)/180*(H-pad.t-pad.b);
+  const iX = p => 20 + (p-pad.l)/(W-pad.l-pad.r)*55, iY = p => 40 + (H-pad.b-p)/(H-pad.t-pad.b)*180;
+  function fitLS(){
+    const n = pts.length, mx = pts.reduce((a,p)=>a+p.x,0)/n, my = pts.reduce((a,p)=>a+p.y,0)/n;
+    let sxy = 0, sxx = 0; pts.forEach(p => { sxy += (p.x-mx)*(p.y-my); sxx += (p.x-mx)**2; });
+    const b1 = sxx ? sxy/sxx : 0; return {n, mx, my, sxy, sxx, b1, b0: my - b1*mx};
+  }
+  const sse = (b0, b1) => pts.reduce((a,p) => a + (p.y-(b0+b1*p.x))**2, 0);
+  const draw = live(cv, "reg", (ctx, w, h) => {
+    W = w; H = h;
+    axes(ctx, w, h, pad, "x", "y", [20,30,40,50,60,70].map(v=>[v, X(v)]), [40,80,120,160,200].map(v=>[v, Y(v)]));
+    const L = fitLS(), b0 = mode==="ls" ? L.b0 : +$("#b0").value, b1 = mode==="ls" ? L.b1 : +$("#b1").value;
+    ctx.save(); ctx.beginPath(); ctx.rect(pad.l, pad.t, W-pad.l-pad.r, H-pad.t-pad.b); ctx.clip();
+    if (mode !== "ls"){ ctx.setLineDash([5,5]); ctx.strokeStyle = tok("--muted"); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(X(20), Y(L.b0+L.b1*20)); ctx.lineTo(X(75), Y(L.b0+L.b1*75)); ctx.stroke(); ctx.setLineDash([]); }
+    pts.forEach(p => { ctx.strokeStyle = tok("--c4"); ctx.globalAlpha = .7; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(X(p.x), Y(p.y)); ctx.lineTo(X(p.x), Y(b0+b1*p.x)); ctx.stroke(); ctx.globalAlpha = 1; });
+    ctx.strokeStyle = tok("--accent"); ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(X(20), Y(b0+b1*20)); ctx.lineTo(X(75), Y(b0+b1*75)); ctx.stroke();
+    pts.forEach(p => { ctx.beginPath(); ctx.arc(X(p.x), Y(p.y), 4.5, 0, 7); ctx.fillStyle = tok("--c1"); ctx.fill(); });
+    ctx.restore();
+    $("#rB0").textContent = b0.toFixed(2); $("#rB1").textContent = b1.toFixed(3); $("#rSSE").textContent = Math.round(sse(b0,b1)).toLocaleString("en-US"); $("#rMin").textContent = Math.round(sse(L.b0,L.b1)).toLocaleString("en-US");
+    $("#b0v").textContent = $("#b0").value; $("#b1v").textContent = (+$("#b1").value).toFixed(2);
+    $("#regCalc").innerHTML = `n = ${L.n}, x̄ = ${L.mx.toFixed(2)}, ȳ = ${L.my.toFixed(2)}<br>β1 = ${L.sxy.toFixed(1)} / ${L.sxx.toFixed(1)} = ${L.b1.toFixed(3)}<br>β0 = ${L.my.toFixed(2)} − ${L.b1.toFixed(3)} × ${L.mx.toFixed(2)} = ${L.b0.toFixed(2)}`;
+  });
+  cv.addEventListener("click", e => { const [x, y] = at(cv, e), vx = iX(x), vy = iY(y); if (vx>=20 && vx<=75 && vy>=40 && vy<=220){ pts.push({x:vx, y:vy}); draw(); } });
+  $$("#regMode .chip").forEach(b => b.onclick = () => { mode = b.dataset.m; $$("#regMode .chip").forEach(x => x.setAttribute("aria-pressed", String(x===b))); $("#regOwn").hidden = mode==="ls"; draw(); });
+  $("#b0").oninput = $("#b1").oninput = () => draw();
+  $("#regReset").onclick = () => { reset(); draw(); };
+})();
+
+/* ---------------- clustering ---------------- */
+(function clu(){
+  const cv = $("#cvClu"); let W = 0, H = 0, pts, drag = -1, last = null; const pad = 16;
+  function reset(){ const R = rng(39); pts = []; [[2.6,6.8],[7.2,7.4],[6.4,2.6]].forEach(([cx,cy],g) => { for (let i=0;i<12;i++) pts.push({x: cx + gauss(R)*.55, y: cy + gauss(R)*.55, g}); }); }
+  reset();
+  const X = v => pad + v/10*(W-2*pad), Y = v => H-pad - v/10*(H-2*pad);
+  const cent = () => [0,1,2].map(g => { const m = pts.filter(p => p.g===g); return {x: m.reduce((a,p)=>a+p.x,0)/m.length, y: m.reduce((a,p)=>a+p.y,0)/m.length}; });
+  const draw = live(cv, "clu", (ctx, w, h) => {
+    W = w; H = h; const C = cent(), col = ["--c1","--c4","--c3"].map(tok);
+    ctx.strokeStyle = tok("--line"); ctx.strokeRect(pad, pad, W-2*pad, H-2*pad);
+    pts.forEach(p => { ctx.strokeStyle = col[p.g]; ctx.globalAlpha = .35; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X(p.x), Y(p.y)); ctx.lineTo(X(C[p.g].x), Y(C[p.g].y)); ctx.stroke(); });
+    ctx.globalAlpha = 1; ctx.setLineDash([6,5]); ctx.strokeStyle = tok("--ink"); ctx.lineWidth = 1.5;
+    [[0,1],[1,2],[0,2]].forEach(([a,b]) => { ctx.beginPath(); ctx.moveTo(X(C[a].x), Y(C[a].y)); ctx.lineTo(X(C[b].x), Y(C[b].y)); ctx.stroke(); });
+    ctx.setLineDash([]);
+    pts.forEach(p => { ctx.beginPath(); ctx.arc(X(p.x), Y(p.y), 5.5, 0, 7); ctx.fillStyle = col[p.g]; ctx.fill(); });
+    C.forEach((c,g) => { ctx.beginPath(); ctx.arc(X(c.x), Y(c.y), 7, 0, 7); ctx.fillStyle = tok("--surface"); ctx.fill(); ctx.strokeStyle = col[g]; ctx.lineWidth = 3; ctx.stroke(); });
+    const intra = pts.reduce((a,p) => a + Math.hypot(p.x-C[p.g].x, p.y-C[p.g].y), 0)/pts.length;
+    const inter = [[0,1],[1,2],[0,2]].reduce((a,[i,j]) => a + Math.hypot(C[i].x-C[j].x, C[i].y-C[j].y), 0)/3;
+    $("#cIntra").textContent = intra.toFixed(2); $("#cInter").textContent = inter.toFixed(2);
+  });
+  const toV = e => { const [x, y] = at(cv, e); return [(x-pad)/(W-2*pad)*10, (H-pad-y)/(H-2*pad)*10]; };
+  cv.addEventListener("pointerdown", e => { const [vx, vy] = toV(e); let best = 1e9; pts.forEach(p => { const d = Math.hypot(p.x-vx, p.y-vy); if (d < best){ best = d; drag = p.g; } }); if (best > 1.2) drag = -1; else { last = [vx, vy]; cv.setPointerCapture(e.pointerId); } });
+  cv.addEventListener("pointermove", e => { if (drag < 0) return; const [vx, vy] = toV(e); const dx = vx-last[0], dy = vy-last[1]; last = [vx, vy]; pts.forEach(p => { if (p.g===drag){ p.x = Math.max(0, Math.min(10, p.x+dx)); p.y = Math.max(0, Math.min(10, p.y+dy)); } }); draw(); });
+  cv.addEventListener("pointerup", () => drag = -1);
+  $("#cluReset").onclick = () => { reset(); draw(); };
+})();
+
+/* ---------------- association rules ---------------- */
+(function asc(){
+  const T = [["Bread","Coke","Milk"],["Beer","Bread"],["Beer","Coke","Diaper","Milk"],["Beer","Bread","Diaper","Milk"],["Coke","Diaper","Milk"]];
+  const items = ["Bread","Coke","Milk","Beer","Diaper"], st = Object.fromEntries(items.map(i => [i,0]));
+  const has = (t, s) => s.every(i => t.includes(i));
+  const ib = $("#arItems");
+  items.forEach(i => { const b = document.createElement("button"); b.textContent = i; b.dataset.i = i; b.onclick = () => { st[i] = (st[i]+1)%3; upd(); }; ib.appendChild(b); });
+  [[["Milk"],["Coke"]],[["Diaper","Milk"],["Beer"]]].forEach(([A,C]) => { const b = document.createElement("button"); b.className = "chip sm"; b.textContent = `{${A.join(", ")}} → {${C.join(", ")}}`; b.onclick = () => { items.forEach(i => st[i] = A.includes(i) ? 1 : C.includes(i) ? 2 : 0); upd(); }; $("#arRules").appendChild(b); });
+  function upd(){
+    const A = items.filter(i => st[i]===1), C = items.filter(i => st[i]===2);
+    $$("button", ib).forEach(b => b.className = st[b.dataset.i]===1 ? "a" : st[b.dataset.i]===2 ? "c" : "");
+    $("#arTx").innerHTML = `<div style="color:var(--muted)">TID · Items</div>` + T.map((t,n) => { const a = A.length && has(t,A), both = a && C.length && has(t,C); return `<div class="${both ? "hit" : a ? "hitA" : ""}">${n+1} · ${t.join(", ")}</div>`; }).join("");
+    $("#arRule").textContent = `{${A.join(", ") || "…"}} → {${C.join(", ") || "…"}}`;
+    if (!A.length || !C.length){ $("#arText").textContent = "Pick at least one item for each side."; return; }
+    const ia = T.map((t,n) => has(t,A) ? n+1 : 0).filter(Boolean), ib2 = ia.filter(n => has(T[n-1], C));
+    $("#arText").innerHTML = `{${A.join(", ")}} occurs in ${ia.length} of ${T.length} records${ia.length ? ` (${ia.join(", ")})` : ""}. {${C.join(", ")}} also occurs in <b>${ib2.length}</b> of these${ib2.length ? ` (${ib2.join(", ")})` : ""}.`;
+  }
+  items.forEach(i => st[i] = i==="Milk" ? 1 : i==="Coke" ? 2 : 0); upd();
+})();
+
+/* ---------------- which task? ---------------- */
+quiz($("#taskQ"), ["Classification","Regression","Clustering","Association","Sequence analysis"], [
+  ["An email service labels each incoming message as spam or not spam, using past messages that users have already marked.", 0, "Each record gets one label from a fixed set (spam, not spam), learned from labelled examples."],
+  ["Estimate the selling price of a flat in HK$ from its size, district and building age.", 1, "The target is a numerical value, not a category."],
+  ["A gym groups its members by visit times and class choices, with no groups defined in advance.", 2, "There are no labels; groups are found from similarity between members."],
+  ["A restaurant finds which dishes are often ordered together, such as {dumplings} → {milk tea}.", 3, "Items that occur together in the same record (an order)."],
+  ["From students' click paths in the course website, find common orders such as watch video → try quiz → read forum, to predict what a student does next.", 4, "The order of events matters, and frequent subsequences predict future behaviour."],
+  ["Predict tomorrow's peak electricity demand in megawatts from the weather forecast.", 1, "The output is a number (megawatts)."],
+  ["A bank decides whether a loan applicant is low, medium or high risk, based on past applicants whose outcomes are known.", 0, "Three risk classes, learned from past records with known outcomes."],
+  ["A music app discovers groups of songs with similar audio features, without any genre labels, to build playlists.", 2, "Unlabelled songs grouped by similarity."],
+  ["A hospital looks for common orders of tests before a diagnosis, such as blood test → X-ray → CT scan.", 4, "Frequently occurring sequences of events over time."],
+  ["An app store finds which apps are often installed together on the same phone.", 3, "Sets of items (apps) that co-occur on the same phone."],
+], $("#taskScore"));
+
+/* ---------------- KDD process flow ---------------- */
+(function flow(){
+  const ND = {data:[28,30,92,54,["data"]], cleaned:[420,30,110,54,["cleaned data"]], tr:[590,140,110,60,["transformed","data"]], alg:[590,290,110,54,["data mining","algorithms"]], res:[450,290,90,54,["results"]], ev:[290,290,110,54,["result","evaluation"]], kb:[400,368,130,50,["knowledge base"]]};
+  const ED = {sel:["M120,57H212",[170,47,["data selection"]]], cln:["M300,57H412",[358,34,["data cleansing /","preprocessing"]]], red:["M530,57H645V132",[592,18,["data reduction /","transformation"]]], ta:["M645,200V282"], ar:["M590,317H548"], re:["M450,317H408"], ns:["M290,312L126,226",[176,296,["not satisfied"]]], eb:["M345,344V362"], bk:["M362,393H392"]};
+  const RF = ["M80,166L70,92","M108,176L250,92","M120,190L470,92","M124,202L582,170","M120,216L582,306"];
+  let s = `<defs><marker id="kh" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" class="mk"/></marker></defs>`;
+  s += `<g class="rf" id="rfl">${RF.map(d => `<path d="${d}"/>`).join("")}</g>`;
+  Object.entries(ED).forEach(([k,[d,l]]) => { s += `<g class="ed" id="e-${k}"><path d="${d}" marker-end="url(#kh)"/>${l ? l[2].map((t,i) => `<text x="${l[0]}" y="${l[1]+i*13}">${t}</text>`).join("") : ""}</g>`; });
+  Object.entries(ND).forEach(([k,[x,y,w,h,L]]) => { s += `<g class="nd" id="n-${k}">${k==="data" ? `<rect x="${x-8}" y="${y-8}" width="${w}" height="${h}" rx="4"/><rect x="${x-4}" y="${y-4}" width="${w}" height="${h}" rx="4"/>` : ""}<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6"/>${L.map((t,i) => `<text x="${x+w/2}" y="${y+h/2+4-(L.length-1)*7+i*14}">${t}</text>`).join("")}</g>`; });
+  const cyl = (cx, y) => `<rect x="${cx-14}" y="${y}" width="28" height="26"/><path d="M${cx-14},${y}a14,5 0 0 0 28,0a14,5 0 0 0 -28,0"/><path d="M${cx-14},${y+26}a14,5 0 0 0 28,0" style="fill:none"/>`;
+  s += `<g class="nd" id="n-dbs">${cyl(245,26)}${cyl(272,52)}</g>`;
+  s += `<g class="nd" id="n-ref"><circle cx="90" cy="200" r="34"/><text x="90" y="204">refine!</text></g>`;
+  s += `<g class="nd" id="n-bulb"><circle cx="345" cy="384" r="16"/><path d="M337,400h16v10h-16z"/></g>`;
+  $("#flow").innerHTML = s;
+  const STP = [
+    ["1","Goal Identification",[],[],"<ul class='clean'><li>Understand your application domain</li><li>Obtain prior known knowledge to help the discovery process and to help set up the goal</li><li>e.g., credit card issuing company: business: hard to retain customers; goal: to find out what characteristics defecting customers share</li></ul>"],
+    ["2","Data Collection and Selection",["data","dbs"],["sel"],"<ul class='clean'><li>What are some of the characteristics that would possibly affect how likely a customer would defect? name? address? age? salary level? education?</li><li>Where can I find all this data?</li><li>If the data is scattered among various databases, shall I find a single place to store them (for later mining)? A data warehouse?</li></ul>"],
+    ["3","Data Cleaning and Preprocessing",["dbs","cleaned"],["cln"],"<ul class='clean'><li>Business data is usually incomplete with missing (and incorrect) values, e.g., operator errors, data entry errors, system measurement failures, database schema revision</li><li>Missing data has to be either (1) thrown away, or (2) filled in</li><li>To avoid incorrect data from affecting the performance of the KDD process, noise (or outliers) has to be detected</li></ul>"],
+    ["4","Data Reduction and Transformation",["cleaned","tr"],["red"],"<ul class='clean'><li>Compact data into a form that is less bulky than the original raw data</li><li>Improve the efficiency of the data mining algorithm</li><li>e.g., data summarization, attribute selection, sampling, generalization</li></ul>"],
+    ["5–7","Data Mining",["tr","alg","res"],["ta","ar"],"<ul class='clean'><li>Step 5: pick a data mining model: association rules? classification? sequence analysis?</li><li>Step 6: pick a data mining algorithm: the Apriori algorithm, decision-tree classifier, neural-network classifier</li><li>Step 7: apply the algorithm to the data</li></ul>"],
+    ["8","Result Evaluation",["res","ev"],["re"],"<ul class='clean'><li>Check if the results obtained satisfy your goals, e.g., classifier's accuracy</li><li>If not, refine some of the steps and re-run</li></ul>"],
+    ["9","Knowledge Consolidation",["bulb","kb"],["eb","bk"],"<p>Document and report the useful knowledge to the users.</p>"],
+  ];
+  const host = $("#kSteps"); let cur = 0, ref = false;
+  STP.forEach((t,i) => { const b = document.createElement("button"); b.setAttribute("role","tab"); b.innerHTML = `<span class="s">Step ${t[0]}</span><b style="font-size:.86rem;line-height:1.2">${t[1]}</b>`; b.onclick = () => pick(i); host.appendChild(b); });
+  function paint(){
+    const t = STP[cur];
+    $$("#flow .nd").forEach(g => g.classList.toggle("hi", t[2].includes(g.id.slice(2)) || (ref && g.id==="n-ref")));
+    $$("#flow .ed").forEach(g => g.classList.toggle("hi", t[3].includes(g.id.slice(2)) || (ref && g.id==="e-ns")));
+    $("#rfl").classList.toggle("hi", ref);
+  }
+  function pick(i){ cur = i; $$("button", host).forEach((b,k) => b.setAttribute("aria-selected", String(k===i))); const t = STP[i]; $("#kNum").textContent = "Step " + t[0]; $("#kTitle").textContent = t[1]; $("#kText").innerHTML = t[4]; paint(); }
+  $("#kRefine").onclick = () => { ref = !ref; $("#kRefine").setAttribute("aria-pressed", String(ref)); $("#kRefine").textContent = ref ? "Hide the refine loop" : "Not satisfied: refine!"; paint(); };
+  pick(0);
+})();
+
+/* ---------------- presentation mode: one board per screen ---------------- */
+(function present(){
+  const root = document.documentElement, mainEl = $("main");
+  const slides = $$("main > section.board, main > .part-break");
+  if (!slides.length) return;
+  const ico = {
+    play:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>',
+    prev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+    next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>',
+    fs:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+    fsx:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>',
+    close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+  };
+  const mk = (tag, cls, html, label) => { const e = document.createElement(tag); e.className = cls; if (html) e.innerHTML = html; if (label){ e.setAttribute("aria-label", label); e.title = label; } return e; };
+  const startBtn = mk("button", "present-btn", ico.play + "<span>Present</span>", "Present: one board at a time, full screen (P)");
+  const prog = mk("div", "deck-ui deck-progress");
+  const sidePrev = mk("button", "deck-ui deck-side prev", ico.prev, "Previous board (←)");
+  const sideNext = mk("button", "deck-ui deck-side next", ico.next, "Next board (→)");
+  const bar = mk("div", "deck-ui deck-bar"); bar.setAttribute("role", "toolbar"); bar.setAttribute("aria-label", "Presentation controls");
+  const bPrev = mk("button", "", ico.prev, "Previous board (←)"), bNext = mk("button", "", ico.next, "Next board (→)");
+  const count = mk("span", "deck-count"); count.setAttribute("aria-live", "polite");
+  const bFs = mk("button", "", ico.fs, "Full screen (F)"), bExit = mk("button", "", ico.close, "End presentation (Esc)");
+  bar.append(bPrev, count, bNext, bFs, bExit);
+  document.body.append(startBtn, prog, sidePrev, sideNext, bar);
+  const spacer = mk("div", "deck-ui deck-spacer"); mainEl.appendChild(spacer);
+  const keysHint = $(".rail .keys");
+  if (keysHint) keysHint.innerHTML = 'Press <kbd>P</kbd> to present one board at a time, then <kbd>←</kbd> <kbd>→</kbd>. <kbd>F</kbd> toggles full screen.';
+
+  let idx = 0, on = false, fsByUs = false;
+  const label = el => el.dataset.nav || (el.querySelector("h2") ? el.querySelector("h2").textContent : "");
+  const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+  function enterFs(){ const f = root.requestFullscreen || root.webkitRequestFullscreen; if (!f || fsEl()) return; try { const p = f.call(root); fsByUs = true; if (p && p.catch) p.catch(() => { fsByUs = false; }); } catch(e){ fsByUs = false; } }
+  function exitFs(){ const f = document.exitFullscreen || document.webkitExitFullscreen; if (f && fsEl()){ try { const p = f.call(document); if (p && p.catch) p.catch(() => {}); } catch(e){} } }
+  function fsIcon(){ const isFs = !!fsEl(); bFs.innerHTML = isFs ? ico.fsx : ico.fs; bFs.title = isFs ? "Exit full screen (F)" : "Full screen (F)"; bFs.setAttribute("aria-label", bFs.title); }
+
+  function fit(){
+    if (!on) return;
+    const el = slides[idx], vw = innerWidth, vh = innerHeight;
+    const narrow = vw < 700, pad = narrow ? 18 : 84, barH = 70, topPad = 22;
+    const W = Math.min(1180, vw - 2*pad);
+    root.style.setProperty("--deck-w", W + "px");
+    root.style.setProperty("--deck-s", 1);
+    const h = el.offsetHeight;
+    // phones: keep full size and scroll; larger screens: scale the board to fit the screen
+    let s = narrow ? 1 : Math.max(0.6, Math.min(1.6, (vw - 2*pad) / W, (vh - barH - topPad) / h));
+    const top = Math.max(topPad, (vh - barH - h*s) / 2 + 6);
+    root.style.setProperty("--deck-s", s.toFixed(4));
+    root.style.setProperty("--deck-top", top + "px");
+    spacer.style.top = (top + h*s + barH + 10) + "px";
+    // canvases size themselves from their on-screen box, so nudge them to redraw at the new scale
+    $$("canvas.cv, .cv", el).forEach(c => { c.style.width = "calc(100% - 1px)"; requestAnimationFrame(() => { c.style.width = ""; }); });
+  }
+  function show(i){
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((el, k) => el.classList.toggle("is-current", k === idx));
+    mainEl.scrollTop = 0;
+    count.textContent = `${idx + 1} / ${slides.length} · ${label(slides[idx])}`;
+    prog.style.width = ((idx + 1) / slides.length * 100) + "%";
+    bPrev.disabled = sidePrev.disabled = idx === 0;
+    bNext.disabled = sideNext.disabled = idx === slides.length - 1;
+    const b = boards.indexOf(slides[idx]); if (b >= 0) current = b;
+    requestAnimationFrame(fit);
+  }
+  function start(){
+    if (on) return;
+    on = true; root.classList.add("presenting");
+    let i = slides.indexOf(boards[current]); if (i < 0) i = 0;
+    enterFs(); show(i);
+  }
+  function stop(){
+    if (!on) return;
+    on = false; root.classList.remove("presenting");
+    slides.forEach(el => el.classList.remove("is-current"));
+    if (fsByUs) exitFs(); fsByUs = false;
+    const el = slides[idx];
+    requestAnimationFrame(() => el.scrollIntoView({block: "start"}));
+  }
+  startBtn.onclick = start;
+  bPrev.onclick = sidePrev.onclick = () => show(idx - 1);
+  bNext.onclick = sideNext.onclick = () => show(idx + 1);
+  bExit.onclick = stop;
+  bFs.onclick = () => { if (fsEl()) { fsByUs = false; exitFs(); } else enterFs(); };
+  const onFs = () => { fsIcon(); if (on && !fsEl() && fsByUs){ fsByUs = false; stop(); } else requestAnimationFrame(fit); };
+  document.addEventListener("fullscreenchange", onFs); document.addEventListener("webkitfullscreenchange", onFs);
+  addEventListener("resize", () => requestAnimationFrame(fit));
+  new ResizeObserver(() => { if (on) requestAnimationFrame(fit); }).observe(mainEl);
+  slides.forEach(el => new ResizeObserver(() => { if (on && el.classList.contains("is-current")) fit(); }).observe(el));
+
+  // keys: capture phase so the scrolling navigation never sees them while presenting
+  addEventListener("keydown", e => {
+    const t = e.target, typing = t.closest && t.closest("input,textarea,select,[contenteditable]");
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!on){
+      if (!typing && (e.key === "p" || e.key === "P")){ e.preventDefault(); start(); }
+      return;
+    }
+    if (typing) return;
+    const onBtn = t.closest && t.closest("button,a,summary");
+    let handled = true;
+    if (e.key === "ArrowRight" || e.key === "PageDown" || (e.key === " " && !onBtn) || (e.key === "Enter" && !onBtn)) show(idx + 1);
+    else if (e.key === "ArrowLeft" || e.key === "PageUp" || e.key === "Backspace") show(idx - 1);
+    else if (e.key === "Home") show(0);
+    else if (e.key === "End") show(slides.length - 1);
+    else if (e.key === "Escape") stop();
+    else if (e.key === "f" || e.key === "F") bFs.onclick();
+    else if (e.key === "p" || e.key === "P") stop();
+    else handled = false;
+    if (handled){ e.preventDefault(); e.stopImmediatePropagation(); e.stopPropagation(); }
+  }, true);
+
+  // swipe on touch screens, but not on demos that use dragging
+  let sx = 0, sy = 0, swipe = false;
+  mainEl.addEventListener("touchstart", e => { if (!on || e.touches.length !== 1) return; swipe = !e.target.closest("canvas,.scene,input,select,button,svg,.tbl-wrap"); sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, {passive: true});
+  mainEl.addEventListener("touchend", e => { if (!on || !swipe) return; const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy; if (Math.abs(dx) > 60 && Math.abs(dy) < 50) show(idx + (dx < 0 ? 1 : -1)); }, {passive: true});
+})();
+})();
+</script>
+
+</body>
+</html>
