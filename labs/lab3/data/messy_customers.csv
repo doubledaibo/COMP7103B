@@ -1,0 +1,101 @@
+customer_id,name,company,district,phone,email,signup_date,parcel_weight
+C015,  Fung  Hung  Siu ,Victoria Print Works Ltd,Sha Tin,6275-6966,hungsiu.fung@example.com,30 May 2023,4.56kg
+C057,Siu Shan Kwok,peak digital ltd ,Kln City,9212-3567,shankwok.siu@example.com,19.09.2024,3.44kg
+C038,CHEUNG CHUN WAI,Harbour Logistics Ltd,Eastern,9566-2832,chunwai.cheung@example.com,18/02/2024,"1,560 g"
+C042,cheung ka man,Sai Kung Seafood Ltd.,kwai tsing,6879 9786,,14.04.2024,8.66 kg
+C091,Tang Ka Chun,Lion Rock Software Ltd,tai po,9357 8151,kachun.tang@example.com,2025-11-06,3.90 kg
+C011,NG WAI YAN,Harbour Logistics Limited,Wanchai,68654727,waiyan.ng@example.com,2023-05-12,15.37 lb
+C044,lam wai sze,Harbour Logistics Ltd,tuen mun,62735208,waisze.lam@example.com,07/05/2024,4.25 lb
+C070,Chow Siu Ting,Kowloon Fresh Foods Ltd,unknown,9556 7984,siuting.chow@example.com,10/03/2025,16.87 lb
+C017,LAU SZE CHUN,Harbour Logistics LTD,Yau Tsim Mong,5785 8579,szechun.lau@example.com,03 Jun 2023,"7,740 g"
+C005,ho ling chun,Lantau Bay Trading Co. Ltd,Islands,5327 0399,Lingchun.ho@example.com,30/01/2023,9.02 kg
+C046,Chan Suet Yan,sai kung seafood ltd,Sha Tin,57899577,suetyan.chan@example.com,2024-05-16,"4,530 g"
+C012,tang ho suet,Pearl River Packaging Ltd,Yuen Long,9962 7258,Hosuet.tang@example.com,2023-05-18,"1,640 g"
+C002,Leung Suet Wai,VICTORIA PIRNT WORKS LTD,WTS,9562 6268,suetwai.leung@example.com,03 Jan 2023,6.18 kg
+C081,TANG KIT LING,Lion Rock Software Ltd.,WTS,9745 5178,kitling.tang@example.com,21/07/2025,"7,400 g"
+C095,  Ho  Wai  Tai ,Sai Kung Seafood Ltd,North District,+852 5920 4944,waitai.ho@example.com,25 Jan 2025,4.81 kg
+C058,Chan Kwok Hung,kowloon fresh foods ltd,yau tsim mong,5688-4664,kwokhung.chan@example.com,21 Oct 2024,4.14 kg
+C014,YEUNG LING KIT,Peak Digital ,Kwun Tong,+852 9648 1132,lingkit.yeung@example.com,2023-05-28,6.19 lb
+C027,tsang yan yuk,Lantau Bay Trading Limited,Tuenmun,9152-1332,yanyuk.tsang@example.com,2023-09-12,10.71 lb
+C006,LEE YAN MAN,Sai Kung Seafood Co. Ltd,Saikung,(852) 58596958,yanman.lee@example.com,2023-03-04,7.19 kg
+C010,Yip Man Ling,Victoria Print Works Ltd,wong tai sin,+852 5190 5404,manling.yip@example.com,10.05.2023,7.84kg
+C047,Tsang Yan Wing,SAI KUNG SEAFOOD LTD,Sham Shui Po,+852 9111 5146,yanwing.tsang@example.com,19.05.2024,"9,250 g"
+C098,tsang yan yuk,lantau bay trading ltd,Tuen Mun,+852 9152 1332,yanyuk.tsang@example.com,19/11/2023,4.86kg
+C065,TANG HOI FUNG,sai kung seafood limited,Wong Tai Sin,6431 1065,hoifung.tang@example.com,24.12.2024,5.12 kg
+C089,  Kwok  Wing  Ting ,Victoria Print Works ,Sha Tin,9073-2560,wingting.kwok@example.com,2025-10-13,3.69kg
+C088,NG SHAN CHI,sai kung seafood ltd.,kwai tsing,(852) 93080687,,04 Oct 2025,"1,540 g"
+C069,Choi Yuk Ka,Lantau Bay Trading Ltd,tuen mun,5137 0074,yukka.choi@example.com,15 Feb 2025,5.57kg
+C064,YIP WAI SUET,Kowolon Fresh Foods Ltd,Wan Chai,(852) 63089963,waisuet.yip@example.com,20 Dec 2024,"1,540 g"
+C041,chan kwok kit,Victoria Print Works Ltd,Tuen Mun,(852) 59978902,kwokkit.chan@example.com,11 Apr 2024,16.86kg
+C033,ng man man,Peak Digital Ltd ,Central and Western,(852) 69572896,manman.ng@example.com,2023-11-23,24.89 lb
+C066,  Chan  Ka  Chun ,Lantau Bay Trading Limited,Wong Tai Sin,+852 5414 4280,kachun.chan@example.com,28 Jan 2025,10.78 lb
+C077,Ho Pui Suet,Pearl River Packaging Ltd,Yuen Long,+852 9305 6573,puisuet.ho@example.com,19 Jun 2025,19.97 lb
+C096,  Lam  Chi  Hung ,Kowloon Fresh Foods Ltd ,sha tin,(852) 50263098,-,18.08.2024,8.46 kg
+C004,HO KA HUNG,Lion Rock Software LTD ,tai po,65269272,Kahung.ho@example.com,23 Jan 2023,5.42kg
+C074,  Chow  Kit  Wing ,Victoria Print Works Ltd,Yuenlong,5094-0757,kitwing.chow@example.com,07.05.2025,"10,450 g"
+C039,CHEUNG MEI LING,lantau bay trading ltd,Sham Shui Po,5817 7238,Meiling.cheung@example.com,16/03/2024,7.90 kg
+C082,Lo Lai Kit,Harbour Logsitics Ltd,kwai tsing,55552120,laikit.lo@example.com,24 Jul 2025,0.78kg
+C043,tang man siu,Victoria Print Works Ltd,Kln City,+852 6722 7725,mansiu.tang@example.com,24/04/2024,"4,650 g"
+C045,Ng Yuk Yin,Peak Digital,Sai Kung,93364666,unknown,08 May 2024,3.79 lb
+C021,Fung Ho Man,LANTAU BAY TRADING LTD,WTS,51923479,homan.fung@example.com,2023-08-19,8.69 lb
+C052,Chow Kit Hung,Victoria Pirnt Works ,N/A,(852) 58780538,kithung.chow@example.com,11.07.2024,"6,750 g"
+C055,Yeung Hung Ka,Lantau Bay Trading Ltd,YTM,6572-2545,Hungka.yeung@example.com,15 Aug 2024,4.52 kg
+C099,Leung Suet Wai,victoria print works ltd,WTS,9562 6268,suetwai.leung@example.com,21/07/2023,"6,180 g"
+C022,FUNG LAN MAN,Sai Kung Seafood Ltd,WTS,9116 9234,Lanman.fung@example.com,29.08.2023,6.99 kg
+C026,Mak Hung Ling,VICTORIA PRINT WORKS LTD,Saikung,9617 7888,Hungling.mak@example.com,11 Sep 2023,"10,030 g"
+C016,siu sze sze,Harbour Logistics LTD,tuen mun,+852 5793 1294,szesze.siu@example.com,03.06.2023,5.95 lb
+C030,Ng Yin Ling,Kowloon Fresh Foods Limited,Sham Shui Po,+852 5474 9896,yinling.ng@example.com,2023-10-01,3.30kg
+C008,Cheung Suet Chi,Kowloon Fresh Foods Co. Ltd,tuen mun,+852 5050 3862,suetchi.cheung@example.com,2023-04-12,8.70 kg
+C003,Wong Wing Wai,Harbour Logistics Ltd,Sha Tin,(852) 99562006,Wingwai.wong@example.com,05 Jan 2023,"2,490 g"
+C040,CHOW TAI YAN,Sai Kung Seafood Ltd,Yau Tsim Mong,+852 9593 9122,taiyan.chow@example.com,2024-04-08,3.53 kg
+C024,Choi Ling Mei,Lantau Bay Trading Co. Ltd,Taipo,+852 9098 0686,Lingmei.choi@example.com,2023-09-02,1.66kg
+C001,LEE KWOK SIU,Lantau Bay Trading Ltd ,southern,9688-2615,kwoksiu.lee@example.com,03 Jan 2023,14.90 lb
+C097,Lee Ka Man,lantau bay trading ltd,sai kung,(852) 52587050,Kaman.lee@example.com,17 Apr 2025,"9,660 g"
+C078,Cheung Kwok Ho,Harbour Logistics LTD,Central and Western,6434 9667,kwokho.cheung@example.com,23 Jun 2025,16.69 lb
+C007,SIU PUI SHAN,Victoria Print Works LTD,Tsuen wan,+852 9096 3330,puishan.siu@example.com,19.03.2023,"3,810 g"
+C059,chow wing hoi,Sai Kung Seafood Limited,sham shui po,+852 5879 1059,winghoi.chow@example.com,26/10/2024,11.53 lb
+C080,Siu Hoi Kwok,Lion Rock Software Ltd,Islands,51644328,hoikwok.siu@example.com,17 Jul 2025,3.35kg
+C090,Tang Chi Siu,Lion Rock Software Ltd.,Tuenmun,(852) 96928696,chisiu.tang@example.com,05 Nov 2025,"3,340 g"
+C094,  Fung  Kwok  Sze ,Sai Kung Seafood Ltd,,5608 6096,kwoksze.fung@example.com,2025-12-29,13.46kg
+C009,Ng Lan Hung,Lion Rock Software Ltd,Wongtaisin,(852) 59387318,lanhung.ng@example.com,05.05.2023,2.46 kg
+C075,  Wong  Wing  Ting ,Lion Rock Software LTD,North,+852 5491 3642,wingting.wong@example.com,01.06.2025,2.06 kg
+C018,siu hung lai,Harbour Logistics Ltd,Saikung,9183 5691,hunglai.siu@example.com,12/06/2023,3.63kg
+C037,LEE YIN CHUN,Kowloon Fresh Foods Ltd,Wanchai,5991 4145,yinchun.lee@example.com,15/02/2024,8.81 kg
+C054,Tsang Hung Hoi,Harbour Logistics Ltd,Islands,+852 9193 2969,Hunghoi.tsang@example.com,14 Aug 2024,3.20 kg
+C031,cheung kwok yin,Pearl River Packaging Ltd,SSP,6608 6568,-,22.10.2023,1.77kg
+C013,Mak Wai Ling,Sai Kung Seafood Ltd,north,67805954,-,26.05.2023,1.60 kg
+C036,  Choi  Chi  Ho ,Peak Digital Ltd,Eastern District,9978 1047,Chiho.choi@example.com,20 Jan 2024,"2,480 g"
+C067,LAU KA CHUN,Kwoloon Fresh Foods Ltd.,kwun tong,(852) 66596952,kachun.lau@example.com,05.02.2025,9.81 lb
+C051,Choi Yuk Ting,peak digital ltd,central and western,9504-2304,yukting.choi@example.com,21.06.2024,9.99 lb
+C085,Choi Sze Wing,Lion Rock Software Ltd,Yuen Long,6683 5840,Szewing.choi@example.com,2025-08-10,2.67 kg
+C079,Choi Siu Chi,victoria print works ltd ,Kowloon City,6636 6697,Siuchi.choi@example.com,01.07.2025,"4,080 g"
+C048,Mak Chi Tai,LANTAU BAY TRADING CO. LTD,Tsuen Wan,5827-6487,chitai.mak@example.com,25.05.2024,3.38 kg
+C049,tang wai pui,Peak Digital Limited,Wong Tai Sin,(852) 61047299,Waipui.tang@example.com,06 Jun 2024,0.94kg
+C071,Lee Ka Man,Lantau Bay Trading Co. Ltd,sai kung,5258-7050,kaman.lee@example.com,15.03.2025,"9,660 g"
+C073,Wong Kwok Pui,Peak Digital Ltd,southern,+852 5614 9847,kwokpui.wong@example.com,30.04.2025,8.73kg
+C068,Mak Chi Lan,PEAK DIGITAL CO. LTD,sai kung,(852) 66801701,Chilan.mak@example.com,05 Feb 2025,"5,410 g"
+C086,Lee Yin Ho,Kowloon Fresh Foods Co. Ltd,Southern,6510-2138,yinho.lee@example.com,2025-08-11,2.72 kg
+C092,chow ling mei,victoria print works ltd,-,6428-5775,lingmei.chow@example.com,2025-11-23,"5,650 g"
+C060,yip ho suet,Lantau Bay Trading Limited,Kowloon City,6413 1178,hosuet.yip@example.com,18/11/2024,4.63 lb
+C056,Tsang Lai Lai,Pearl River Packaging Co. Ltd ,Kwun Tong,+852 6852 5149,Lailai.tsang@example.com,21.08.2024,7.09 kg
+C083,wong ka lai,Harbour Logistics LTD,Tai Po,9460 6271,kalai.wong@example.com,2025-08-05,9.17kg
+C029,mak man ka,SAI KUNG SEAFOOD LTD,sham shui po,+852 6466 4746,manka.mak@example.com,2023-09-22,"3,650 g"
+C072,mak kit ka,Harbour Logistics Ltd,southern,6391-5853,Kitka.mak@example.com,17 Apr 2025,1.25 kg
+C053,LAM CHI HUNG,Kowloon Fresh Foods Ltd,sha tin,5026 3098,-,2024-07-13,18.65 lb
+C019,Tsang Hoi Man,Lion Rock Software Ltd,kowloon city,(852) 50766743,Hoiman.tsang@example.com,12/07/2023,9.99 lb
+C061,Lo Kwok Lai,sai kung seafood,Tuen Mun,6650-7619,kwoklai.lo@example.com,05/12/2024,5.38 kg
+C020,cheung ting wai,Sai Kung Seafood Ltd ,Tai Po,+852 9381 9638,tingwai.cheung@example.com,17 Jul 2023,19.11 lb
+C076,Yeung Ka Ling,Peak Digital LTD,Yau Tsim Mong,6654 6474,kaling.yeung@example.com,2025-06-16,2.61 kg
+C084,CHOW HO CHI,Pearl River Packaging Co. Ltd,Wongtaisin,5711 7161,hochi.chow@example.com,10/08/2025,3.34 kg
+C062,cheung man suet,Lantau Bay Trading Limited,Southern Dist.,6636 1570,mansuet.cheung@example.com,15 Dec 2024,2.88 kg
+C035,Tang Hung Lai,Kowloon Fresh Foods Ltd,Wong Tai Sin,+852 5654 8730,hunglai.tang@example.com,03.01.2024,10.65 lb
+C063,Ho Wai Tai,SAI KUNG SEFAOOD LTD,North District,5920 4944,Waitai.ho@example.com,2024-12-19,4.81kg
+C034,leung ho fung,Pearl River Packaging,Central & Western,(852) 91192207,hofung.leung@example.com,09/12/2023,6.19 lb
+C028,WONG TAI HO,victoria print works ltd,Wong Tai Sin,6649-3416,taiho.wong@example.com,2023-09-14,4.67kg
+C093,Cheung Yan Ka,lion rock software,N/A,6599-0676,yanka.cheung@example.com,2025-12-24,33.11 lb
+C100,Lo Lai Kit,harbour logistics ltd,Kwai Tsing,55552120,laikit.lo@example.com,10 Dec 2025,780 g
+C087,Fung Chi Wai,Kowloon Fresh Foods LTD ,Southern,(852) 95496417,chiwai.fung@example.com,25.08.2025,5.06 kg
+C025,leung wai yan,peak digital limited,Tuen Mun,9583-8783,Waiyan.leung@example.com,05.09.2023,4.39 lb
+C050,Lo Yin Tai,Pearl River Packaging Ltd,Eastern,5143 5255,yintai.lo@example.com,09/06/2024,"5,830 g"
+C032,Tsang Ho Hung,Peak Digital Lmiited,north,(852) 98157800,hohung.tsang@example.com,2023-10-22,2.81 kg
+C023,  Mak  Sze  Ka ,Victoria Print Works Ltd,Tuen Mun,9242-1679,szeka.mak@example.com,2023-08-31,5.24 kg

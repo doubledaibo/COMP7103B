@@ -1,0 +1,95 @@
+customer_id,name,company,district,phone,email,signup_date,parcel_weight_kg
+C001,Lee Kwok Siu,Lantau Bay Trading Ltd,Southern,96882615,kwoksiu.lee@example.com,2023-01-03,6.76
+C002,Leung Suet Wai,Victoria Print Works Ltd,Wong Tai Sin,95626268,suetwai.leung@example.com,2023-01-03,6.18
+C003,Wong Wing Wai,Harbour Logistics Ltd,Sha Tin,99562006,wingwai.wong@example.com,2023-01-05,2.49
+C004,Ho Ka Hung,Lion Rock Software Ltd,Tai Po,65269272,kahung.ho@example.com,2023-01-23,5.42
+C005,Ho Ling Chun,Lantau Bay Trading Ltd,Islands,53270399,lingchun.ho@example.com,2023-01-30,9.02
+C006,Lee Yan Man,Sai Kung Seafood Ltd,Sai Kung,58596958,yanman.lee@example.com,2023-03-04,7.19
+C007,Siu Pui Shan,Victoria Print Works Ltd,Tsuen Wan,90963330,puishan.siu@example.com,2023-03-19,3.81
+C008,Cheung Suet Chi,Kowloon Fresh Foods Ltd,Tuen Mun,50503862,suetchi.cheung@example.com,2023-04-12,8.70
+C009,Ng Lan Hung,Lion Rock Software Ltd,Wong Tai Sin,59387318,lanhung.ng@example.com,2023-05-05,2.46
+C010,Yip Man Ling,Victoria Print Works Ltd,Wong Tai Sin,51905404,manling.yip@example.com,2023-05-10,7.84
+C011,Ng Wai Yan,Harbour Logistics Ltd,Wan Chai,68654727,waiyan.ng@example.com,2023-05-12,6.97
+C012,Tang Ho Suet,Pearl River Packaging Ltd,Yuen Long,99627258,hosuet.tang@example.com,2023-05-18,1.64
+C013,Mak Wai Ling,Sai Kung Seafood Ltd,North,67805954,,2023-05-26,1.60
+C014,Yeung Ling Kit,Peak Digital Ltd,Kwun Tong,96481132,lingkit.yeung@example.com,2023-05-28,2.81
+C015,Fung Hung Siu,Victoria Print Works Ltd,Sha Tin,62756966,hungsiu.fung@example.com,2023-05-30,4.56
+C016,Siu Sze Sze,Harbour Logistics Ltd,Tuen Mun,57931294,szesze.siu@example.com,2023-06-03,2.70
+C017,Lau Sze Chun,Harbour Logistics Ltd,Yau Tsim Mong,57858579,szechun.lau@example.com,2023-06-03,7.74
+C018,Siu Hung Lai,Harbour Logistics Ltd,Sai Kung,91835691,hunglai.siu@example.com,2023-06-12,3.63
+C019,Tsang Hoi Man,Lion Rock Software Ltd,Kowloon City,50766743,hoiman.tsang@example.com,2023-07-12,4.53
+C020,Cheung Ting Wai,Sai Kung Seafood Ltd,Tai Po,93819638,tingwai.cheung@example.com,2023-07-17,8.67
+C021,Fung Ho Man,Lantau Bay Trading Ltd,Wong Tai Sin,51923479,homan.fung@example.com,2023-08-19,3.94
+C022,Fung Lan Man,Sai Kung Seafood Ltd,Wong Tai Sin,91169234,lanman.fung@example.com,2023-08-29,6.99
+C023,Mak Sze Ka,Victoria Print Works Ltd,Tuen Mun,92421679,szeka.mak@example.com,2023-08-31,5.24
+C024,Choi Ling Mei,Lantau Bay Trading Ltd,Tai Po,90980686,lingmei.choi@example.com,2023-09-02,1.66
+C025,Leung Wai Yan,Peak Digital Ltd,Tuen Mun,95838783,waiyan.leung@example.com,2023-09-05,1.99
+C026,Mak Hung Ling,Victoria Print Works Ltd,Sai Kung,96177888,hungling.mak@example.com,2023-09-11,10.03
+C027,Tsang Yan Yuk,Lantau Bay Trading Ltd,Tuen Mun,91521332,yanyuk.tsang@example.com,2023-09-12,4.86
+C028,Wong Tai Ho,Victoria Print Works Ltd,Wong Tai Sin,66493416,taiho.wong@example.com,2023-09-14,4.67
+C029,Mak Man Ka,Sai Kung Seafood Ltd,Sham Shui Po,64664746,manka.mak@example.com,2023-09-22,3.65
+C030,Ng Yin Ling,Kowloon Fresh Foods Ltd,Sham Shui Po,54749896,yinling.ng@example.com,2023-10-01,3.30
+C031,Cheung Kwok Yin,Pearl River Packaging Ltd,Sham Shui Po,66086568,,2023-10-22,1.77
+C032,Tsang Ho Hung,Peak Digital Ltd,North,98157800,hohung.tsang@example.com,2023-10-22,2.81
+C033,Ng Man Man,Peak Digital Ltd,Central and Western,69572896,manman.ng@example.com,2023-11-23,11.29
+C034,Leung Ho Fung,Pearl River Packaging Ltd,Central and Western,91192207,hofung.leung@example.com,2023-12-09,2.81
+C035,Tang Hung Lai,Kowloon Fresh Foods Ltd,Wong Tai Sin,56548730,hunglai.tang@example.com,2024-01-03,4.83
+C036,Choi Chi Ho,Peak Digital Ltd,Eastern,99781047,chiho.choi@example.com,2024-01-20,2.48
+C037,Lee Yin Chun,Kowloon Fresh Foods Ltd,Wan Chai,59914145,yinchun.lee@example.com,2024-02-15,8.81
+C038,Cheung Chun Wai,Harbour Logistics Ltd,Eastern,95662832,chunwai.cheung@example.com,2024-02-18,1.56
+C039,Cheung Mei Ling,Lantau Bay Trading Ltd,Sham Shui Po,58177238,meiling.cheung@example.com,2024-03-16,7.90
+C040,Chow Tai Yan,Sai Kung Seafood Ltd,Yau Tsim Mong,95939122,taiyan.chow@example.com,2024-04-08,3.53
+C041,Chan Kwok Kit,Victoria Print Works Ltd,Tuen Mun,59978902,kwokkit.chan@example.com,2024-04-11,16.86
+C042,Cheung Ka Man,Sai Kung Seafood Ltd,Kwai Tsing,68799786,,2024-04-14,8.66
+C043,Tang Man Siu,Victoria Print Works Ltd,Kowloon City,67227725,mansiu.tang@example.com,2024-04-24,4.65
+C044,Lam Wai Sze,Harbour Logistics Ltd,Tuen Mun,62735208,waisze.lam@example.com,2024-05-07,1.93
+C045,Ng Yuk Yin,Peak Digital Ltd,Sai Kung,93364666,,2024-05-08,1.72
+C046,Chan Suet Yan,Sai Kung Seafood Ltd,Sha Tin,57899577,suetyan.chan@example.com,2024-05-16,4.53
+C047,Tsang Yan Wing,Sai Kung Seafood Ltd,Sham Shui Po,91115146,yanwing.tsang@example.com,2024-05-19,9.25
+C048,Mak Chi Tai,Lantau Bay Trading Ltd,Tsuen Wan,58276487,chitai.mak@example.com,2024-05-25,3.38
+C049,Tang Wai Pui,Peak Digital Ltd,Wong Tai Sin,61047299,waipui.tang@example.com,2024-06-06,0.94
+C050,Lo Yin Tai,Pearl River Packaging Ltd,Eastern,51435255,yintai.lo@example.com,2024-06-09,5.83
+C051,Choi Yuk Ting,Peak Digital Ltd,Central and Western,95042304,yukting.choi@example.com,2024-06-21,4.53
+C052,Chow Kit Hung,Victoria Print Works Ltd,,58780538,kithung.chow@example.com,2024-07-11,6.75
+C053,Lam Chi Hung,Kowloon Fresh Foods Ltd,Sha Tin,50263098,,2024-07-13,8.46
+C054,Tsang Hung Hoi,Harbour Logistics Ltd,Islands,91932969,hunghoi.tsang@example.com,2024-08-14,3.20
+C055,Yeung Hung Ka,Lantau Bay Trading Ltd,Yau Tsim Mong,65722545,hungka.yeung@example.com,2024-08-15,4.52
+C056,Tsang Lai Lai,Pearl River Packaging Ltd,Kwun Tong,68525149,lailai.tsang@example.com,2024-08-21,7.09
+C057,Siu Shan Kwok,Peak Digital Ltd,Kowloon City,92123567,shankwok.siu@example.com,2024-09-19,3.44
+C058,Chan Kwok Hung,Kowloon Fresh Foods Ltd,Yau Tsim Mong,56884664,kwokhung.chan@example.com,2024-10-21,4.14
+C059,Chow Wing Hoi,Sai Kung Seafood Ltd,Sham Shui Po,58791059,winghoi.chow@example.com,2024-10-26,5.23
+C060,Yip Ho Suet,Lantau Bay Trading Ltd,Kowloon City,64131178,hosuet.yip@example.com,2024-11-18,2.10
+C061,Lo Kwok Lai,Sai Kung Seafood Ltd,Tuen Mun,66507619,kwoklai.lo@example.com,2024-12-05,5.38
+C062,Cheung Man Suet,Lantau Bay Trading Ltd,Southern,66361570,mansuet.cheung@example.com,2024-12-15,2.88
+C063,Ho Wai Tai,Sai Kung Seafood Ltd,North,59204944,waitai.ho@example.com,2024-12-19,4.81
+C064,Yip Wai Suet,Kowloon Fresh Foods Ltd,Wan Chai,63089963,waisuet.yip@example.com,2024-12-20,1.54
+C065,Tang Hoi Fung,Sai Kung Seafood Ltd,Wong Tai Sin,64311065,hoifung.tang@example.com,2024-12-24,5.12
+C066,Chan Ka Chun,Lantau Bay Trading Ltd,Wong Tai Sin,54144280,kachun.chan@example.com,2025-01-28,4.89
+C067,Lau Ka Chun,Kowloon Fresh Foods Ltd,Kwun Tong,66596952,kachun.lau@example.com,2025-02-05,4.45
+C068,Mak Chi Lan,Peak Digital Ltd,Sai Kung,66801701,chilan.mak@example.com,2025-02-05,5.41
+C069,Choi Yuk Ka,Lantau Bay Trading Ltd,Tuen Mun,51370074,yukka.choi@example.com,2025-02-15,5.57
+C070,Chow Siu Ting,Kowloon Fresh Foods Ltd,,95567984,siuting.chow@example.com,2025-03-10,7.65
+C071,Lee Ka Man,Lantau Bay Trading Ltd,Sai Kung,52587050,kaman.lee@example.com,2025-03-15,9.66
+C072,Mak Kit Ka,Harbour Logistics Ltd,Southern,63915853,kitka.mak@example.com,2025-04-17,1.25
+C073,Wong Kwok Pui,Peak Digital Ltd,Southern,56149847,kwokpui.wong@example.com,2025-04-30,8.73
+C074,Chow Kit Wing,Victoria Print Works Ltd,Yuen Long,50940757,kitwing.chow@example.com,2025-05-07,10.45
+C075,Wong Wing Ting,Lion Rock Software Ltd,North,54913642,wingting.wong@example.com,2025-06-01,2.06
+C076,Yeung Ka Ling,Peak Digital Ltd,Yau Tsim Mong,66546474,kaling.yeung@example.com,2025-06-16,2.61
+C077,Ho Pui Suet,Pearl River Packaging Ltd,Yuen Long,93056573,puisuet.ho@example.com,2025-06-19,9.06
+C078,Cheung Kwok Ho,Harbour Logistics Ltd,Central and Western,64349667,kwokho.cheung@example.com,2025-06-23,7.57
+C079,Choi Siu Chi,Victoria Print Works Ltd,Kowloon City,66366697,siuchi.choi@example.com,2025-07-01,4.08
+C080,Siu Hoi Kwok,Lion Rock Software Ltd,Islands,51644328,hoikwok.siu@example.com,2025-07-17,3.35
+C081,Tang Kit Ling,Lion Rock Software Ltd,Wong Tai Sin,97455178,kitling.tang@example.com,2025-07-21,7.40
+C082,Lo Lai Kit,Harbour Logistics Ltd,Kwai Tsing,55552120,laikit.lo@example.com,2025-07-24,0.78
+C083,Wong Ka Lai,Harbour Logistics Ltd,Tai Po,94606271,kalai.wong@example.com,2025-08-05,9.17
+C084,Chow Ho Chi,Pearl River Packaging Ltd,Wong Tai Sin,57117161,hochi.chow@example.com,2025-08-10,3.34
+C085,Choi Sze Wing,Lion Rock Software Ltd,Yuen Long,66835840,szewing.choi@example.com,2025-08-10,2.67
+C086,Lee Yin Ho,Kowloon Fresh Foods Ltd,Southern,65102138,yinho.lee@example.com,2025-08-11,2.72
+C087,Fung Chi Wai,Kowloon Fresh Foods Ltd,Southern,95496417,chiwai.fung@example.com,2025-08-25,5.06
+C088,Ng Shan Chi,Sai Kung Seafood Ltd,Kwai Tsing,93080687,,2025-10-04,1.54
+C089,Kwok Wing Ting,Victoria Print Works Ltd,Sha Tin,90732560,wingting.kwok@example.com,2025-10-13,3.69
+C090,Tang Chi Siu,Lion Rock Software Ltd,Tuen Mun,96928696,chisiu.tang@example.com,2025-11-05,3.34
+C091,Tang Ka Chun,Lion Rock Software Ltd,Tai Po,93578151,kachun.tang@example.com,2025-11-06,3.90
+C092,Chow Ling Mei,Victoria Print Works Ltd,,64285775,lingmei.chow@example.com,2025-11-23,5.65
+C093,Cheung Yan Ka,Lion Rock Software Ltd,,65990676,yanka.cheung@example.com,2025-12-24,15.02
+C094,Fung Kwok Sze,Sai Kung Seafood Ltd,,56086096,kwoksze.fung@example.com,2025-12-29,13.46

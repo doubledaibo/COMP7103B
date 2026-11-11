@@ -1,0 +1,10 @@
+All files here are synthetic, written by make_data.py (seed 7103) for COMP7103 Lab 3. All people, companies,
+phone numbers and e-mail addresses are made up; districts are Hong Kong's 18 districts.
+messy_customers.csv: 94 customers plus 6 who registered twice, with typos, mixed formats, mixed units and missing values.
+clean_customers.csv: the hidden clean version (94 rows) that score() compares with.
+cleaning_rules.csv: the target format for each column. llm_prompts.json: the instructions for the LLM step.
+llm_fallback_district.txt, llm_fallback_company.txt: ready-made LLM answers, written by make_llm_fallback.py with
+Qwen/Qwen2.5-1.5B-Instruct (Apache 2.0) on CPU, bf16, greedy decoding, at most 24 new tokens. The model is asked one value
+at a time: the instructions from llm_prompts.json, then "1. <value>" (an empty value is shown as "(empty)").
+Only the first line of each answer is kept and a leading "1. " is removed; the answers are then numbered in the order
+of the notebook's list. No answer was edited by hand: stray formatting and wrong names are the model's own output.

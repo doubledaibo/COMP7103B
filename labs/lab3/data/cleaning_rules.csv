@@ -1,0 +1,10 @@
+column,target format
+customer_id,Keep as is.
+name,"Single spaces, Title Case: ""Chan Tai Man""."
+company,"One standard spelling per company: Title Case, correct spelling, ending in ""Ltd""."
+district,"One of Hong Kong's 18 districts, spelled as in the official list. Missing → empty."
+phone,"8 digits, no country code, spaces or dashes: ""91234567""."
+email,Lower case. Missing → empty.
+signup_date,YYYY-MM-DD. Dates such as 05/03/2024 are day first (5 March).
+parcel_weight_kg,"A number in kg with 2 decimals (1 lb = 0.45359237 kg, 1,000 g = 1 kg)."
+(rows),"A customer who registered twice (same name and phone) keeps only the first registration, the smaller customer_id."

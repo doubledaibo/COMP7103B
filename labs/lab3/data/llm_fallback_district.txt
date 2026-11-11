@@ -1,0 +1,50 @@
+1. (empty)
+2. (empty)
+3. Central and Western
+4. Central and Western
+5. Eastern
+6. Eastern
+7. Islands
+8. Kwun Tong
+9. (empty)
+10. Kwai Tsing
+11. Kwun Tong
+12. (empty)
+13. (empty)
+14. (empty)
+15. (empty)
+16. Sai Kung
+17. Sai Kung
+18. Sha Tin. Sha Tin
+19. Sham Shui Po
+20. Southern
+21. Southern
+22. Tai Po
+23. (empty)
+24. Tsuen Wan. Tsuen Wan
+25. Tsuen Wan
+26. Tuen Mun
+27. Tuen Mun
+28. (empty)
+29. Wan Chai
+30. Wong Tai Sin
+31. Wong Tai Sin
+32. (empty)
+33. Yau Tsim Mong
+34. Yau Tsim Mong
+35. Yuen Long. Yuen Long
+36. Yuen Long
+37. central and western
+38. Kwun Tong
+39. Kwai Tsing
+40. Kwun Tong
+41. (empty)
+42. Sai Kung
+43. Sha Tin.
+44. Sham Shui Po
+45. southern Southern
+46. Tai Po
+47. Tuen Mun
+48. (empty)
+49. Wong Tai Sin
+50. Yau Tsim Mong

@@ -1,0 +1,4 @@
+{
+ "district": "Standardize these Hong Kong district names. Map each value to one of Hong Kong's 18 districts, spelled exactly as in this list: Central and Western, Wan Chai, Eastern, Southern, Yau Tsim Mong, Sham Shui Po, Kowloon City, Wong Tai Sin, Kwun Tong, Kwai Tsing, Tsuen Wan, Tuen Mun, Yuen Long, North, Tai Po, Sha Tin, Sai Kung, Islands. If a value is empty or means \"missing\", write (empty). Return one line per input, in the same order, as \"number. name\". Return nothing else.",
+ "company": "Standardize these company names. Several spellings refer to the same company. Write each one in a single standard form: Title Case, correct spelling, ending in \"Ltd\". Return one line per input, in the same order, as \"number. name\". Return nothing else."
+}
