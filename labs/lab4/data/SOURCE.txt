@@ -1,0 +1,7 @@
+Synthetic churn data for COMP7103 Lab 4, made by make_data.py (numpy seed 7103). No real customers.
+800 customers; 200 of them are exported twice (identical rows), so the file has 1000 rows.
+Churn is drawn from a logistic model of the 7 customer columns (tenure_years, contract_months, support_calls_90d,
+fiber_internet, auto_pay, paperless_billing, senior).
+page_0001 ... page_3000 are pure noise: each is 1 for about 5 random rows, independent of churn.
+cancellation_fee_charged is planted target leakage: 1 for 95% of churners, 2% of stayers.
+Licence: CC0 (public domain).

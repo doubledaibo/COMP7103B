@@ -1,0 +1,2247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Data Quality and Preprocessing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&family=Unbounded:wght@600;700;800&display=swap">
+<style>
+/* Layout: a lecture rail on the left, one long column of numbered "boards" on the right; each board is one slide's idea, made interactive. */
+:root{
+  --bg:#F3F8F9; --surface:#FFFFFF; --surface-2:#E3F0F3; --ink:#0E2228; --muted:#4D666E; --line:#CBDDE2;
+  --accent:#04617B; --accent-2:#1489B0; --good:#0B8466; --signal:#BF2A2F; --warn:#B26A00;
+  --c1:#04617B; --c2:#1489B0; --c3:#0B8466; --c4:#BF2A2F; --c5:#7A5BB5;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#09161B; --surface:#0F2129; --surface-2:#153039; --ink:#E2F0F3; --muted:#92ADB5; --line:#244049;
+  --accent:#43C3DB; --accent-2:#8AD9EA; --good:#3FD69B; --signal:#FF6F6A; --warn:#F2B04A;
+  --c1:#43C3DB; --c2:#8AD9EA; --c3:#3FD69B; --c4:#FF6F6A; --c5:#B79BFF; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#09161B; --surface:#0F2129; --surface-2:#153039; --ink:#E2F0F3; --muted:#92ADB5; --line:#244049;
+  --accent:#43C3DB; --accent-2:#8AD9EA; --good:#3FD69B; --signal:#FF6F6A; --warn:#F2B04A;
+  --c1:#43C3DB; --c2:#8AD9EA; --c3:#3FD69B; --c4:#FF6F6A; --c5:#B79BFF; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;margin:0}
+.page{display:grid;grid-template-columns:210px minmax(0,1fr);gap:48px;max-width:1260px;margin:0 auto;padding-inline:24px;padding-block:28px 80px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.02;font-weight:700}
+h2{font-size:clamp(1.6rem,3vw,2.15rem);line-height:1.1;font-weight:700}
+h3{font-size:1.15rem;font-weight:600;line-height:1.25}
+p{margin:0}
+.lead{font-size:1.12rem;color:var(--muted);max-width:62ch}
+.mono{font-family:var(--mono)}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+
+/* rail */
+.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;max-height:calc(100vh - 48px);overflow:auto;font-size:.88rem}
+.rail .course{font-family:var(--mono);font-size:.75rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.rail .ltitle{font-family:var(--display);font-weight:700;font-size:1.05rem;line-height:1.2;margin:4px 0 18px}
+.rail ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.rail .part{font-family:var(--mono);font-size:.7rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin:14px 0 4px}
+.rail a{display:block;color:var(--muted);text-decoration:none;padding:4px 10px;border-radius:6px;border-left:2px solid transparent}
+.rail a:hover{color:var(--ink);background:var(--surface-2)}
+.rail a.on{color:var(--ink);background:var(--surface-2);font-weight:600}
+.rail .keys{margin-top:18px;color:var(--muted);font-size:.78rem}
+kbd{font-family:var(--mono);font-size:.75rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--surface)}
+
+main{min-width:0;display:grid;gap:88px}
+section.board{scroll-margin-top:24px;display:grid;gap:22px}
+.part-break{padding:26px 0 0;border-top:1px solid var(--line);display:grid;gap:6px}
+.part-break .n{font-family:var(--display);font-size:clamp(3rem,7vw,5rem);line-height:.9;color:var(--accent);font-weight:700}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:28px;align-items:center}
+.hero .meta{display:grid;gap:16px}
+.stage-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;cursor:pointer;font-size:.92rem}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"],.chip[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.scene{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:var(--r);background:radial-gradient(120% 90% at 30% 20%,var(--surface) 0%,var(--surface-2) 100%);overflow:hidden;touch-action:none}
+.scene canvas{display:block;width:100%!important;height:100%!important}
+.scene .hint{position:absolute;right:12px;bottom:10px;font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.scene .legend{position:absolute;left:12px;top:10px;font-family:var(--mono);font-size:.72rem;color:var(--muted);display:grid;gap:2px}
+.caption{min-height:4.8em;border-left:3px solid var(--accent);padding-left:14px}
+.caption b{font-weight:600}
+
+/* generic */
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:grid;gap:8px;align-content:start;min-width:0}
+.card .tag{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase}
+.card p{color:var(--muted)}
+.card.bad{background:color-mix(in srgb,var(--signal) 7%,var(--surface));border-color:color-mix(in srgb,var(--signal) 30%,var(--line))}
+.card.good{background:color-mix(in srgb,var(--good) 8%,var(--surface));border-color:color-mix(in srgb,var(--good) 30%,var(--line))}
+ul.clean{margin:0;padding-left:1.1em;display:grid;gap:6px}
+.note{font-size:.85rem;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;min-width:0}
+
+/* roadmap */
+.phases{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.phase{display:grid;gap:6px;align-content:start}
+.phase .pn{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-bottom:4px;border-bottom:2px solid var(--pc)}
+.wk{display:flex;gap:10px;align-items:baseline;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:.88rem;line-height:1.3}
+.wk .num{font-family:var(--mono);font-size:.8rem;color:var(--pc);font-weight:500;min-width:1.4em}
+.wk:hover{border-color:var(--pc)}
+.wk[aria-pressed="true"]{background:var(--surface-2);border-color:var(--pc);font-weight:600}
+.wkdetail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.wkdetail h4{margin:0 0 4px;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+/* assessment */
+.bars{display:grid;gap:14px}
+.barrow{display:grid;grid-template-columns:5.5em minmax(0,1fr);gap:12px;align-items:center}
+.barrow .lbl{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.bar{display:flex;height:54px;border-radius:8px;overflow:hidden;background:var(--surface-2)}
+.seg{display:flex;flex-direction:column;justify-content:center;padding:0 10px;color:#fff;font-size:.82rem;line-height:1.15;white-space:nowrap;overflow:hidden;transition:flex-basis .6s ease}
+.seg b{font-family:var(--mono);font-size:.95rem}
+.seg.ai{background:var(--c1)} .seg.ai2{background:var(--c3)} .seg.ex{background:#5B6F76}
+.legend-row{display:flex;gap:18px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* quiz */
+.quiz{display:grid;gap:12px}
+.q{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.q .opts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.q .opts button{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:6px 10px;font-size:.82rem;cursor:pointer}
+.q .opts button:hover{border-color:var(--accent)}
+.q .fb{grid-column:1/-1;font-size:.88rem;display:none}
+.q.done .fb{display:block}
+.q.right{border-color:var(--good)} .q.wrong{border-color:var(--signal)}
+.q.right .fb b{color:var(--good)} .q.wrong .fb b{color:var(--signal)}
+.q button.picked{background:var(--surface-2);font-weight:600}
+.score{font-family:var(--mono);font-size:.9rem;color:var(--muted)}
+
+/* playground */
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.play{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;align-items:start}
+.cv{width:100%;aspect-ratio:3/2;max-width:100%;display:block;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);touch-action:none;cursor:crosshair}
+.side{display:grid;gap:14px;min-width:0}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.stat .k{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stat .v{font-family:var(--mono);font-size:1.35rem;font-variant-numeric:tabular-nums}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--bg);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:.9rem;font-weight:500}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:hover{filter:brightness(1.08)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.items{display:flex;gap:6px;flex-wrap:wrap}
+.items button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:.85rem;cursor:pointer}
+.items button.a{background:var(--c1);border-color:var(--c1);color:var(--bg)}
+.items button.c{background:var(--c4);border-color:var(--c4);color:var(--bg)}
+.tx{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;font-family:var(--mono);font-size:.8rem}
+.tx div{border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--surface);color:var(--muted)}
+.tx div.hitA{border-color:var(--c1);color:var(--ink)}
+.tx div.hit{border-color:var(--c4);background:color-mix(in srgb,var(--c4) 10%,var(--surface));color:var(--ink)}
+.tx-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+
+/* kdd */
+.stage-panel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.stage-panel h4{margin:0 0 6px;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stage-panel .fail{color:var(--signal)}
+.scene.wide{aspect-ratio:16/7}
+
+/* stepper */
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.steps button{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 12px;cursor:pointer;display:grid;gap:2px}
+.steps button .s{font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.steps button[aria-selected="true"]{border-color:var(--accent);background:var(--surface-2)}
+.exflow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+
+/* case */
+.case{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.agent{font-family:var(--mono);font-size:.92rem;background:var(--surface-2);border-radius:8px;padding:14px 16px;line-height:1.5}
+.feat{display:grid;gap:8px}
+.feat label{display:flex;gap:10px;align-items:center;cursor:pointer;font-family:var(--mono);font-size:.88rem}
+.feat input{accent-color:var(--accent);width:18px;height:18px}
+.meter{height:12px;border-radius:6px;background:var(--surface-2);position:relative;overflow:hidden}
+.meter i{position:absolute;inset:0 auto 0 0;background:var(--accent);transition:width .5s ease}
+.meter .base{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.verdict{border-radius:8px;padding:12px 14px;font-size:.92rem}
+.verdict.leak{background:color-mix(in srgb,var(--signal) 12%,var(--surface));color:var(--ink);border:1px solid var(--signal)}
+.verdict.meh{background:color-mix(in srgb,var(--warn) 12%,var(--surface));border:1px solid var(--warn)}
+.verdict.ok{background:color-mix(in srgb,var(--good) 10%,var(--surface));border:1px solid var(--good)}
+
+/* table */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:.92rem;background:var(--surface)}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface-2)}
+td:first-child{font-weight:600}
+tr:last-child td{border-bottom:none}
+
+/* checklist */
+.checks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.check{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--good);margin-top:3px}
+.check:has(input:checked){border-color:var(--good);background:color-mix(in srgb,var(--good) 7%,var(--surface))}
+.check b{display:block;margin-bottom:2px}
+.check span{color:var(--muted);font-size:.92rem}
+.progress{font-family:var(--mono);font-size:.9rem;color:var(--muted)}
+
+.lab{counter-reset:s;display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.lab li{display:grid;grid-template-columns:2.4em minmax(0,1fr);gap:12px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.lab li::before{counter-increment:s;content:counter(s);font-family:var(--display);font-weight:700;font-size:1.5rem;color:var(--accent)}
+.lab li.key::before{color:var(--signal)}
+.next{background:var(--accent);color:var(--bg);border-radius:var(--r);padding:20px 22px;display:grid;gap:4px}
+.next .eyebrow{color:var(--bg);opacity:.8}
+
+@media (max-width:980px){
+  .page{grid-template-columns:minmax(0,1fr);gap:24px;padding-inline:16px}
+  .rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);max-height:none;padding-block:8px;border-bottom:1px solid var(--line);margin-inline:-16px;padding-inline:16px}
+  .rail .course,.rail .ltitle,.rail .part,.rail .keys{display:none}
+  .rail ol{display:flex;overflow-x:auto;gap:4px;scrollbar-width:none}
+  .rail a{white-space:nowrap}
+  .hero,.play,.case,.tx-wrap{grid-template-columns:minmax(0,1fr)}
+  .phases{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid4,.checks{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stage-panel,.wkdetail,.exflow{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:620px){
+  .grid3,.grid2,.grid4,.checks,.phases,.steps{grid-template-columns:minmax(0,1fr)}
+  .q{grid-template-columns:minmax(0,1fr)} .q .opts{justify-content:flex-start}
+  .scene.wide{aspect-ratio:4/3}
+  main{gap:64px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---- chapter 1 ---- */
+main a{color:var(--accent)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.lab-s{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);min-width:4.6em}
+.chip.sm{padding:4px 11px;font-size:.84rem}
+table.sm{min-width:0;font-size:.86rem}
+table.sm th,table.sm td{padding:7px 10px}
+table.sm td:first-child{font-weight:400}
+table.num td{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+table.num th{text-align:right}
+table.num td:first-child,table.num th:first-child{text-align:left}
+table .hl{background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
+table tr.tot td{font-weight:600;background:var(--surface-2)}
+.formula{background:var(--surface-2);border-radius:8px;padding:12px 16px;overflow-x:auto;font-size:1.05rem}
+.formula math{font-size:1.1em}
+.quote{border-left:3px solid var(--accent);padding-left:14px;font-size:1.05rem}
+.ill{width:100%;height:100%;display:block}
+.ill text{font-family:var(--mono);font-size:11px;fill:var(--muted);text-anchor:middle}
+.ill .ln{stroke:var(--muted);stroke-width:1.6;fill:none}
+.ill .ink{stroke:var(--ink);stroke-width:1.4;fill:var(--surface)}
+.ill .f1{fill:var(--c1)} .ill .f2{fill:var(--c2)} .ill .f3{fill:var(--c3)} .ill .f4{fill:var(--c4)} .ill .fw{fill:var(--warn)} .ill .fs{fill:var(--surface-2)}
+.ill .k{transition:opacity .4s}
+.ill .k.dim{opacity:.28}
+.ill .k.cur .ln{stroke:var(--accent);stroke-width:2.6}
+.ill .k.cur text{fill:var(--ink);font-weight:600}
+.ill .lane{font-size:10px;letter-spacing:.08em;text-anchor:start;fill:var(--accent)}
+.ill .mk{fill:var(--muted)}
+.ladder{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;align-items:end}
+.ladder div{border-radius:8px;padding:8px 10px;color:var(--bg);font-size:.86rem;line-height:1.25;font-weight:500}
+.axisrow{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.74rem;color:var(--muted);border-top:2px solid var(--line);padding-top:4px;margin-top:6px}
+.bar button.seg{border:0;cursor:pointer;text-align:left;font:inherit;color:var(--bg)}
+.mob{display:none}
+.bar button.seg[aria-pressed="true"]{box-shadow:inset 0 -5px 0 rgba(0,0,0,.35)}
+.tl{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:6px}
+.tl button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:0 0 8px;cursor:pointer;display:grid;gap:4px;overflow:hidden;font-size:.82rem}
+.tl button i{display:block;height:6px;background:var(--pc)}
+.tl button b{font-family:var(--mono);font-size:.95rem;color:var(--pc)}
+.tl button[aria-pressed="true"]{border-color:var(--pc);background:var(--surface-2)}
+.tl button .t{color:var(--muted);font-size:.72rem;line-height:1.2;padding:0 4px}
+.wkdetail h4,.flowtxt h4{margin:0 0 4px;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.steps.s5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.steps.s7{grid-template-columns:repeat(7,minmax(0,1fr))}
+.pane{display:grid;gap:14px}
+.strike{text-decoration:line-through;opacity:.5}
+.tok{display:inline-block;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 11px;font-family:var(--mono);font-size:.82rem;margin:2px}
+.tok.on{border-color:var(--accent);background:var(--accent);color:var(--bg)}
+.arrow{font-family:var(--mono);color:var(--accent);padding:0 6px}
+#clsBoard[data-show="ind"] .ci,#clsBoard[data-show="cls"] .cc{background:color-mix(in srgb,var(--accent) 16%,var(--surface))}
+#clsBoard[data-show="train"] #tTrain,#clsBoard[data-show="test"] #tTest{outline:3px solid var(--accent);outline-offset:-1px}
+.cc{color:var(--signal);font-weight:600}
+.lbl3{position:absolute;left:0;top:0;font-family:var(--mono);font-size:.72rem;color:var(--muted);pointer-events:none;white-space:nowrap;transform:translate(-50%,-50%)}
+.lbl3.t{color:var(--accent);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase}
+.flowwrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.flow{width:100%;min-width:560px;height:auto;display:block}
+.flow text{font-family:var(--mono);font-size:12px;fill:var(--muted);text-anchor:middle}
+.flow .nd rect,.flow .nd circle,.flow .nd path{fill:var(--surface);stroke:var(--accent-2);stroke-width:1.5;transition:fill .3s}
+.flow .nd text{fill:var(--ink)}
+.flow .nd.hi rect,.flow .nd.hi circle,.flow .nd.hi path{fill:color-mix(in srgb,var(--warn) 35%,var(--surface));stroke:var(--warn)}
+.flow .ed path{fill:none;stroke:var(--muted);stroke-width:1.6}
+.flow .ed.hi path{stroke:var(--warn);stroke-width:3.2}
+.flow .ed.hi text{fill:var(--signal);font-weight:600}
+.flow .rf path{stroke:var(--accent-2);stroke-width:1;opacity:.45;fill:none}
+.flow .rf.hi path{opacity:1;stroke-width:2;stroke:var(--signal)}
+.flow .mk{fill:var(--muted)}
+.flowtxt{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:980px){.ladder{grid-template-columns:minmax(0,1fr)} .ladder div{margin:0!important} .axisrow{display:none} .mob{display:block} .tl{grid-template-columns:repeat(6,minmax(0,1fr))} .steps.s7{grid-template-columns:repeat(4,minmax(0,1fr))} .flowtxt{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){.steps.s5,.steps.s7{grid-template-columns:repeat(3,minmax(0,1fr))} .steps.s5 button,.steps.s7 button{padding:8px} .tl{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* ---------- presentation mode: one board per screen, like slides ---------- */
+.present-btn{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 14px);z-index:20;display:inline-flex;gap:8px;align-items:center;border:1px solid var(--accent);background:var(--accent);color:var(--bg);border-radius:999px;padding:8px 16px 8px 13px;font:500 .9rem var(--body);cursor:pointer;box-shadow:0 2px 12px color-mix(in srgb,var(--ink) 18%,transparent)}
+.present-btn:hover{filter:brightness(1.08)}
+.present-btn svg,.deck-bar svg{width:18px;height:18px;display:block}
+html:not(.presenting) .deck-ui{display:none!important}
+html.presenting .present-btn{display:none}
+html.presenting,html.presenting body{height:100%;overflow:hidden}
+html.presenting .rail{display:none}
+html.presenting .page{display:block;max-width:none;padding:0;margin:0}
+html.presenting main{position:fixed;inset:0;display:block;background:var(--bg);overflow-x:hidden;overflow-y:auto;z-index:10;padding:0}
+html.presenting main > section.board,html.presenting main > .part-break{display:none}
+html.presenting main > section.board.is-current,html.presenting main > .part-break.is-current{display:grid;position:absolute;left:50%;top:var(--deck-top,24px);width:var(--deck-w,1180px);margin:0;transform-origin:top center;transform:translateX(-50%) scale(var(--deck-s,1))}
+html.presenting main > .part-break.is-current{border-top:none;padding:0;gap:14px}
+html.presenting main > .part-break.is-current .n{font-size:8rem}
+html.presenting main > .part-break.is-current h2{font-size:3.4rem}
+.deck-bar{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);z-index:30;display:flex;gap:2px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;box-shadow:0 2px 14px color-mix(in srgb,var(--ink) 14%,transparent);opacity:.45;transition:opacity .2s}
+.deck-bar:hover,.deck-bar:focus-within{opacity:1}
+.deck-bar button{border:none;background:transparent;color:var(--ink);border-radius:999px;width:38px;height:38px;display:grid;place-items:center;cursor:pointer}
+.deck-bar button:hover{background:var(--surface-2)}
+.deck-bar button:disabled{opacity:.3;cursor:default;background:transparent}
+.deck-count{font-family:var(--mono);font-size:.8rem;color:var(--muted);padding:0 10px;white-space:nowrap;max-width:46vw;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.deck-side{position:fixed;top:0;bottom:0;width:64px;z-index:25;border:none;background:transparent;cursor:pointer;color:var(--muted);display:grid;place-items:center;opacity:0;transition:opacity .2s}
+.deck-side svg{width:34px;height:34px}
+.deck-side.prev{left:0}
+.deck-side.next{right:0}
+.deck-side:hover,.deck-side:focus-visible{opacity:1}
+.deck-side:disabled{display:none}
+.deck-spacer{position:absolute;left:0;width:1px;height:1px;pointer-events:none}
+.deck-progress{position:fixed;left:0;top:0;height:3px;background:var(--accent);z-index:30;transition:width .3s ease}
+@media (max-width:700px){.deck-side{display:none!important}.present-btn{padding:7px 12px}}
+@media (prefers-reduced-motion:reduce){.deck-progress,.deck-bar,.deck-side{transition:none}}
+
+/* ================= "sticker pop" theme layer (chapter 1) =================
+   Layout stays the same. Bold ink outlines, hard offset shadows, sticker labels,
+   marker-pen headings and a dotted notebook background. */
+:root{
+  --bg:#F3EFFF; --surface:#FFFFFF; --surface-2:#ECE5FF; --ink:#17132B; --muted:#585074; --line:#D6CCF5;
+  --accent:#6A35FF; --accent-2:#E8307F; --good:#0E9A6E; --signal:#E5372B; --warn:#FFB703;
+  --c1:#6A35FF; --c2:#E8307F; --c3:#0C946C; --c4:#E8590C; --c5:#1883CC;
+  --edge:#17132B; --shadow:#17132B; --dot:#CFC4F2; --marker:#FFD54A; --sticker:#FFD54A; --sticker-ink:#17132B;
+  --display:"Unbounded", "Arial Black", "Segoe UI", system-ui, sans-serif;
+  --body:"Rubik", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"Space Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:16px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#110D22; --surface:#1C1736; --surface-2:#28214D; --ink:#F4F0FF; --muted:#B3A8DB; --line:#3A3166;
+  --accent:#A68BFF; --accent-2:#FF6AAE; --good:#33E0A1; --signal:#FF6B63; --warn:#FFC93D;
+  --c1:#A68BFF; --c2:#FF6AAE; --c3:#33E0A1; --c4:#FF9F55; --c5:#55C8FF;
+  --edge:#7B67D6; --shadow:#05030C; --dot:#2A2350; --marker:#7A4FE0; --sticker:#FFC93D; --sticker-ink:#17132B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#110D22; --surface:#1C1736; --surface-2:#28214D; --ink:#F4F0FF; --muted:#B3A8DB; --line:#3A3166;
+  --accent:#A68BFF; --accent-2:#FF6AAE; --good:#33E0A1; --signal:#FF6B63; --warn:#FFC93D;
+  --c1:#A68BFF; --c2:#FF6AAE; --c3:#33E0A1; --c4:#FF9F55; --c5:#55C8FF;
+  --edge:#7B67D6; --shadow:#05030C; --dot:#2A2350; --marker:#7A4FE0; --sticker:#FFC93D; --sticker-ink:#17132B; color-scheme:dark}
+
+body{background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.3px,transparent 1.5px);background-size:22px 22px;font-size:17.5px}
+h1{font-size:clamp(2rem,4.4vw,3.1rem);font-weight:800;letter-spacing:-.02em;line-height:1.08}
+h2{font-size:clamp(1.35rem,2.6vw,1.85rem);font-weight:700;letter-spacing:-.015em;line-height:1.2;
+   text-decoration:underline;text-decoration-color:var(--marker);text-decoration-thickness:.32em;text-underline-offset:-.12em;text-decoration-skip-ink:none}
+h3{font-family:var(--body);font-weight:600;font-size:1.12rem}
+.lead{color:var(--muted)}
+
+/* sticker labels */
+.eyebrow{display:inline-block;justify-self:start;width:fit-content;background:var(--sticker);color:var(--sticker-ink);border:2px solid var(--edge);border-radius:8px;padding:3px 10px 2px;font-weight:700;font-size:.72rem;letter-spacing:.06em;transform:rotate(-1.5deg);box-shadow:2px 2px 0 var(--shadow)}
+section.board:nth-of-type(even) .eyebrow{transform:rotate(1.2deg)}
+.card .tag{font-weight:700}
+
+/* hero squiggle */
+.hero h1::after,.hero-title h1::after{content:"";display:block;width:150px;height:16px;margin-top:12px;background:var(--accent-2);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 16'%3E%3Cpath d='M3 10c12-10 22 8 34 0s22-10 34 0 22 8 34 0 22-10 34 0' fill='none' stroke='black' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 16'%3E%3Cpath d='M3 10c12-10 22 8 34 0s22-10 34 0 22 8 34 0 22-10 34 0' fill='none' stroke='black' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
+
+/* chunky outlined surfaces */
+.card,.panel,.stat,.q,.check,.lab li,.tbl-wrap,.flowwrap,.tl button,.wk,.steps button{border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow)}
+.card,.panel{border-radius:var(--r)}
+.card.bad{border-color:var(--signal);box-shadow:4px 4px 0 var(--signal)}
+.card.good{border-color:var(--good);box-shadow:4px 4px 0 var(--good)}
+.stat{border-radius:12px}
+.stat .v{font-weight:700}
+.scene,.cv{border:2px solid var(--edge);box-shadow:6px 6px 0 var(--accent-2);border-radius:var(--r)}
+.scene{background:radial-gradient(120% 90% at 30% 20%,var(--surface) 0%,var(--surface-2) 100%)}
+.formula{border:2px dashed var(--accent);background:var(--surface)}
+.quote{border-left:5px solid var(--accent-2)}
+.caption{border-left:5px solid var(--accent-2)}
+table{background:var(--surface)}
+th{background:var(--accent);color:#FFFFFF;font-weight:700}
+.tbl-wrap{border-radius:12px}
+.tok{border:2px solid var(--edge)}
+.tok.on{background:var(--accent-2);border-color:var(--edge);color:#FFFFFF}
+
+/* buttons that feel pressable */
+.chip,.btn,.items button,.q .opts button{border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);font-weight:500;transition:transform .12s ease,box-shadow .12s ease,background .15s}
+.chip:hover,.btn:hover,.items button:hover,.q .opts button:hover{transform:translate(-1px,-1px) rotate(-1deg);box-shadow:4px 4px 0 var(--shadow);filter:none}
+.chip:active,.btn:active,.items button:active,.q .opts button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--shadow)}
+.chip[aria-pressed="true"],.chip[aria-selected="true"]{background:var(--accent-2);border-color:var(--edge);color:#FFFFFF}
+.btn{background:var(--accent);color:#FFFFFF;border-color:var(--edge)}
+.btn.ghost{background:var(--surface);color:var(--ink)}
+.steps button[aria-selected="true"],.wk[aria-pressed="true"],.tl button[aria-pressed="true"]{background:var(--marker);border-color:var(--edge);color:var(--sticker-ink)}
+.steps button[aria-selected="true"] .s,.tl button[aria-pressed="true"] .t{color:var(--sticker-ink)}
+.q.right{border-color:var(--good);box-shadow:4px 4px 0 var(--good)}
+.q.wrong{border-color:var(--signal);box-shadow:4px 4px 0 var(--signal)}
+.check:has(input:checked){box-shadow:4px 4px 0 var(--good)}
+
+/* bars and ladder */
+.bar{border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow);border-radius:12px}
+.ladder div{border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);border-radius:10px;color:#FFFFFF;font-weight:600}
+
+/* part dividers: outlined giant numbers */
+.part-break{border-top:3px dashed var(--edge)}
+.part-break .n{color:var(--surface);-webkit-text-stroke:3px var(--edge);text-shadow:7px 7px 0 var(--accent-2);font-weight:800;font-size:clamp(3.4rem,8vw,6rem)}
+.part-break:nth-of-type(2n) .n{text-shadow:7px 7px 0 var(--c3)}
+
+/* rail */
+.rail .ltitle{font-weight:800;font-size:1rem}
+.rail a{border-radius:999px;border:2px solid transparent;padding:4px 12px}
+.rail a:hover{background:var(--surface);border-color:var(--edge)}
+.rail a.on{background:var(--accent);color:#FFFFFF;border-color:var(--edge);box-shadow:2px 2px 0 var(--shadow)}
+.rail .part{color:var(--accent-2);font-weight:700}
+
+/* next block */
+.next{border:2px solid var(--edge);box-shadow:6px 6px 0 var(--accent-2);background:var(--accent);color:#FFFFFF}
+.next .eyebrow{color:var(--sticker-ink)}
+
+/* presentation controls */
+.present-btn{background:var(--accent-2);color:#FFFFFF;border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);font-weight:600}
+.present-btn:hover{transform:translate(-1px,-1px) rotate(-2deg)}
+.deck-bar{border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);opacity:.6}
+.deck-progress{height:5px;background:var(--accent-2)}
+html.presenting main > .part-break.is-current .n{font-size:9rem;-webkit-text-stroke:4px var(--edge);text-shadow:10px 10px 0 var(--accent-2)}
+html.presenting main > .part-break.is-current h2{font-size:3rem}
+
+@media (prefers-reduced-motion:reduce){.chip:hover,.btn:hover,.items button:hover,.q .opts button:hover,.present-btn:hover{transform:none}}
+html.presenting main{background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.3px,transparent 1.5px);background-size:22px 22px}
+
+.steps button{min-width:0}
+.steps button b{overflow-wrap:anywhere;hyphens:auto}
+@media (max-width:620px){.steps button b{font-size:.8rem!important}}
+
+/* ===== green palette variant: overrides the sticker-pop colours only ===== */
+:root{--bg:#EDF8F0; --surface:#FFFFFF; --surface-2:#DFF2E5; --ink:#10241A; --muted:#4C6656; --line:#C6E6CF; --accent:#0B8A4F; --accent-2:#8BD100; --good:#0B8A4F; --signal:#E5372B; --warn:#FFB703; --c1:#0B8A4F; --c2:#5FA800; --c3:#0F8C8C; --c4:#E8590C; --c5:#6A35FF; --edge:#10241A; --shadow:#10241A; --dot:#BCE0C6; --marker:#FFD54A; --sticker:#FFD54A; --sticker-ink:#10241A; --on-accent:#FFFFFF; --on-accent-2:#10241A;}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0A1912; --surface:#12271C; --surface-2:#1A3727; --ink:#ECFBF1; --muted:#9DC4AB; --line:#2A4D38; --accent:#3EDB8A; --accent-2:#B6F23C; --good:#3EDB8A; --signal:#FF6B63; --warn:#FFC93D; --c1:#3EDB8A; --c2:#B6F23C; --c3:#3FD4D4; --c4:#FF9F55; --c5:#A68BFF; --edge:#3E9E6A; --shadow:#020805; --dot:#173323; --marker:#2E8F55; --sticker:#FFC93D; --sticker-ink:#10241A; --on-accent:#0A1912; --on-accent-2:#0A1912; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0A1912; --surface:#12271C; --surface-2:#1A3727; --ink:#ECFBF1; --muted:#9DC4AB; --line:#2A4D38; --accent:#3EDB8A; --accent-2:#B6F23C; --good:#3EDB8A; --signal:#FF6B63; --warn:#FFC93D; --c1:#3EDB8A; --c2:#B6F23C; --c3:#3FD4D4; --c4:#FF9F55; --c5:#A68BFF; --edge:#3E9E6A; --shadow:#020805; --dot:#173323; --marker:#2E8F55; --sticker:#FFC93D; --sticker-ink:#10241A; --on-accent:#0A1912; --on-accent-2:#0A1912; color-scheme:dark}
+.btn,.rail a.on,div.next,div.next h3,div.next p,th{color:var(--on-accent)}
+.chip[aria-pressed="true"],.chip[aria-selected="true"],.tok.on,.present-btn{color:var(--on-accent-2)}
+</style>
+<style>
+/* ===== Lecture 1 additions: block schedule, AI checks, lab audit form (green tokens only) ===== */
+.blk{display:grid;grid-template-columns:4.6em repeat(5,minmax(0,1fr));gap:8px;align-items:stretch}
+.blk .dh{font-family:var(--mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;font-weight:700}
+.blk .wl{font-family:var(--mono);font-size:.78rem;font-weight:700;color:var(--accent);display:grid;align-content:center}
+.blk .cell{min-width:0;display:grid}
+.blk .lec{display:grid;gap:3px;align-content:start;text-align:left;border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);background:var(--surface);border-radius:12px;padding:8px 10px;cursor:pointer;font-size:.8rem;line-height:1.25;min-height:92px;transition:transform .12s ease,box-shadow .12s ease}
+.blk .lec:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--shadow)}
+.blk .lec b{font-family:var(--mono);font-size:.95rem;color:var(--accent)}
+.blk .lec .t{color:var(--ink)}
+.blk .lec .d{display:none;font-family:var(--mono);font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.blk .lec[aria-pressed="true"]{background:var(--marker);color:var(--sticker-ink)}
+.blk .lec[aria-pressed="true"] b,.blk .lec[aria-pressed="true"] .t,.blk .lec[aria-pressed="true"] .d{color:var(--sticker-ink)}
+.blk .ev{justify-self:start;font-family:var(--mono);font-size:.64rem;font-weight:700;letter-spacing:.03em;background:var(--sticker);color:var(--sticker-ink);border:1.5px solid var(--edge);border-radius:6px;padding:1px 6px;margin-top:2px}
+.blk .free{display:grid;place-items:center;text-align:center;border:2px dashed var(--line);border-radius:12px;padding:8px;font-size:.78rem;color:var(--muted);min-height:92px;background:color-mix(in srgb,var(--surface) 55%,transparent)}
+.blk .free .d{display:none}
+.aichk{font-size:.92rem;color:var(--ink)!important;border-top:2px dashed var(--line);padding-top:8px;margin-top:2px}
+.aichk b{display:block;font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--c3)}
+.labgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+.labgrid .claims{grid-template-columns:repeat(2,minmax(0,1fr))}
+html.presenting .labgrid{grid-template-columns:minmax(0,.8fr) minmax(0,1.5fr)}
+html.presenting .labgrid .claims{grid-template-columns:minmax(0,1fr)}
+.claims{display:grid;gap:8px;margin-top:8px}
+.claims button{display:grid;gap:2px;text-align:left;font:inherit;font-family:var(--body);font-size:.86rem;line-height:1.35;color:var(--ink);background:var(--surface);border:2px solid var(--edge);border-radius:10px;padding:7px 10px;cursor:pointer;box-shadow:2px 2px 0 var(--shadow)}
+.claims button:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--shadow)}
+.claims button[disabled]{opacity:.45;cursor:default;transform:none;box-shadow:none}
+.claims .hint{display:none;font-size:.78rem;color:var(--c3);font-family:var(--mono)}
+.claims.showhints .hint{display:block}
+table.audit{min-width:620px;font-size:.88rem}
+table.audit td{padding:8px;vertical-align:top}
+table.audit td:first-child{font-family:var(--mono);color:var(--muted);width:2.2em;padding-top:14px}
+table.audit textarea,table.audit select{width:100%;font:inherit;font-size:.86rem;color:var(--ink);background:var(--bg);border:2px solid var(--edge);border-radius:8px;padding:6px 8px;resize:vertical}
+table.audit textarea{min-height:3.6em}
+table.audit select{cursor:pointer;min-width:8.5em}
+table.audit td.claim{font-size:.95rem;line-height:1.45;color:var(--ink);padding-top:12px}
+table.audit .step{font-family:var(--mono);font-size:.72rem;color:var(--muted);white-space:nowrap}
+table.audit .vchips{display:flex;flex-wrap:nowrap;gap:6px;width:max-content;padding-right:4px}
+table.audit .vchips .chip{white-space:nowrap}
+table.audit .vchips .chip{font-size:.8rem;padding:4px 10px}
+table.audit tr[data-v="unk"] td{background:color-mix(in srgb,var(--c5) 12%,var(--surface))}
+table.audit tr[data-v="ok"] td{background:color-mix(in srgb,var(--good) 12%,var(--surface))}
+table.audit tr[data-v="part"] td{background:color-mix(in srgb,var(--warn) 16%,var(--surface))}
+table.audit tr[data-v="wrong"] td{background:color-mix(in srgb,var(--signal) 12%,var(--surface))}
+.pf{display:inline-flex;gap:6px;align-items:center;font-size:.88rem;cursor:pointer}
+.pf input{width:18px;height:18px;accent-color:var(--accent)}
+@media (max-width:980px){html.presenting .labgrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){.labgrid .claims{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){
+  .blk{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .blk .dh,.blk .corner{display:none}
+  .blk .wl{grid-column:1/-1;margin-top:6px}
+  .blk .lec .d,.blk .free .d{display:block}
+  .blk .lec,.blk .free{min-height:0}
+}
+/* fix: classification table headers stay readable when a column is highlighted (inherited from Ch1) */
+#clsBoard th.ci,#clsBoard th.cc{color:var(--on-accent)}
+#clsBoard[data-show="ind"] th.ci,#clsBoard[data-show="cls"] th.cc{color:var(--ink)}
+/* segmented bars: truncate labels in narrow segments */
+.bar button.seg span{overflow:hidden;text-overflow:ellipsis}
+/* "new this year" additions and replaced lines */
+.add{border:2px dashed var(--c3);border-radius:var(--r);padding:14px 16px;display:grid;gap:10px;background:color-mix(in srgb,var(--c3) 5%,transparent)}
+.add .addt{font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--c3)}
+.panel .add{margin-top:14px}
+.was del{color:var(--muted);text-decoration-thickness:1.5px}
+.repl{display:inline-block;font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.03em;color:var(--sticker-ink);background:var(--sticker);border:1.5px solid var(--edge);border-radius:6px;padding:0 6px;margin-top:2px}
+
+/* hero: data -> pattern -> knowledge (2D) */
+#aiHeroScene canvas{cursor:crosshair}
+#aiHeroScene .hint{top:8px;bottom:auto}
+.hero-rule{position:absolute;display:grid;gap:3px;background:var(--surface);border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow);border-radius:12px;padding:10px 14px;font-size:.95rem;line-height:1.35}
+.hero-rule .k{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.hero-rule b{color:var(--accent)}
+.hero-rule .n{font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+.hero-tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-family:var(--mono);font-size:.74rem;padding:4px 8px;border-radius:6px;white-space:nowrap}
+
+.hero-title .instructor{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin:0}
+.hero-title .instructor .k{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.hero-title .instructor .name{font-weight:600;font-size:1.05rem;color:var(--ink);border:2px var(--muted);border-radius:8px;padding:2px 10px}
+
+.title-board{padding-block:10vh 8vh}
+.hero-title{display:grid;justify-items:center;text-align:center;gap:20px;max-width:920px;margin:0 auto}
+.hero-title .eyebrow{justify-self:center}
+.hero-title h1{font-size:clamp(2.4rem,6.2vw,4.6rem)}
+.hero-title h1::after{margin-left:auto;margin-right:auto}
+.hero-title .lead{max-width:52ch}
+.hero-title .instructor{justify-content:center;margin-top:6px}
+
+/* ================= Lecture 2 components ================= */
+.qlist{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.dq{display:grid;gap:6px;align-content:start;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:2px solid var(--edge);border-radius:12px;padding:12px;cursor:pointer;box-shadow:3px 3px 0 var(--shadow)}
+.dq .n{font-family:var(--display);font-weight:800;font-size:1.6rem;color:var(--accent)}
+.dq b{font-size:.98rem;line-height:1.3}
+.dq .when{font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;color:var(--good)}
+.dq.later{background:var(--surface-2)}
+.dq.later .when{color:var(--muted)}
+.dq[aria-pressed="true"]{background:var(--marker);color:var(--sticker-ink)}
+.dq[aria-pressed="true"] .n,.dq[aria-pressed="true"] .when{color:var(--sticker-ink)}
+.qgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.sel{font:inherit;font-size:.9rem;border:2px solid var(--edge);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 10px;max-width:100%}
+.txt{font:inherit;font-size:.95rem;width:100%;border:2px solid var(--edge);background:var(--surface);color:var(--ink);border-radius:8px;padding:8px 10px}
+.lbl3.lq{color:var(--c4);font-weight:700;font-size:.82rem;z-index:3}
+.lbl3.ln{color:var(--c1);font-weight:600;z-index:2}
+ol.nn{margin:6px 0;padding-left:1.4em;font-family:var(--mono);font-size:.85rem;display:grid;gap:1px}
+table.pick th,table.pick td,table.pick tr{cursor:pointer}
+table tr.sub td{color:var(--muted);font-size:.8rem}
+.vecrow{display:grid;grid-template-columns:5.6em repeat(var(--n,10),minmax(0,1fr));gap:4px;align-items:center}
+.vecrow .nm{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.vecrow .hd{font-family:var(--mono);font-size:.66rem;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bit,.vecrow input{min-width:0;width:100%;font-family:var(--mono);font-size:.95rem;text-align:center;border:2px solid var(--edge);background:var(--surface);color:var(--ink);border-radius:6px;padding:6px 0;cursor:pointer}
+.vecrow input{cursor:text;-moz-appearance:textfield;appearance:textfield}
+.vecrow input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.bit.on{background:var(--accent);color:#FFFFFF}
+.bit.zz{background:var(--surface-2);color:var(--muted)}
+.mcell{font-family:var(--mono);font-size:.66rem;text-align:center;border-radius:4px;padding:3px 0}
+.m11{background:color-mix(in srgb,var(--good) 28%,var(--surface))}
+.m00{background:var(--surface-2);color:var(--muted)}
+.m10,.m01{background:color-mix(in srgb,var(--signal) 20%,var(--surface))}
+.bag{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-family:var(--mono);font-size:.95rem}
+.bag span{border:2px solid var(--edge);background:var(--surface);border-radius:999px;padding:3px 10px}
+.bag span.br{border:none;background:none;padding:0;font-size:1.4rem;color:var(--muted)}
+.bag span b{color:var(--accent)}
+.words{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;min-height:4.6em}
+.wd{display:grid;gap:4px;justify-items:center}
+.wd b{font-size:1.5rem;font-weight:600;border-bottom:3px solid transparent;padding:0 2px}
+.wd.ch b{color:var(--c4);border-color:var(--c4)}
+.wd i{font-style:normal;font-family:var(--mono);font-size:.7rem;color:var(--muted);max-width:9em;text-align:center}
+.seq{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-family:var(--mono);font-size:.85rem;margin:6px 0}
+.seq span{border:2px solid var(--c1);border-radius:6px;padding:3px 8px}
+svg.traj{width:100%;height:auto;display:block}
+#tmSvg,#weSvg,#prMini{width:100%;height:auto;display:block;overflow:hidden}
+#coWork,#prWork,#euWork,#mWork{overflow-wrap:anywhere}
+#weSvg{max-width:360px;justify-self:center}
+.fig{margin:0;display:grid;gap:6px;justify-items:center}
+.fig img{width:100%;height:auto;max-height:52vh;object-fit:contain;background:#FFFFFF;border:2px solid var(--edge);border-radius:12px;box-shadow:4px 4px 0 var(--shadow)}
+.fig figcaption{font-weight:600;font-size:.95rem}
+.mats{display:grid;grid-template-columns:minmax(0,.7fr) repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+svg.venn{width:min(320px,100%);height:auto;justify-self:center;display:block}
+.pair{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:1rem}
+.pair .mono{background:var(--surface);border:2px solid var(--edge);border-radius:8px;padding:6px 10px}
+.pair .vs{font-family:var(--mono);color:var(--muted)}
+.ladder5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.ladder5 button{display:grid;gap:2px;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:2px solid var(--edge);border-radius:10px;padding:10px 12px;cursor:pointer;box-shadow:3px 3px 0 var(--shadow);min-width:0}
+.ladder5 button .s{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.ladder5 button b{overflow-wrap:anywhere}
+.ladder5 button[aria-selected="true"]{background:var(--marker);color:var(--sticker-ink)}
+.strip-row{display:grid;grid-template-columns:6.5em minmax(0,1fr);gap:4px 10px;align-items:center}
+.strip-row .note{grid-column:2}
+canvas.strip{width:100%;height:46px;display:block;border-radius:6px}
+.res{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.res li{display:grid;grid-template-columns:minmax(0,1fr) 3.4em;gap:8px;align-items:center;border:2px solid var(--edge);background:var(--surface);border-radius:8px;padding:7px 10px;font-size:.9rem;position:relative;overflow:hidden}
+.res li i{position:absolute;left:0;bottom:0;height:4px;background:var(--accent)}
+.res li .sc{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.res li.zero{color:var(--muted)}
+.hitrow{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:start;cursor:pointer}
+.hitrow input{width:17px;height:17px;margin-top:2px;accent-color:var(--good)}
+.stepper{display:inline-flex;align-items:center;gap:8px}
+.stepper button{width:28px;height:28px;border:2px solid var(--edge);border-radius:8px;background:var(--surface);color:var(--ink);font:600 1rem var(--body);cursor:pointer;box-shadow:2px 2px 0 var(--shadow)}
+.stepper b{min-width:1.2em;text-align:center}
+#cvBias{aspect-ratio:4/3}
+table th.hl{background:var(--marker);color:var(--sticker-ink)}
+#topSl input{width:100%}
+#topSl>div{min-width:0}
+#dense .side{min-width:0}
+#dense .sel{width:100%;min-width:0}
+.prmini{display:grid;gap:4px;justify-items:center;align-content:start}
+#prMini{max-width:320px}
+#spScene .lbl3{font-size:.64rem;opacity:.65}
+#spScene .lbl3.lq,#spScene .lbl3.ln{opacity:1}
+.tfgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px;align-items:start}
+#cvLr{aspect-ratio:3/2}
+.lab li .mono{font-family:var(--mono)}
+@media (max-width:900px){
+  .qlist{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ladder5{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:620px){
+  .qlist,.qgrid,.mats{grid-template-columns:minmax(0,1fr)}
+  .vecrow{grid-template-columns:3.6em repeat(var(--n,10),minmax(0,1fr));gap:2px}
+  .bit,.vecrow input{font-size:.78rem;padding:5px 0;border-width:1px}
+  .wd b{font-size:1.15rem}
+  .strip-row{grid-template-columns:minmax(0,1fr)}
+  .strip-row .note{grid-column:1}
+  .stats[style]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .tfgrid{grid-template-columns:minmax(0,1fr)}
+}
+
+/* ================= Lecture 3 components ================= */
+.mtx{display:grid;gap:3px;font-family:var(--mono);font-size:.72rem}
+.mtx span{color:var(--muted);display:flex;align-items:end;justify-content:center;padding:2px 0;overflow:hidden;white-space:nowrap}
+.mtx span.rl{justify-content:flex-end;align-items:center;padding-right:6px}
+.mtx button{border:2px solid var(--edge);border-radius:6px;padding:9px 0;cursor:pointer;font-family:var(--mono);font-size:.74rem;color:var(--ink);font-variant-numeric:tabular-nums}
+.mtx button[aria-pressed="true"]{outline:3px solid var(--c4);outline-offset:-3px}
+.cv.tall{aspect-ratio:4/3}
+.cv.grid{aspect-ratio:5/4;cursor:default}
+.big{font-family:var(--mono);font-size:1.25rem;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.schema{display:flex;gap:4px;align-items:center;margin:10px 0;font-family:var(--mono);font-weight:700}
+.schema span{width:30px;height:28px;display:grid;place-items:center;border:2px solid var(--edge);border-radius:4px;background:color-mix(in srgb,var(--c3) 35%,var(--surface))}
+.schema span.n{background:color-mix(in srgb,var(--c2) 35%,var(--surface))}
+.schema i{font-style:normal;margin:0 8px;color:var(--c4)}
+ol.tech{margin:6px 0 0;padding-left:1.4em;display:grid;gap:4px}
+.rules{display:grid;gap:4px;min-height:9em}
+.rules p{margin:0}
+.pipe{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;font-family:var(--mono);font-size:.82rem}
+.pipe span{border:2px solid var(--edge);border-radius:8px;padding:4px 10px;background:var(--surface)}
+.small-list li{font-size:.9rem}
+.ablate{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.ablate .box{border:2px solid var(--c2);border-radius:8px;padding:6px 12px;font-family:var(--mono);text-align:center;background:var(--surface)}
+.ablate .arr{font-family:var(--mono);font-size:.85rem;color:var(--muted)}
+#hRanges{width:100%;height:auto;display:block;overflow:hidden}
+table.cleanT td,table.erT td,table.exT td{font-size:.84rem}
+table td.ok{color:var(--good)}
+table td.bad{color:var(--signal);background:color-mix(in srgb,var(--signal) 8%,var(--surface))}
+table.erT td.num{font-family:var(--mono);text-align:right}
+b.flag{color:var(--warn)}
+#cvErr{aspect-ratio:5/2}
+#cvLr{aspect-ratio:3/2}
+#pcaScene{aspect-ratio:4/3}
+@media (max-width:620px){
+  .mtx{font-size:.6rem}
+  .mtx button{font-size:.62rem;padding:7px 0}
+}
+</style>
+
+<div class="page">
+<nav class="rail" aria-label="Lecture sections">
+  <div class="course">COMP7103 Data Mining</div>
+  <div class="ltitle">Lecture 3 · Data quality and preprocessing</div>
+  <ol id="toc"></ol>
+  <p class="keys">Press <kbd>←</kbd> <kbd>→</kbd> to step through boards while lecturing.</p>
+</nav>
+
+<main>
+<!-- ============ OPENING ============ -->
+<!-- source: title board in the style of Lectures 1 and 2 -->
+<section class="board title-board" id="opening" data-part="Opening" data-nav="Title">
+  <div class="hero-title">
+    <span class="eyebrow">COMP7103B Data Mining · Lecture 3</span>
+    <h1>Data Quality <br/> and Preprocessing</h1>
+    <p class="lead">Find what is wrong with the data, fix what you can, <br/> and shape the rest for mining.</p>
+    <p class="instructor"><span class="name">Prof. Bo Dai</span></p>
+    <p class="instructor"><span class="name">School of Computing and Data Science, The University of Hong Kong</span></p>
+  </div>
+</section>
+
+<!-- source: data.pptx slide 2 -->
+<section class="board" id="questions" data-part="Opening" data-nav="Five questions about data">
+  <span class="eyebrow">Chapter 2 · Data</span>
+  <h2>Five Questions about Data</h2>
+  <p class="lead">Lecture 2 answered three of the data chapter's questions. Today answers the other two.</p>
+  <div class="qlist" id="dataQs">
+    <button class="dq later" data-q="0" aria-pressed="false"><span class="n">1</span><b>What are the various types of data?</b><span class="when">Lecture 2</span></button>
+    <button class="dq later" data-q="1" aria-pressed="false"><span class="n">2</span><b>How is data represented?</b><span class="when">Lecture 2</span></button>
+    <button class="dq" data-q="2" aria-pressed="true"><span class="n">3</span><b>How to improve data quality?</b><span class="when">Today · Part 1</span></button>
+    <button class="dq" data-q="3" aria-pressed="false"><span class="n">4</span><b>How to preprocess data for analysis?</b><span class="when">Today · Parts 2–4</span></button>
+    <button class="dq later" data-q="4" aria-pressed="false"><span class="n">5</span><b>How to measure similarity between data objects?</b><span class="when">Lecture 2</span></button>
+  </div>
+  <div class="panel" id="dataQd"></div>
+</section>
+
+<!-- source: new (session format, same as Lectures 1 and 2) -->
+<section class="board" id="plan" data-part="Opening" data-nav="Today's plan">
+  <span class="eyebrow">One 2.5-hour session</span>
+  <h2>Today's Plan</h2>
+  <p class="lead">Every lecture in the block has the same shape. Click a part of the bar.</p>
+  <div class="bar" id="planBar">
+    <button class="seg" style="flex-basis:43.3%;background:var(--c1)" aria-pressed="true"><b>~65 min</b><span>Classical core</span></button>
+    <button class="seg" style="flex-basis:20%;background:var(--c3)" aria-pressed="false"><b>~30 min</b><span>AI layer</span></button>
+    <button class="seg" style="flex-basis:6.7%;background:var(--muted);padding:0 5px" aria-pressed="false"><b>10</b><span>Break</span></button>
+    <button class="seg" style="flex-basis:30%;background:var(--c4)" aria-pressed="false"><b>~45 min</b><span>Lab</span></button>
+  </div>
+  <div class="panel" id="planDetail"></div>
+  <div class="grid3">
+    <a class="card" href="#quality" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c1)">Part 1</span><h3>Data quality</h3><p>Noise, outliers, missing values, erroneous and duplicate data.</p></a>
+    <a class="card" href="#integrate" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c2)">Part 2</span><h3>Data preprocessing</h3><p>Integration, cleaning, aggregation, generalization and sampling.</p></a>
+    <a class="card" href="#dims" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c3)">Part 3</span><h3>Dimensionality reduction</h3><p>The curse of dimensionality, feature creation, correlation, PCA, feature selection.</p></a>
+    <a class="card" href="#disc" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c4)">Part 4</span><h3>Discretization and normalization</h3><p>Equal-width, equal-frequency and k-means bins; min-max and z-score.</p></a>
+    <a class="card" href="#aiclean" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c5)">Part 5 · AI layer</span><h3>Cleaning with AI, measured</h3><p>LLM-assisted cleaning, entity resolution, extraction, synthetic data.</p></a>
+    <a class="card" href="#labbrief" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c4)">Part 6 · Lab</span><h3>Clean it twice</h3><p>By hand with pandas, and one column with an LLM. Score both.</p></a>
+  </div>
+</section>
+
+<!-- ============ PART 1 ============ -->
+<div class="part-break"><span class="n">01</span><span class="eyebrow">Part 1</span><h2>Data Quality</h2></div>
+
+<!-- source: data.pptx slide 24 -->
+<section class="board" id="quality" data-part="Part 1 · Data quality" data-nav="Data quality">
+  <span class="eyebrow">Data quality</span>
+  <h2>Data Quality</h2>
+  <p class="lead">Data should be of good quality for correct data analysis.</p>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">Examples of data quality problems</span><ul class="clean"><li><b>noise</b> and <b>outliers</b></li><li>missing values</li><li>duplicate and inconsistent data</li></ul></div>
+    <div class="side">
+      <div class="card bad"><span class="tag" style="color:var(--signal)">Noise</span><p>Incorrect data (could look normal).</p></div>
+      <div class="card"><span class="tag" style="color:var(--c2)">Outliers</span><p>Unusual data (could be correct or incorrect).</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: data.pptx slide 25 -->
+<section class="board" id="noise" data-part="Part 1 · Data quality" data-nav="Noise and outliers">
+  <span class="eyebrow">Data quality</span>
+  <h2>Noise and Outliers</h2>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c4)">Noise</span><p>Noise in data could occur due to error in data collection.</p><ul class="clean"><li>e.g., a student of age 123 years old (but is actually 23)</li><li>their presence would affect the accuracy of the results</li><li>should be detected and removed</li></ul></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Outliers</span><p>Outliers are data that deviate so much from the norm that they may represent some very rare or exceptional cases (or just noise).</p><p>Outliers are not necessarily noise:</p><ul class="clean"><li>e.g., no one can ever guarantee that no one lives for more than 123 years</li><li>outliers could be useful or not depending on the applications</li></ul></div>
+  </div>
+</section>
+
+<!-- source: data.pptx slides 26-27 -->
+<section class="board" id="outliers" data-part="Part 1 · Data quality" data-nav="Outliers">
+  <span class="eyebrow">Outliers</span>
+  <h2>Outliers</h2>
+  <p class="lead">Outliers are data objects with characteristics that are considerably different than most of the other data objects in the data set.</p>
+  <div class="play">
+    <canvas class="cv" id="cvOutFig" style="cursor:default" aria-label="Four clusters of points and three outliers, circled"></canvas>
+    <div class="side">
+      <div class="card"><span class="tag" style="color:var(--c1)">Example</span><p>Credit-card fraud detection relies a lot on outliers (exceptional cases, abnormal spending patterns) detection to discover possible cases of fraud.</p></div>
+      <div class="card"><span class="tag" style="color:var(--c1)">Example</span><p>An insurance company uses outlier detection to discover a fraudulent case in which a customer claims maternity compensation twice in half a year time.</p></div>
+      <div class="card bad"><p style="color:var(--ink)">Outliers are not the norm. So, rules about them may or may not be useful.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: data.pptx slides 28-29 -->
+<section class="board" id="detect" data-part="Part 1 · Data quality" data-nav="Detecting outliers">
+  <span class="eyebrow">Detecting outliers · try it</span>
+  <h2>Detecting Outliers</h2>
+  <div class="play">
+    <canvas class="cv" id="cvOut" aria-label="Outlier detection plot"></canvas>
+    <div class="side">
+      <div class="tabs" id="outTabs"><button class="chip" data-m="knn" aria-pressed="true">kNN distance</button><button class="chip" data-m="clu" aria-pressed="false">Cluster analysis</button></div>
+      <p class="note" id="outDesc"></p>
+      <div class="row" id="outKrow"><label class="note" for="outK">k = <b id="outKv">4</b></label><input type="range" id="outK" min="1" max="12" value="4" style="flex:1"></div>
+      <div class="row"><label class="note" for="outN">flag the top <b id="outNv">8</b></label><input type="range" id="outN" min="1" max="20" value="8" style="flex:1"></div>
+      <div class="stats"><div class="stat"><div class="k">highest score</div><div class="v" id="outMax">–</div></div><div class="stat"><div class="k">your last point</div><div class="v" id="outYou">–</div></div></div>
+      <div class="btnrow"><button class="btn ghost" id="outReset">Reset points</button></div>
+      <p class="note">Click the plot to add a point. Synthetic points.</p>
+    </div>
+  </div>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">Cluster analysis</span><p>By definition, outliers are data points that are not close to, or similar to, other data points. A cluster is a group of data points that are similar among themselves. Points that do not fall into any cluster could be flagged as outliers.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Distance-based: simple kNN</span><p>For a data object (point) <i>p</i>, the distance to its <i>k</i>-th nearest neighbor is taken as <i>p</i>'s outlier score. The higher the score, the more likely that <i>p</i> is an outlier.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Model-based</span><p>Assume data follows certain model. Then, find data points that deviate from the model prediction.</p></div>
+  </div>
+</section>
+
+<!-- source: data.pptx slide 29, quiz with new examples -->
+<section class="board" id="handling" data-part="Part 1 · Data quality" data-nav="Handling noise">
+  <span class="eyebrow">Handling noise · check yourself</span>
+  <h2>Handling Noise</h2>
+  <div class="grid2">
+    <div class="card bad"><span class="tag" style="color:var(--signal)">No good ways</span><p>Some possible actions:</p><ul class="clean"><li>Perform outlier detection and then check manually whether the outliers are likely noise</li><li>Data verification</li></ul></div>
+    <p class="lead" style="align-self:center">Six new records. Noise to detect and remove, an outlier that may be useful, or something to verify first?</p>
+  </div>
+  <div class="quiz qgrid" id="noiseQ"></div>
+  <p class="score" id="noiseScore"></p>
+</section>
+
+<!-- source: data.pptx slides 30-31 -->
+<section class="board" id="missing" data-part="Part 1 · Data quality" data-nav="Missing values">
+  <span class="eyebrow">Missing values</span>
+  <h2>Missing Values</h2>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c4)">A common and difficult problem</span><ul class="clean"><li>a customer may refuse to supply certain info</li><li>a change of the database schema may also lead to missing values</li></ul><div class="schema"><span>A</span><span>B</span><span>C</span><i>→</i><span class="n">A</span><span class="n">B</span><span class="n">C</span><span class="n">D</span></div><p>In general, no good solutions.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c1)">Possible actions</span><ul class="clean">
+      <li><b>Ignore records with missing values</b>: simple; ok if only a small fraction of the data contains missing values</li>
+      <li><b>Find the missing data</b>: may require expensive and time-consuming labor</li>
+      <li><b>Guess ("data imputation")</b>: e.g., fill in the missing values with averages; use a regression model; use the values of neighbors (kNN)</li>
+      <li><b>Use a special symbol</b>, say <span class="mono">null</span>, to denote a missing value</li></ul></div>
+  </div>
+</section>
+
+<!-- source: data.pptx slide 31, imputation comparer (spec demo) -->
+<section class="board" id="impute" data-part="Part 1 · Data quality" data-nav="Comparing the options">
+  <span class="eyebrow">Missing values · compare the options</span>
+  <h2>Ignore, Average, Regression or Neighbors?</h2>
+  <div class="play">
+    <canvas class="cv" id="cvMiss" aria-label="Imputation comparison plot"></canvas>
+    <div class="side">
+      <div class="row"><label class="note" for="missRate">incomes missing: <b id="missRateV">30%</b></label><input type="range" id="missRate" min="10" max="50" step="5" value="30" style="flex:1"></div>
+      <div class="tabs" id="missM"><button class="chip" data-m="drop" aria-pressed="true">Ignore records</button><button class="chip" data-m="mean" aria-pressed="false">Average</button><button class="chip" data-m="reg" aria-pressed="false">Regression</button><button class="chip" data-m="knn" aria-pressed="false">Neighbors (kNN, k = 3)</button></div>
+      <div class="stats">
+        <div class="stat"><div class="k">records used</div><div class="v" id="missUsed">–</div></div>
+        <div class="stat"><div class="k">mean income</div><div class="v" id="missMean">–</div></div>
+        <div class="stat"><div class="k">true mean</div><div class="v" id="missTrue">–</div></div>
+        <div class="stat"><div class="k">avg error of guesses</div><div class="v" id="missErr">–</div></div>
+      </div>
+      <p class="note">Synthetic data. Hollow rings show the true hidden incomes, so you can see how far each guess lands.</p>
+    </div>
+  </div>
+</section>
+
+<!-- source: data.pptx slide 32 -->
+<section class="board" id="errors" data-part="Part 1 · Data quality" data-nav="Erroneous and duplicate data">
+  <span class="eyebrow">Data quality</span>
+  <h2>Erroneous and Duplicate Data</h2>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c4)">Erroneous values</span><p>Data set may include erroneous values.</p><ul class="clean"><li>E.g., negative age</li><li>Detect and treat them as missing values</li><li>Sometimes error-correction codes can be used to find correct value</li></ul></div>
+    <div class="card"><span class="tag" style="color:var(--c1)">Duplicates</span><p>Data set may include data objects that are duplicates, or almost duplicates of one another.</p><ul class="clean"><li>Major issue when merging data from heterogeneous sources</li><li>E.g., Same person with multiple email addresses</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ PART 2 ============ -->
+<div class="part-break"><span class="n">02</span><span class="eyebrow">Part 2</span><h2>Data Preprocessing</h2></div>
+
+<!-- source: data.pptx slide 33 -->
+<section class="board" id="integrate" data-part="Part 2 · Data preprocessing" data-nav="Integrate data">
+  <span class="eyebrow">Data preprocessing</span>
+  <h2>Data Preprocessing: Integrate Data</h2>
+  <p class="lead">Data preprocessing is needed to <b>integrate data</b> into a data warehouse.</p>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c2)">Different representations</span><p>A car dealer's database may use a <i>string</i>, "red" say, to represent color; another dealer's database may use a <i>numeric</i> color code, say 4.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Inconsistent data</span><p>A customer may have two phone numbers, one registered under the name "P. Chan", another under the name "Peter Chan".</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Naming inconsistency</span><p>One db uses "customer-id", another uses "cid" as attribute name.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Different units</span><p>Numerical attributes may be recorded using different unit measures (e.g., HKD, USD, …).</p></div>
+  </div>
+</section>
+
+<!-- source: data.pptx slides 34-35 -->
+<section class="board" id="prep" data-part="Part 2 · Data preprocessing" data-nav="Clean, reduce, transform">
+  <span class="eyebrow">Data preprocessing</span>
+  <h2>Clean, Reduce and Transform the Data</h2>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c4)">Is needed to clean the data</span><p>E.g., noise due to entry error.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Is needed to reduce the size of the data</span><p>Raw data may have "too much" details and redundancy.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c5)">Is needed to transform the data</span><p>Into a format that is more suitable for data mining. E.g., a document is converted to a TF-IDF or embedding vector.</p></div>
+  </div>
+  <div class="panel"><h3 style="margin-bottom:6px">Data cleaning</h3><ul class="clean"><li>to fill in missing data</li><li>to resolve inconsistency</li><li>to remove noisy data</li></ul></div>
+</section>
+
+<!-- source: data.pptx slides 36-37 -->
+<section class="board" id="reduce" data-part="Part 2 · Data preprocessing" data-nav="Reduction and transformation">
+  <span class="eyebrow">Data reduction and transformation</span>
+  <h2>Data Reduction and Transformation</h2>
+  <div class="grid2">
+    <div class="card"><ul class="clean"><li><b>Data reduction</b> refers to wisely reducing the size of the data set so that data mining algorithms could be executed more efficiently.</li><li>One should be very careful so that the reduction would not affect the analytical results much.</li><li>Typical approaches: use fewer records (sampling); use fewer attributes (feature selection).</li></ul></div>
+    <div class="card"><span class="tag" style="color:var(--c1)">Techniques</span><ol class="tech">
+      <li>Aggregation</li><li>Generalization</li><li>Sampling</li><li>Dimensionality Reduction</li><li>Feature creation</li><li>Feature selection</li><li>Discretization and Binarization</li><li>Normalization</li></ol></div>
+  </div>
+</section>
+
+<!-- source: data.pptx slide 38 -->
+<section class="board" id="aggregate" data-part="Part 2 · Data preprocessing" data-nav="Aggregation">
+  <span class="eyebrow">Aggregation · slide the interval</span>
+  <h2>Aggregation</h2>
+  <ul class="clean lead" style="max-width:none">
+    <li>Reduce the resolution (or granularity) of data by deriving summary statistics of raw data.</li>
+    <li>A busy stock market may process thousands of trade transactions per second. To analyze the data for patterns, it may not be necessary to consider all the details of each transaction.</li>
+    <li>Perhaps grouping all transactions that occur in 10-second intervals (and compute the turnover sum) would provide enough resolution (on the time domain) for pattern analysis.</li>
+  </ul>
+  <div class="play">
+    <canvas class="cv" id="cvAgg" aria-label="Turnover per time interval"></canvas>
+    <div class="side">
+      <div class="row"><label class="note" for="aggW">interval: <b id="aggWv">10 s</b></label><input type="range" id="aggW" min="0" max="6" value="3" style="flex:1"></div>
+      <div class="stats"><div class="stat"><div class="k">raw trades</div><div class="v" id="aggRaw">–</div></div><div class="stat"><div class="k">rows after</div><div class="v" id="aggRows">–</div></div></div>
+      <p class="note">Synthetic trades for one minute.</p>
+    </div>
+  </div>
+</section>
+
+<!-- source: data.pptx slides 39-40 -->
+<section class="board" id="generalize" data-part="Part 2 · Data preprocessing" data-nav="Generalization">
+  <span class="eyebrow">Generalization · switch the attribute</span>
+  <h2>Generalization</h2>
+  <p class="lead">Reduce the <b>cardinality</b> of an attribute's domain.</p>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">Example</span><ul class="clean"><li>A customer database may contain information about the ages of the customers.</li><li>We want to know how customers' ages affect their buying patterns.</li><li>We could map the values of the attribute "age" into another attribute "age-group" which takes on one of the following values: "kids, teens, thirties, middle-ages, seniors".</li><li>The attribute "age-group" is a higher-level concept (or a generalization) of the attribute "age".</li></ul></div>
+    <div class="side">
+      <div class="row" role="group" aria-label="Attribute"><button class="chip" data-g="age" aria-pressed="true">age</button><button class="chip" data-g="grp" aria-pressed="false">age-group</button></div>
+      <div class="rules" id="genRules"></div>
+      <p class="note">Generalization may make rules (1) more easily found, (2) more concise and (3) more interpretable. Which rule do you like better?</p>
+    </div>
+  </div>
+</section>
+
+<!-- source: data.pptx slides 41-42 -->
+<section class="board" id="sampling" data-part="Part 2 · Data preprocessing" data-nav="Sampling">
+  <span class="eyebrow">Sampling</span>
+  <h2>Sampling</h2>
+  <div class="grid2">
+    <div class="card"><ul class="clean"><li>Sampling is the main technique employed for data selection/reduction. It is often used for both the preliminary investigation of the data and the final data analysis.</li><li>Statisticians sample because obtaining the entire set of data of interest is too expensive or time consuming.</li><li>Sampling is used in data mining because processing the entire set of data of interest is too expensive or time consuming.</li></ul></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Representative</span><ul class="clean"><li>A sample is representative if it has approximately the same property (of interest) as the original set of data.</li><li>With representative sample, using a sample will work almost as well as using the entire data set.</li></ul><div class="pipe"><span>Data</span>→<span>DM</span>→<span>Results / patterns / model</span></div></div>
+  </div>
+</section>
+
+<!-- source: data.pptx slide 43, rare-class demo (spec) -->
+<section class="board" id="sampletypes" data-part="Part 2 · Data preprocessing" data-nav="Types of sampling">
+  <span class="eyebrow">Types of sampling · draw samples</span>
+  <h2>Types of Sampling</h2>
+  <div class="play">
+    <canvas class="cv grid" id="cvSamp" aria-label="Population grid with sampled objects"></canvas>
+    <div class="side">
+      <p class="note">Three groups of 49.9%, 49.9% and 0.2%: 2,000 objects, so the 0.2% group is 4 objects, ringed. Synthetic data.</p>
+      <div class="tabs" id="sampM"><button class="chip" data-m="wo" aria-pressed="true">Without replacement</button><button class="chip" data-m="w" aria-pressed="false">With replacement</button><button class="chip" data-m="st" aria-pressed="false">Stratified</button></div>
+      <div class="row"><label class="note" for="sampN">sample size n = <b id="sampNv">100</b></label><input type="range" id="sampN" min="10" max="400" step="10" value="100" style="flex:1"></div>
+      <div class="stats">
+        <div class="stat"><div class="k">groups in sample</div><div class="v" id="sampMix" style="font-size:1rem">–</div></div>
+        <div class="stat"><div class="k">picked twice or more</div><div class="v" id="sampDup">–</div></div>
+        <div class="stat" style="grid-column:1/-1"><div class="k">over 1,000 draws: samples with none of the 0.2% group</div><div class="v" id="sampMiss">–</div></div>
+      </div>
+      <div class="btnrow"><button class="btn" id="sampDraw">Draw again</button><button class="btn ghost" id="sampRun">Run 1,000 draws</button></div>
+    </div>
+  </div>
+  <div class="grid4">
+    <div class="card"><span class="tag" style="color:var(--c1)">Simple random sampling</span><p>Equal probability of selecting any particular data object.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Without replacement</span><p>As each object is selected, it is removed from the population.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">With replacement</span><p>Objects are not removed from the population as they are selected for the sample: the same object can be picked up more than once. Simpler mathematical analysis.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Stratified sampling</span><p>Split the data into groups (called strata); then draw random samples from each group. Should be used if data classes are highly imbalanced.</p></div>
+  </div>
+</section>
+
+<!-- ============ PART 3 ============ -->
+<div class="part-break"><span class="n">03</span><span class="eyebrow">Part 3</span><h2>Dimensionality Reduction</h2></div>
+
+<!-- source: data.pptx slides 44 and 46 -->
+<section class="board" id="dims" data-part="Part 3 · Dimensionality reduction" data-nav="Dimensionality reduction">
+  <span class="eyebrow">Dimensionality reduction</span>
+  <h2>Dimensionality Reduction</h2>
+  <ul class="clean lead" style="max-width:none">
+    <li>Typical data is high-dimensional (i.e., many attributes).</li>
+    <li>Remove attributes without much affecting the mining results.</li>
+  </ul>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c4)">e.g., random account numbers</span><p>If customer account numbers are randomly assigned, they may not be associated with any property of the customers. So, account numbers could be excluded from the analysis.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">e.g., highly correlated attributes</span><p>If two attributes A and B are highly correlated, including only one of them may not affect the results of data mining much (e.g., height and foot-size; number of words and number of characters in a document).</p></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">Purpose</span><ul class="clean"><li>Avoid curse of dimensionality</li><li>Reduce amount of time and memory required by data mining algorithms</li><li>Less complex rules ⇒ more interpretable</li></ul></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Techniques</span><ul class="clean"><li>Feature creation</li><li>Correlation analysis</li><li>Principal components analysis (PCA)</li><li>Feature selection</li></ul></div>
+  </div>
+</section>
+
+<!-- source: data.pptx slide 45, experiment rerun live -->
+<section class="board" id="curse" data-part="Part 3 · Dimensionality reduction" data-nav="Curse of dimensionality">
+  <span class="eyebrow">Curse of dimensionality · computed live</span>
+  <h2>Curse of Dimensionality</h2>
+  <div class="play">
+    <div class="side">
+      <canvas class="cv" id="cvCurse" aria-label="log10 of (max distance minus min distance) over min distance, against the number of dimensions"></canvas>
+      <p class="note">Randomly generate 500 points. Compute difference between max and min distance between any pair of points. Your browser reruns the experiment for each dimension.</p>
+    </div>
+    <div class="side">
+      <div class="row"><label class="note" for="curD">inspect d = <b id="curDv">10</b></label><input type="range" id="curD" min="0" max="11" value="4" style="flex:1"></div>
+      <canvas class="cv" id="cvHist" style="cursor:default;aspect-ratio:5/2" aria-label="Histogram of pairwise distances"></canvas>
+      <div class="stats"><div class="stat"><div class="k">min distance</div><div class="v" id="curMin">–</div></div><div class="stat"><div class="k">max distance</div><div class="v" id="curMax">–</div></div></div>
+      <ul class="clean small-list">
+        <li>When dimensionality increases, data becomes <b>increasingly sparse</b> in the space that it occupies.</li>
+        <li>Definitions of <b>density</b> and <b>distance</b> between points, which is critical for clustering and outlier detection, become less meaningful.</li>
+        <li>Sometimes, it is observed that including too many features degrade model performance.</li>
+        <li>Data Mining algorithms will become very slow if there are too many features in the data.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- source: data.pptx slide 47 -->
+<section class="board" id="featcreate" data-part="Part 3 · Dimensionality reduction" data-nav="Feature creation">
+  <span class="eyebrow">Feature creation · move the thresholds</span>
+  <h2>Feature Creation</h2>
+  <ul class="clean lead" style="max-width:none">
+    <li>New attributes are created to replace some existing attributes.</li>
+    <li>e.g., a database table may record a person's <i>height</i> and <i>weight</i>. To understand the association between "overweight" and certain illness, we need a measure of "overweight". <i>BMI</i>, which is equal to <i>weight/height²</i>, could be a good indicator. We can derive this new attribute before a data mining algorithm is applied.</li>
+  </ul>
+  <div class="play">
+    <canvas class="cv" id="cvBmi" aria-label="Height against weight, with the region picked out by each rule"></canvas>
+    <div class="side">
+      <div class="row" role="group" aria-label="Rule"><button class="chip" data-r="hw" aria-pressed="true">If (height &lt; a) &amp; (weight &gt; b)</button><button class="chip" data-r="bmi" aria-pressed="false">If (BMI &gt; c)</button></div>
+      <div id="bmiCtl"></div>
+      <div class="verdict ok small mono" id="bmiOut"></div>
+      <p class="note">Synthetic people. The orange points are those a BMI cut-off of 28 would call "overweight". One rule on one created attribute picks them out; two thresholds on the raw attributes cannot.</p>
+    </div>
+  </div>
+</section>
+
+<!-- source: data.pptx slides 48-49 -->
+<section class="board" id="correlation" data-part="Part 3 · Dimensionality reduction" data-nav="Correlation">
+  <span class="eyebrow">Correlation · click a cell</span>
+  <h2>Correlation</h2>
+  <ul class="clean lead" style="max-width:none"><li>Correlation measures the linear relationship between attributes. Pearson's correlation is a normalized definition of covariance. Usually visualized using a correlation matrix.</li></ul>
+  <div class="formula"><math display="block"><mrow><mi>corr</mi><mo stretchy="false">(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mrow><mi>coVariance</mi><mo stretchy="false">(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy="false">)</mo></mrow><mrow><msub><mi>s</mi><mi>x</mi></msub><msub><mi>s</mi><mi>y</mi></msub></mrow></mfrac><mspace width="1.5em"/><mi>coVariance</mi><mo stretchy="false">(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mn>1</mn><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow></mfrac><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo stretchy="false">(</mo><msub><mi>x</mi><mi>k</mi></msub><mo>−</mo><mover><mi>x</mi><mo>¯</mo></mover><mo stretchy="false">)</mo><mo stretchy="false">(</mo><msub><mi>y</mi><mi>k</mi></msub><mo>−</mo><mover><mi>y</mi><mo>¯</mo></mover><mo stretchy="false">)</mo><mspace width="1.5em"/><msub><mi>s</mi><mi>x</mi></msub><mo>=</mo><msqrt><mrow><mfrac><mn>1</mn><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow></mfrac><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msup><mrow><mo stretchy="false">(</mo><msub><mi>x</mi><mi>k</mi></msub><mo>−</mo><mover><mi>x</mi><mo>¯</mo></mover><mo stretchy="false">)</mo></mrow><mn>2</mn></msup></mrow></msqrt></mrow></math></div>
+  <p class="note"><i>x̄</i>, <i>ȳ</i>: means of x and y. <i>n</i> records in total. <i>x<sub>k</sub></i>, <i>y<sub>k</sub></i>: x, y values of the k-th record. <i>s<sub>x</sub></i>: s.d. of attribute x.</p>
+  <div class="play">
+    <div class="side">
+      <div class="mtx" id="mtx"></div>
+      <div class="tabs" id="corrPat"><button class="chip" data-m="-1" aria-pressed="false">Negative correlation</button><button class="chip" data-m="0" aria-pressed="false">Independent</button><button class="chip" data-m="1" aria-pressed="false">Positive correlation</button></div>
+      <p class="note">Correlation matrix of 150 synthetic people, with BMI created from height and weight.</p>
+    </div>
+    <div class="side">
+      <canvas class="cv" id="cvCorr" style="cursor:default" aria-label="Scatter plot of the selected pair"></canvas>
+      <p class="note" id="corrNote"></p>
+    </div>
+  </div>
+</section>
+
+<!-- source: data.pptx slide 50, 3D scene (spec demo) -->
+<section class="board" id="pca" data-part="Part 3 · Dimensionality reduction" data-nav="PCA">
+  <div class="hero">
+    <div class="meta">
+      <span class="eyebrow">Principal components analysis · drag to rotate</span>
+      <h2>Principal Components Analysis (PCA)</h2>
+      <ul class="clean">
+        <li>Input: An <i>n</i>-dimensional dataset of objects</li>
+        <li>Goal: Find a new set of dimensions that better captures the variability of data: the first dimension captures as much variability as possible; the second dimension should be orthogonal to first and capture as much as possible from the remaining variability; …</li>
+        <li>Data is "rotated" to a new set of axes, based on variability</li>
+        <li>Total variability is preserved but new attributes are uncorrelated</li>
+      </ul>
+      <div class="row" role="group" aria-label="View"><button class="chip" data-pv="0" aria-pressed="true">Data and axes</button><button class="chip" data-pv="1" aria-pressed="false">Project onto PC1 and PC2</button></div>
+      <div class="stats" id="pcaVar" style="grid-template-columns:repeat(3,minmax(0,1fr))"></div>
+    </div>
+    <div class="scene" id="pcaScene"><span class="hint">drag to rotate</span></div>
+  </div>
+  <p class="note">300 synthetic 3-D points. The principal axes are computed in your browser from the covariance matrix.</p>
+</section>
+
+<!-- source: data.pptx slide 51, 2D rotation -->
+<section class="board" id="pca2" data-part="Part 3 · Dimensionality reduction" data-nav="Total variance is preserved">
+  <span class="eyebrow">Principal components analysis · turn the axis</span>
+  <h2>Principal Components Analysis: Rotate the Axes</h2>
+  <div class="play">
+    <canvas class="cv" id="cvPca" aria-label="2D points with a rotating axis U"></canvas>
+    <div class="side">
+      <div class="formula" style="padding:6px"><math display="block"><mrow><mi>Var</mi><mo>(</mo><mi>X</mi><mo>)</mo><mo>+</mo><mi>Var</mi><mo>(</mo><mi>Y</mi><mo>)</mo><mo>=</mo><mi>Var</mi><mo>(</mo><mi>U</mi><mo>)</mo><mo>+</mo><mi>Var</mi><mo>(</mo><mi>V</mi><mo>)</mo></mrow></math></div>
+      <p class="note">Total variance is preserved. X and Y are the original dimensions; U and V the transformed dimensions.</p>
+      <div class="row"><label class="note" for="pcaA">axis U at <b id="pcaAv">0°</b></label><input type="range" id="pcaA" min="0" max="179" value="0" style="flex:1"></div>
+      <div class="stats">
+        <div class="stat"><div class="k">Var(X) + Var(Y)</div><div class="v" id="pcaXY">–</div></div>
+        <div class="stat"><div class="k">Var(U) + Var(V)</div><div class="v" id="pcaUV">–</div></div>
+        <div class="stat"><div class="k">share on U</div><div class="v" id="pcaSh">–</div></div>
+        <div class="stat"><div class="k">Cov(U, V)</div><div class="v" id="pcaCov">–</div></div>
+      </div>
+      <div class="btnrow"><button class="btn" id="pcaSnap">Snap U to the first dimension</button></div>
+      <p class="note">Instead of using attributes X and Y, using (the derived) dimension U is perhaps good enough to capture the variability in the data. Synthetic points.</p>
+    </div>
+  </div>
+</section>
+
+<!-- source: data.pptx slide 52 -->
+<section class="board" id="whypca" data-part="Part 3 · Dimensionality reduction" data-nav="Why PCA?">
+  <span class="eyebrow">Principal components analysis · pick k</span>
+  <h2>Why PCA?</h2>
+  <div class="play">
+    <div class="side">
+      <ul class="clean">
+        <li>If most of the data variability can be captured by the first <i>k</i> dimensions (or "<b>components</b>"): use only first <i>k</i> components and discard the others.
+          <div class="mono note">Original dimensions: x<sub>1</sub>, x<sub>2</sub>, x<sub>3</sub>, x<sub>4</sub>, x<sub>5</sub>, x<sub>6</sub>, x<sub>7</sub>, x<sub>8</sub>, …<br>After transformation (in descending variability): y<sub>1</sub>, y<sub>2</sub>, y<sub>3</sub>, y<sub>4</sub>, y<sub>5</sub>, y<sub>6</sub>, y<sub>7</sub>, y<sub>8</sub>, …</div></li>
+        <li>The transformed data does not lose much information but have lower dimensionality.</li>
+        <li>Search/indexing/analysis is easier for such data.</li>
+        <li><b>Rule of thumb</b>: keep the minimum number of components that capture at least 85% of the total variability (as measured by sum of variances) in the data.</li>
+      </ul>
+    </div>
+    <div class="side">
+      <canvas class="cv" id="cvScree" aria-label="Variance captured by each component, and the cumulative share"></canvas>
+      <div class="row"><label class="note" for="wpK">keep k = <b id="wpKv">3</b></label><input type="range" id="wpK" min="1" max="8" value="3" style="flex:1"></div>
+      <div class="verdict ok small" id="wpOut"></div>
+      <p class="note">PCA on 400 synthetic records with 8 attributes, computed in your browser.</p>
+    </div>
+  </div>
+</section>
+
+<!-- source: data.pptx slides 53-54 -->
+<section class="board" id="selection" data-part="Part 3 · Dimensionality reduction" data-nav="Feature selection">
+  <span class="eyebrow">Feature selection</span>
+  <h2>Feature Selection</h2>
+  <p class="lead">Remove redundant and/or irrelevant features.</p>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c2)">Redundant features</span><p>Duplicate much or all of the information contained in one or more other attributes. Example: purchase price of a product and the amount of sales tax paid.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c4)">Irrelevant features</span><p>Contain no information that is useful for the data mining task at hand. Example: customer name/id is often irrelevant to the task of predicting customers' buying habit.</p></div>
+  </div>
+  <div class="grid4">
+    <div class="card"><span class="tag" style="color:var(--c1)">Brute-force approach</span><p>Try all possible feature subsets as input to data mining method.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Embedded approach</span><p>Feature selection occurs naturally as part of the data mining algorithm.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Filter approach</span><p>Features are selected before data mining algorithm is run.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c5)">Wrapper approach</span><p>Use the output of a data mining algorithm as feedback to revise the set of attributes used. Example: ablation test.</p></div>
+  </div>
+  <div class="grid2">
+    <div class="panel"><div class="row"><label class="note" for="selN">brute force with <b id="selNv">20</b> attributes</label><input type="range" id="selN" min="1" max="60" value="20" style="flex:1"></div><p class="big mono" id="selOut"></p></div>
+    <div class="panel ablate"><span class="box">a<sub>1</sub>, a<sub>2</sub>, a<sub>3</sub>, a<sub>4</sub><br><small>Model M<sub>1</sub></small></span><span class="arr">take away a<sub>2</sub> →</span><span class="box">a<sub>1</sub>, a<sub>3</sub>, a<sub>4</sub><br><small>Model M<sub>2</sub></small></span><span class="note">Compare M<sub>1</sub> vs M<sub>2</sub>. What is the impact on model performance?</span></div>
+  </div>
+</section>
+
+<!-- ============ PART 4 ============ -->
+<div class="part-break"><span class="n">04</span><span class="eyebrow">Part 4</span><h2>Discretization and Normalization</h2></div>
+
+<!-- source: data.pptx slides 55-56 -->
+<section class="board" id="disc" data-part="Part 4 · Discretization and normalization" data-nav="Discretization and binarization">
+  <span class="eyebrow">Discretization and binarization</span>
+  <h2>Discretization and Binarization</h2>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">Discretization</span><p>Convert a continuous numerical attribute into a discrete ordinal attribute.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Binarization</span><p>The resulting attribute is binary.</p></div>
+  </div>
+  <p class="lead">Sometimes, it is more convenient and efficient for a DM algorithm to work with categorical/nominal/binary values instead of continuous numerical values.</p>
+  <h3>Discretization of continuous data</h3>
+  <ul class="clean"><li>Split a continuous data domain into ranges. <i>n</i>−1 split points define <i>n</i> ranges. Ranges are values of a discrete attribute.</li><li>E.g., height (in cm) discretized into ranges as follows: 0-60, 60-80, 80-100, 100-120, 120-140, 140-160, 160-170, 170-180, 180-190, 190- (10 values).</li></ul>
+  <div class="panel"><svg id="hRanges" viewBox="0 0 900 110" role="img" aria-label="A height scale from 0 to 220 cm split into ten ranges R1 to R10"></svg><div class="row"><label class="note" for="hIn">a height of <b id="hInv">172</b> cm</label><input type="range" id="hIn" min="30" max="215" value="172" style="flex:1"></div></div>
+</section>
+
+<!-- source: data.pptx slide 57 -->
+<section class="board" id="discex" data-part="Part 4 · Discretization and normalization" data-nav="Discretization examples">
+  <span class="eyebrow">Discretization playground · change the number of ranges</span>
+  <h2>Discretization Examples</h2>
+  <div class="play">
+    <canvas class="cv tall" id="cvDisc" aria-label="The same data discretized by equal width, equal frequency and k-means"></canvas>
+    <div class="side">
+      <div class="row"><label class="note" for="discK">number of ranges = <b id="discKv">4</b></label><input type="range" id="discK" min="2" max="8" value="4" style="flex:1"></div>
+      <ul class="clean">
+        <li><b>Equal-width</b>: intervals have the same width.</li>
+        <li><b>Equal frequency (equal-depth)</b>: intervals have the same number of objects.</li>
+        <li><b>K-means</b>: interval boundaries are determined by clustering the objects.</li>
+      </ul>
+      <p class="note">Numbers under each row count the objects per interval. Synthetic values.</p>
+    </div>
+  </div>
+</section>
+
+<!-- source: data.pptx slide 58 -->
+<section class="board" id="normalize" data-part="Part 4 · Discretization and normalization" data-nav="Normalization">
+  <span class="eyebrow">Normalization · compare two people</span>
+  <h2>Normalization</h2>
+  <ul class="clean lead" style="max-width:none">
+    <li>The process of converting numerical numbers to a common range (e.g., [0,1]).</li>
+    <li>e.g., weight in kg; salary in HKD. How to measure the similarity (or distance) between two persons based on their weights (<i>w</i>) and salaries (<i>s</i>)? |<i>w</i><sub>1</sub> − <i>w</i><sub>2</sub>| + |<i>s</i><sub>1</sub> − <i>s</i><sub>2</sub>| ?</li>
+  </ul>
+  <div class="play">
+    <div class="tbl-wrap"><table class="sm num" id="nwT"></table></div>
+    <div class="side">
+      <div class="row" role="group" aria-label="Scale"><button class="chip" data-nw="raw" aria-pressed="true">Raw values</button><button class="chip" data-nw="mm" aria-pressed="false">Min-max normalized</button></div>
+      <div class="verdict ok small mono" id="nwOut"></div>
+      <p class="note">Which person is closest to Ann? Six synthetic people.</p>
+    </div>
+  </div>
+</section>
+
+<!-- source: data.pptx slide 59 -->
+<section class="board" id="normform" data-part="Part 4 · Discretization and normalization" data-nav="Min-max and z-score">
+  <span class="eyebrow">Normalization · edit the values</span>
+  <h2>Min-Max and Z-Score Normalization</h2>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">min-max normalization</span><p class="mono big">x′ = (x − min)/(max − min)</p><p class="note">Maximum and minimum values of attribute x found in data.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">z-score normalization</span><p class="mono big">x′ = (x − X̄)/σ<sub>X</sub></p><p class="note">X̄: mean of x; σ<sub>X</sub>: standard deviation of x.</p></div>
+  </div>
+  <div class="tabs" id="normM"><button class="chip" data-m="mm" aria-pressed="true">Min-max</button><button class="chip" data-m="z" aria-pressed="false">Z-score</button></div>
+  <div class="tbl-wrap"><table class="sm num"><thead><tr><th>Person</th><th>Weight (kg)</th><th>Salary (HKD / month)</th><th>weight′</th><th>salary′</th></tr></thead><tbody id="normBody"></tbody></table></div>
+  <p class="note" id="normNote"></p>
+</section>
+
+<!-- ============ PART 5 · AI LAYER ============ -->
+<div class="part-break"><span class="n">05</span><span class="eyebrow">Part 5 · AI layer</span><h2>Cleaning with AI, Measured</h2></div>
+
+<!-- source: new (spec AI layer: LLM-assisted cleaning vs rules and regular expressions) -->
+<section class="board" id="aiclean" data-part="Part 5 · Cleaning with AI" data-nav="LLM-assisted cleaning">
+  <span class="eyebrow">AI as a tool · pick a field</span>
+  <h2>LLM-Assisted Cleaning</h2>
+  <p class="lead">Standardize a messy text field two ways: with hand-written rules and regular expressions (the classical baseline), and with an LLM. Then score both against values checked by hand.</p>
+  <div class="row" role="group" aria-label="Field"><button class="chip" data-f="co" aria-pressed="true">Company names</button><button class="chip" data-f="wt" aria-pressed="false">Weights with mixed units</button></div>
+  <div class="tbl-wrap"><table class="sm cleanT" id="clT"></table></div>
+  <div class="grid3">
+    <div class="stat"><div class="k">rules · errors</div><div class="v" id="clR">–</div></div>
+    <div class="stat"><div class="k">LLM (illustrative) · errors</div><div class="v" id="clL">–</div></div>
+    <div class="card" id="clRule"></div>
+  </div>
+  <p class="note">The rules run in your browser. The LLM column is illustrative example output, written for this lecture; the error counts compare each column with the hand-checked value.</p>
+</section>
+
+<!-- source: new (spec AI layer: entity resolution, n-gram Jaccard with a threshold, precision and recall) -->
+<section class="board" id="er" data-part="Part 5 · Cleaning with AI" data-nav="Entity resolution">
+  <span class="eyebrow">Entity resolution · slide the threshold</span>
+  <h2>Entity Resolution</h2>
+  <p class="lead">Which pairs of records refer to the same person? Classical baseline: character 3-gram Jaccard similarity of the names, with a threshold.</p>
+  <div class="play">
+    <div class="tbl-wrap"><table class="sm erT" id="erT"></table></div>
+    <div class="side">
+      <div class="row"><label class="note" for="erTh">match if Jaccard ≥ <b id="erThv">0.65</b></label><input type="range" id="erTh" min="0.05" max="0.95" step="0.05" value="0.65" style="flex:1"></div>
+      <div class="stats" id="erStats" style="grid-template-columns:repeat(2,minmax(0,1fr))"></div>
+      <div class="verdict ok small mono" id="erLlm"></div>
+      <p class="note">16 labelled pairs written for this lecture: 8 matches, 8 non-matches. Jaccard = |shared 3-grams| / |all 3-grams| of the two names. The LLM column is illustrative example output.</p>
+    </div>
+  </div>
+</section>
+
+<!-- source: new (spec AI layer: feature extraction from free text, verified against the source) -->
+<section class="board" id="extract" data-part="Part 5 · Cleaning with AI" data-nav="Extraction from free text">
+  <span class="eyebrow">Feature extraction · verify every value</span>
+  <h2>Feature Extraction from Free Text</h2>
+  <p class="lead">Turn product descriptions into structured columns. Then verify each extracted value against the source text: a value that does not appear in the text needs a human check.</p>
+  <div class="row" role="group" aria-label="Extractor"><button class="chip" data-x="rx" aria-pressed="true">Regular expressions</button><button class="chip" data-x="llm" aria-pressed="false">LLM (illustrative)</button></div>
+  <div class="tbl-wrap"><table class="sm exT" id="exT"></table></div>
+  <div class="grid3">
+    <div class="stat"><div class="k">values correct</div><div class="v" id="exOk">–</div></div>
+    <div class="stat"><div class="k">flagged: not found in the text</div><div class="v" id="exFlag">–</div></div>
+    <div class="stat"><div class="k">wrong and not flagged</div><div class="v" id="exMiss">–</div></div>
+  </div>
+  <p class="note">Six example descriptions written for this lecture. ✓ correct · ✗ wrong · ⚑ not found in the text. The check runs in your browser.</p>
+</section>
+
+<!-- source: new (spec AI layer: synthetic data, uses and risks, check fidelity) -->
+<section class="board" id="synthetic" data-part="Part 5 · Cleaning with AI" data-nav="Synthetic data">
+  <span class="eyebrow">Synthetic data · pick a generator</span>
+  <h2>Synthetic Data: Uses and Risks</h2>
+  <p class="lead">Synthetic records are now often produced by generative AI models, for example an LLM asked to "write 1,000 realistic customer records". Whatever made the data, check it against the real data before you use it.</p>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c3)">Uses</span><p><b>Privacy</b>: share data that looks like the real records without sharing them. <b>Augmentation</b>: more examples of a rare class.</p></div>
+    <div class="card bad"><span class="tag" style="color:var(--signal)">Risks</span><p>Copied rows, broken correlations, impossible values. <b>Check fidelity before use.</b></p></div>
+  </div>
+  <div class="play">
+    <canvas class="cv" id="cvSyn" aria-label="Real records and synthetic records, age against income"></canvas>
+    <div class="side">
+      <p class="note">Three simple generators, each showing one risk. An AI generator can fail in any of these ways, so the same checks apply.</p>
+      <div class="tabs" id="synG"><button class="chip" data-g="copy" aria-pressed="true">Copy with small noise</button><button class="chip" data-g="indep" aria-pressed="false">Each column on its own</button><button class="chip" data-g="gauss" aria-pressed="false">One bell-shaped fit</button></div>
+      <div class="stats" id="synStats" style="grid-template-columns:repeat(3,minmax(0,1fr))"></div>
+      <p class="note" id="synNote"></p>
+    </div>
+  </div>
+</section>
+
+<!-- source: new (spec AI layer: every LLM-cleaned column gets a measured error rate) -->
+<section class="board" id="errrule" data-part="Part 5 · Cleaning with AI" data-nav="Measure every column">
+  <span class="eyebrow">The rule · try a sample size</span>
+  <h2>Every LLM-cleaned column gets a measured error rate</h2>
+  <p class="lead">Check a random sample of the cleaned column by hand, count the errors, and report the error rate with its uncertainty.</p>
+  <div class="play">
+    <div class="side">
+      <div class="row"><label class="note" for="erN">rows checked by hand: <b id="erNv">50</b></label><input type="range" id="erN" min="10" max="200" step="10" value="50" style="flex:1"></div>
+      <div class="row"><label class="note" for="erE">errors found: <b id="erEv">3</b></label><input type="range" id="erE" min="0" max="40" value="3" style="flex:1"></div>
+      <div class="stats" id="erRate" style="grid-template-columns:repeat(2,minmax(0,1fr))"></div>
+      <p class="note">Column of 500 rows. The range is a 95% Wilson interval, computed in your browser. Larger samples give narrower ranges.</p>
+    </div>
+    <canvas class="cv" id="cvErr" aria-label="Estimated error rate with its 95% range"></canvas>
+  </div>
+</section>
+
+<!-- ============ PART 6 · LAB ============ -->
+<div class="part-break"><span class="n">06</span><span class="eyebrow">Part 6 · Lab, 45 minutes</span><h2>Clean It Twice</h2></div>
+
+<!-- source: new (spec lab, in-class version) -->
+<section class="board" id="labbrief" data-part="Part 6 · Lab" data-nav="Lab brief">
+  <span class="eyebrow">Lab 3 · ungraded practice for the exams</span>
+  <h2>Clean a messy customer table, twice</h2>
+  <p class="lead">You get 100 rows of a messy customer table with typos, duplicates, mixed units and missing values. Clean it by hand with pandas, and clean one column with an LLM. A hidden clean version scores both.</p>
+  <div class="bar" id="labBar">
+    <button class="seg" style="flex-basis:11.1%;background:var(--c1)" aria-pressed="true"><b>5 min</b><span>Brief</span></button>
+    <button class="seg" style="flex-basis:66.7%;background:var(--c3)" aria-pressed="false"><b>30 min</b><span>Guided work: clean, then score</span></button>
+    <button class="seg" style="flex-basis:22.2%;background:var(--c4)" aria-pressed="false"><b>10 min</b><span>Share-out</span></button>
+  </div>
+  <div class="panel" id="labDetail"></div>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">By hand</span><h3>pandas</h3><p>Fix typos, units, duplicates and missing values with code you can read and rerun.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">With an LLM</span><h3>One column only</h3><p>Pick one text column and let an LLM standardize it. Keep the prompt.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c4)">Score</span><h3>Error rate and time</h3><p>Compare each version with the hidden clean table: the error rate per column, and the minutes each method took.</p></div>
+  </div>
+</section>
+
+<!-- source: new (same steps as the Lecture 1 and 2 Colab boards) -->
+<section class="board" id="labsetup" data-part="Part 6 · Lab" data-nav="Open the notebook in Colab">
+  <span class="eyebrow">Lab 3 · getting started</span>
+  <h2>Open the notebook in Google Colab</h2>
+  <p class="lead">Same steps as Labs 1 and 2. There is nothing to install.</p>
+  <ol class="lab">
+    <li><div><b>Open the Lab 3 link on Github.</b> The notebook opens in Colab.</div></li>
+    <li><div><b>File → Save a copy in Drive.</b> Work in your copy. Changes to the shared notebook are not saved.</div></li>
+    <li><div><b>Run the cells from top to bottom</b> with <kbd>Shift</kbd> + <kbd>Enter</kbd>, and replace each <span class="mono">___</span> with your own code.</div></li>
+  </ol>
+  <p class="note">No Google account? Download the Lab 3 from Github and open the notebook in Jupyter or VS Code.</p>
+</section>
+
+<!-- source: new (share-out display for the lab) -->
+<section class="board" id="labresults" data-part="Part 6 · Lab" data-nav="Class results">
+  <span class="eyebrow">Lab 3 · share-out</span>
+  <h2>Class Results: Error Rate and Time</h2>
+  <p class="lead">For the column cleaned both ways, enter the class's typical error rate and time for each method.</p>
+  <div class="play">
+    <div class="side" id="lrCtl"></div>
+    <canvas class="cv" id="cvLr" aria-label="Error rate and minutes, by hand and with an LLM"></canvas>
+  </div>
+  <p class="note">The hidden clean table and the scoring code are in your notebook.</p>
+</section>
+
+<!-- ============ SUMMARY ============ -->
+<!-- source: data.pptx slides 24-59; learning outcomes, readings and exam scope from the spec -->
+<section class="board" id="summary" data-part="Summary" data-nav="Summary">
+  <span class="eyebrow">Summary</span>
+  <h2>Summary</h2>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">Data quality</span><p style="color:var(--ink)">Noise and outliers, missing values, erroneous and duplicate data. Detect outliers by cluster analysis, distance (kNN) or a model; check manually whether they are noise.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Preprocessing</span><p style="color:var(--ink)">Integrate, clean, reduce and transform: aggregation, generalization, sampling (simple random, with or without replacement, stratified).</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Fewer, better attributes</span><p style="color:var(--ink)">The curse of dimensionality; feature creation, correlation, PCA (total variance preserved, keep ≥ 85%), feature selection; discretization and normalization.</p></div>
+  </div>
+  <p class="lab-s" style="color:var(--c3);font-weight:700">What you can do after today</p>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">Diagnose</span><p style="color:var(--ink)">Diagnose noise, outliers, missing values and duplicates, and choose a treatment for each.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Apply</span><p style="color:var(--ink)">Apply sampling, PCA, feature selection, discretization and normalization.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c4)">Measure</span><p style="color:var(--ink)">Use an LLM for cleaning or entity resolution, and measure its error rate against a hand-cleaned baseline.</p></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">Key readings</span><p style="color:var(--ink)">Tan, chapter 2 (data quality, preprocessing). Christen, <i>Data Matching</i> (2012), chapter 1, optional.</p></div>
+    <div class="card"><span class="tag" style="color:var(--signal)">Exam-relevant</span><p style="color:var(--ink)">Noise vs outliers, missing-value strategies, sampling types, the curse of dimensionality, PCA's variance argument, discretization methods, normalization formulas.</p></div>
+  </div>
+  <div class="next"><span class="eyebrow">Next</span><h3>Lecture 4 · Classification I: trees and evaluation (Friday)</h3><p>Decision trees, impurity measures, evaluating classifiers, and data leakage.</p></div>
+</section>
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+"use strict";
+// ===== shared lecture kit: utilities, nav, theme hooks, three.js + canvas helpers =====
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const themeHooks = [];
+function onTheme(f){ themeHooks.push(f); }
+function fireTheme(){ themeHooks.forEach(f => { try { f(); } catch(e){} }); }
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", fireTheme);
+new MutationObserver(fireTheme).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
+
+// seeded RNG so every class sees the same data
+function rng(seed){ let s = seed >>> 0; return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function gauss(r){ let u = 0, v = 0; while(!u) u = r(); while(!v) v = r(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+
+/* ---------------- navigation ---------------- */
+const boards = $$("section.board");
+const toc = $("#toc");
+let lastPart = "";
+boards.forEach(b => {
+  if (b.dataset.part !== lastPart){ lastPart = b.dataset.part; const li = document.createElement("li"); li.className = "part"; li.textContent = lastPart; toc.appendChild(li); }
+  const li = document.createElement("li"); const a = document.createElement("a");
+  a.href = "#" + b.id; a.textContent = b.dataset.nav; a.dataset.id = b.id; li.appendChild(a); toc.appendChild(li);
+});
+const links = $$("#toc a");
+let current = 0;
+const io = new IntersectionObserver(es => {
+  es.forEach(e => { if (e.isIntersecting){ current = boards.indexOf(e.target); links.forEach(l => l.classList.toggle("on", l.dataset.id === e.target.id)); const on = links[current]; if (on && innerWidth < 980) on.scrollIntoView({block:"nearest", inline:"center"}); } });
+}, {rootMargin:"-40% 0px -55% 0px"});
+boards.forEach(b => io.observe(b));
+addEventListener("keydown", e => {
+  if (e.target.closest("input,textarea,select") || e.metaKey || e.ctrlKey || e.altKey) return;
+  let n = null;
+  if (e.key === "ArrowRight" || e.key === "PageDown") n = Math.min(boards.length-1, current+1);
+  if (e.key === "ArrowLeft" || e.key === "PageUp") n = Math.max(0, current-1);
+  if (n === null) return;
+  e.preventDefault(); current = n;
+  boards[n].scrollIntoView({behavior: reduce ? "auto" : "smooth", block:"start"});
+});
+
+/* ---------------- three.js helpers ---------------- */
+const hasGL = typeof THREE !== "undefined";
+function dotTexture(){
+  const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d");
+  const grd = g.createRadialGradient(32,32,0,32,32,30); grd.addColorStop(0,"rgba(255,255,255,1)"); grd.addColorStop(.7,"rgba(255,255,255,1)"); grd.addColorStop(1,"rgba(255,255,255,0)");
+  g.fillStyle = grd; g.beginPath(); g.arc(32,32,30,0,Math.PI*2); g.fill();
+  const t = new THREE.CanvasTexture(c); return t;
+}
+function makeRenderer(host){
+  const r = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  r.setPixelRatio(Math.min(devicePixelRatio, 2)); host.prepend(r.domElement);
+  return r;
+}
+function visible(el, cb){ const o = new IntersectionObserver(es => es.forEach(e => cb(e.isIntersecting))); o.observe(el); }
+function noGL(host){ const p = document.createElement("p"); p.className = "note"; p.style.padding = "24px"; p.textContent = "This 3D view needs WebGL, which this browser has turned off."; host.appendChild(p); }
+
+/* ---------------- canvas helpers ---------------- */
+function setupCanvas(cv){
+  const ctx = cv.getContext("2d");
+  const fit = () => { const r = cv.getBoundingClientRect(); const d = Math.min(devicePixelRatio,2); cv.width = Math.max(1, r.width*d); cv.height = Math.max(1, r.height*d); ctx.setTransform(d,0,0,d,0,0); return r; };
+  return {ctx, fit};
+}
+function axes(ctx, w, h, pad, xl, yl, xt, yt){
+  ctx.strokeStyle = tok("--line"); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, h-pad.b); ctx.lineTo(w-pad.r, h-pad.b); ctx.stroke();
+  ctx.fillStyle = tok("--muted"); ctx.font = `12px ${tok("--mono")}`;
+  ctx.textAlign = "center"; ctx.fillText(xl, (pad.l + w - pad.r)/2, h-8);
+  xt.forEach(([v,x]) => ctx.fillText(v, x, h-pad.b+16));
+  ctx.textAlign = "right"; yt.forEach(([v,y]) => ctx.fillText(v, pad.l-6, y+4));
+  ctx.save(); ctx.translate(14, (pad.t + h - pad.b)/2); ctx.rotate(-Math.PI/2); ctx.textAlign = "center"; ctx.fillText(yl, 0, 0); ctx.restore();
+}
+const redraws = {};
+onTheme(() => Object.values(redraws).forEach(f => f()));
+
+
+function live(cv, key, paint){
+  const {ctx, fit} = setupCanvas(cv);
+  const draw = () => { const r = fit(); if (!r.width) return; ctx.clearRect(0,0,r.width,r.height); paint(ctx, r.width, r.height); };
+  redraws[key] = draw; new ResizeObserver(draw).observe(cv); return draw;
+}
+const at = (cv, e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+
+/* ---------------- generic tabsets ---------------- */
+$$(".tabset").forEach(root => {
+  const bs = $$("[data-tab]", root), ps = $$("[data-pane]", root);
+  const go = id => { bs.forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === id))); ps.forEach(p => p.hidden = p.dataset.pane !== id); root.dataset.show = id; };
+  bs.forEach(b => b.onclick = () => go(b.dataset.tab)); go(bs[0].dataset.tab);
+});
+
+/* ---------------- quiz helper ---------------- */
+function quiz(host, O, Q, scoreEl){
+  let answered = 0, right = 0;
+  const upd = () => { if (scoreEl) scoreEl.textContent = answered < Q.length ? `${answered} of ${Q.length} answered · ${right} correct` : `Done: ${right} of ${Q.length} correct`; };
+  Q.forEach(([q, a, why]) => {
+    const d = document.createElement("div"); d.className = "q";
+    d.innerHTML = `<p>${q}</p><div class="opts">${O.map((o,i)=>`<button data-i="${i}">${o}</button>`).join("")}</div><p class="fb"></p>`;
+    $$("button", d).forEach(b => b.onclick = () => {
+      if (d.classList.contains("done")) return;
+      const i = +b.dataset.i; b.classList.add("picked"); d.classList.add("done", i===a ? "right" : "wrong");
+      answered++; if (i===a) right++;
+      $(".fb", d).innerHTML = `<b>${i===a ? "Correct." : "Not quite: " + O[a] + "."}</b> ${why}`; upd();
+    });
+    host.appendChild(d);
+  });
+  upd();
+}
+
+/* ---------------- segmented bars (plan, assessment, lab) ---------------- */
+function segBar(bar, detail, D){
+  const bs = $$(".seg", $(bar));
+  const go = i => { bs.forEach((b,k) => b.setAttribute("aria-pressed", String(k===i))); $(detail).innerHTML = D[i]; };
+  bs.forEach((b,i) => b.onclick = () => go(i)); go(0);
+}
+
+
+/* ================= LECTURE 3 MODULES ================= */
+function chipGroup(btns, attr, cb){ btns.forEach(b => b.addEventListener("click", () => { btns.forEach(x => x.setAttribute(attr, String(x===b))); cb(b); })); }
+function chipHost(host, cb){ const bs = $$(".chip[data-m]", host); bs.forEach(b => b.onclick = () => { bs.forEach(x => x.setAttribute("aria-pressed", String(x===b))); cb(b.dataset.m); }); }
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const f3 = v => (Math.abs(v - Math.round(v)) < 1e-9 ? String(Math.round(v)) : v.toFixed(3));
+const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
+const vari = a => { const m = mean(a); return a.reduce((s,x)=>s+(x-m)**2,0)/(a.length-1); };
+function corr(a,b){ const ma = mean(a), mb = mean(b); let sab=0, saa=0, sbb=0; for (let i=0;i<a.length;i++){ const x = a[i]-ma, y = b[i]-mb; sab += x*y; saa += x*x; sbb += y*y; } return sab/Math.sqrt(saa*sbb); }
+const pct = (x,d=1) => (x*100).toFixed(d) + "%";
+const hk = x => "HK$" + Math.round(x).toLocaleString("en-US");
+function disc(ctx, x, y, r){ ctx.beginPath(); ctx.arc(x, y, r, 0, 7); }
+// eigen-decomposition of a symmetric matrix (cyclic Jacobi), sorted by eigenvalue
+function eigSym(A){
+  const n = A.length, a = A.map(r => r.slice()), v = a.map((r,i) => r.map((_,j) => +(i===j)));
+  for (let sw=0; sw<80; sw++){
+    let off = 0; for (let p=0;p<n;p++) for (let q=p+1;q<n;q++) off += a[p][q]**2;
+    if (off < 1e-20) break;
+    for (let p=0;p<n;p++) for (let q=p+1;q<n;q++){
+      if (Math.abs(a[p][q]) < 1e-15) continue;
+      const th = (a[q][q]-a[p][p])/(2*a[p][q]), t = (th >= 0 ? 1 : -1)/(Math.abs(th)+Math.sqrt(th*th+1)), c = 1/Math.sqrt(t*t+1), s = t*c;
+      for (let k=0;k<n;k++){ const x = a[k][p], y = a[k][q]; a[k][p] = c*x - s*y; a[k][q] = s*x + c*y; }
+      for (let k=0;k<n;k++){ const x = a[p][k], y = a[q][k]; a[p][k] = c*x - s*y; a[q][k] = s*x + c*y; }
+      for (let k=0;k<n;k++){ const x = v[k][p], y = v[k][q]; v[k][p] = c*x - s*y; v[k][q] = s*x + c*y; }
+    }
+  }
+  return a.map((r,i) => ({val:r[i], vec:v.map(row => row[i])})).sort((x,y) => y.val-x.val);
+}
+function covMat(P){ const d = P[0].length, m = Array.from({length:d}, (_,j) => mean(P.map(p => p[j]))); return Array.from({length:d}, (_,i) => Array.from({length:d}, (_,j) => P.reduce((s,p) => s + (p[i]-m[i])*(p[j]-m[j]), 0)/(P.length-1))); }
+
+/* ---------------- five questions (slide 2) ---------------- */
+(function dq(){
+  const D = [
+    "<h3>What are the various types of data?</h3><p style='margin-top:6px'>Lecture 2: data objects and attributes; record, document, set-valued, graph, ordered and unstructured data.</p>",
+    "<h3>How is data represented?</h3><p style='margin-top:6px'>Lecture 2: tables, sparse vectors, sets, graphs and embeddings.</p>",
+    "<h3>How to improve data quality?</h3><p style='margin-top:6px'>Today, Part 1: noise and outliers, missing values, erroneous and duplicate data.</p>",
+    "<h3>How to preprocess data for analysis?</h3><p style='margin-top:6px'>Today, Parts 2–4: integration and cleaning; aggregation, generalization and sampling; dimensionality reduction; discretization and normalization.</p>",
+    "<h3>How to measure similarity between data objects?</h3><p style='margin-top:6px'>Lecture 2: distances, metrics, SMC, Jaccard and cosine.</p>"
+  ];
+  const bs = $$("#dataQs .dq");
+  const go = i => { bs.forEach((b,k) => b.setAttribute("aria-pressed", String(k===i))); $("#dataQd").innerHTML = D[i]; };
+  bs.forEach((b,i) => b.onclick = () => go(i)); go(2);
+})();
+
+/* ---------------- today's plan ---------------- */
+segBar("#planBar", "#planDetail", [
+  "<h3>Classical core · about 65 minutes</h3><p style='margin-top:6px'>Today: data quality (noise, outliers, missing values, duplicates), preprocessing (integration, aggregation, generalization, sampling), dimensionality reduction (PCA, feature selection), discretization and normalization.</p>",
+  "<h3>AI layer · about 30 minutes</h3><p style='margin-top:6px'>AI as a tool for cleaning: LLM-assisted standardization, entity resolution and extraction from free text, each against a classical baseline; synthetic data; and the rule that every LLM-cleaned column gets a measured error rate.</p>",
+  "<h3>Break · 10 minutes</h3><p style='margin-top:6px'>A 10-minute break mid-session, every session.</p>",
+  "<h3>Lab · about 45 minutes</h3><p style='margin-top:6px'>A guided notebook: a 5-minute brief, 30 minutes of guided work and a 10-minute share-out. Today: clean 100 messy rows by hand with pandas, clean one column with an LLM, and score both. Labs are ungraded practice.</p>"
+]);
+
+/* ---------------- outliers figure (slide 26) ---------------- */
+(function outFig(){
+  const R = rng(26), P = [];
+  [[.62,.62,.03,90],[.28,.42,.02,70],[.55,.22,.06,120],[.82,.85,.025,90]].forEach(([cx,cy,s,n]) => { for (let i=0;i<n;i++) P.push([cx+gauss(R)*s, cy+gauss(R)*s]); });
+  const O = [[.1,.78],[.42,.12],[.95,.2]];
+  live($("#cvOutFig"), "outfig", (ctx, W, H) => {
+    const pad = 26, X = x => pad + x*(W-2*pad), Y = y => H-pad - y*(H-2*pad);
+    ctx.strokeStyle = tok("--line"); ctx.beginPath(); ctx.moveTo(pad, pad-10); ctx.lineTo(pad, H-pad); ctx.lineTo(W-pad+10, H-pad); ctx.stroke();
+    ctx.fillStyle = tok("--muted"); ctx.font = `12px ${tok("--mono")}`; ctx.fillText("x", W-pad+2, H-pad+16); ctx.fillText("y", pad-16, pad);
+    ctx.fillStyle = tok("--ink"); ctx.globalAlpha = .75; P.forEach(([x,y]) => { disc(ctx, X(x), Y(y), 2.2); ctx.fill(); }); ctx.globalAlpha = 1;
+    O.forEach(([x,y]) => { disc(ctx, X(x), Y(y), 3); ctx.fillStyle = tok("--c4"); ctx.fill(); disc(ctx, X(x), Y(y), 11); ctx.strokeStyle = tok("--c4"); ctx.lineWidth = 2.5; ctx.stroke(); ctx.lineWidth = 1; });
+    ctx.fillStyle = tok("--c4"); ctx.font = `600 13px ${tok("--body")}`; ctx.fillText("outliers", X(.1)+16, Y(.78)+4);
+  });
+})();
+
+/* ---------------- outlier detection (slide 28) ---------------- */
+(function outliers(){
+  let pts, last = null, method = "knn", k = 4, nFlag = 8, cent = [];
+  function reset(){ const R = rng(5); pts = []; [[.35,.35,.07,40],[1.0,.3,.09,50],[.75,.75,.06,35]].forEach(([cx,cy,s,n]) => { for (let i=0;i<n;i++) pts.push({x:cx+gauss(R)*s, y:cy+gauss(R)*s}); }); for (let i=0;i<8;i++) pts.push({x:.05+R()*1.4, y:.05+R()*.9}); last = null; }
+  const d2 = (a,b) => (a.x-b.x)**2 + (a.y-b.y)**2;
+  function kmeans(){
+    cent = [{x:pts[0].x, y:pts[0].y}];
+    while (cent.length < 3){ let best = null, bd = -1; pts.forEach(p => { const d = Math.min(...cent.map(c => d2(p,c))); if (d > bd){ bd = d; best = p; } }); cent.push({x:best.x, y:best.y}); }
+    for (let it=0; it<30; it++){ const g = cent.map(() => []); pts.forEach(p => { let b = 0; cent.forEach((c,i) => { if (d2(p,c) < d2(p,cent[b])) b = i; }); g[b].push(p); }); cent = cent.map((c,i) => g[i].length ? {x:mean(g[i].map(p => p.x)), y:mean(g[i].map(p => p.y))} : c); }
+  }
+  function score(){
+    if (method === "knn") pts.forEach(p => { const ds = pts.map(q => Math.sqrt(d2(p,q))).sort((a,b) => a-b); p.s = ds[Math.min(k, ds.length-1)]; });
+    else { kmeans(); pts.forEach(p => { let b = 0; cent.forEach((c,i) => { if (d2(p,c) < d2(p,cent[b])) b = i; }); p.c = cent[b]; p.s = Math.sqrt(d2(p, cent[b])); }); }
+    const order = pts.slice().sort((a,b) => b.s - a.s); pts.forEach(p => p.f = false); order.slice(0, nFlag).forEach(p => p.f = true);
+    return order;
+  }
+  let sc = 1, ox = 0, oy = 0;
+  const X = v => ox + v*sc, Y = v => oy + (1-v)*sc;
+  const draw = live($("#cvOut"), "out", (ctx, W, H) => {
+    sc = Math.min((W-36)/1.5, H-36); ox = (W-1.5*sc)/2; oy = (H-sc)/2;
+    const order = score();
+    ctx.strokeStyle = tok("--line"); ctx.strokeRect(ox, oy, 1.5*sc, sc);
+    if (method === "clu"){ pts.forEach(p => { if (p.f){ ctx.strokeStyle = tok("--c4"); ctx.globalAlpha = .6; ctx.beginPath(); ctx.moveTo(X(p.x),Y(p.y)); ctx.lineTo(X(p.c.x),Y(p.c.y)); ctx.stroke(); ctx.globalAlpha = 1; } }); }
+    else pts.forEach(p => { if (p.f){ ctx.setLineDash([4,4]); ctx.strokeStyle = tok("--c4"); ctx.globalAlpha = .35; disc(ctx, X(p.x), Y(p.y), p.s*sc); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1; } });
+    pts.forEach(p => { disc(ctx, X(p.x), Y(p.y), p.f ? 6 : 4.5); ctx.fillStyle = tok(p.f ? "--c4" : "--c1"); ctx.globalAlpha = p.f ? 1 : .75; ctx.fill(); ctx.globalAlpha = 1; });
+    if (last){ disc(ctx, X(last.x), Y(last.y), 10); ctx.strokeStyle = tok("--ink"); ctx.lineWidth = 2; ctx.stroke(); ctx.lineWidth = 1; }
+    if (method === "clu") cent.forEach(c => { const x = X(c.x), y = Y(c.y); ctx.strokeStyle = tok("--ink"); ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x-8,y-8); ctx.lineTo(x+8,y+8); ctx.moveTo(x+8,y-8); ctx.lineTo(x-8,y+8); ctx.stroke(); ctx.lineWidth = 1; });
+    $("#outMax").textContent = order[0].s.toFixed(3);
+    $("#outYou").textContent = last ? `#${order.indexOf(last)+1} of ${pts.length}` : "–";
+    $("#outDesc").textContent = method === "knn" ? `Score = distance to the k-th nearest neighbor (k = ${k}). Dashed circles show that distance for flagged points.` : "Cluster analysis (k-means, 3 clusters, ×). Points far from every cluster centre are flagged; lines link them to their nearest centre.";
+    $("#outKrow").style.visibility = method === "knn" ? "visible" : "hidden";
+  });
+  reset();
+  chipHost($("#outTabs"), m => { method = m; draw(); });
+  $("#outK").oninput = e => { k = +e.target.value; $("#outKv").textContent = k; draw(); };
+  $("#outN").oninput = e => { nFlag = +e.target.value; $("#outNv").textContent = nFlag; draw(); };
+  $("#outReset").onclick = () => { reset(); draw(); };
+  $("#cvOut").addEventListener("click", e => { const r = e.currentTarget.getBoundingClientRect(); const x = (e.clientX-r.left-ox)/sc, y = 1-(e.clientY-r.top-oy)/sc; if (x<0||x>1.5||y<0||y>1) return; last = {x,y}; pts.push(last); draw(); });
+})();
+
+/* ---------------- noise or outlier? (new examples) ---------------- */
+quiz($("#noiseQ"), ["Noise", "Useful outlier", "Verify first"], [
+  ["An office temperature log reads 300 °C for one minute, then 22 °C again.", 0, "An impossible reading from a faulty sensor: an error in data collection."],
+  ["One customer buys 200 umbrellas in a single order on the morning of a typhoon.", 1, "Rare but real behaviour; a shop may well want to know about it."],
+  ["A new account logs in from three countries within one hour.", 1, "An abnormal pattern, like credit-card fraud: exactly what outlier detection is for."],
+  ["An adult's height is recorded as 2.31 m.", 2, "Very rare but possible. Check it against another source before deciding."],
+  ["A customer's date of birth is 1 January 2090.", 0, "A date in the future: an erroneous value. Treat it as missing."],
+  ["A small shop's sales on one day are ten times its daily average.", 2, "Could be a typo (an extra zero) or a real bulk order. Verify the data."],
+], $("#noiseScore"));
+
+/* ---------------- missing values: imputation (slide 31) ---------------- */
+(function missing(){
+  const R = rng(8), n = 60, rows = [];
+  for (let i=0;i<n;i++){ const age = 22 + R()*43; rows.push({age, inc: Math.max(6000, Math.round((9000 + 750*(age-22) + gauss(R)*6000)/100)*100), u: R()}); }
+  const trueMean = mean(rows.map(r => r.inc));
+  let rate = .3, meth = "drop";
+  const pad = {l:62,r:14,t:14,b:44};
+  const draw = live($("#cvMiss"), "miss", (ctx, W, H) => {
+    rows.forEach(r => r.miss = r.u < rate);
+    const known = rows.filter(r => !r.miss), miss = rows.filter(r => r.miss);
+    const ka = known.map(r => r.age), ki = known.map(r => r.inc), km = mean(ki);
+    const ma = mean(ka), b = ka.reduce((s,a,i) => s + (a-ma)*(ki[i]-km), 0) / ka.reduce((s,a) => s + (a-ma)**2, 0), a0 = km - b*ma;
+    miss.forEach(r => { r.fill = meth === "mean" ? km : meth === "reg" ? a0 + b*r.age : meth === "knn" ? mean(known.slice().sort((p,q) => Math.abs(p.age-r.age) - Math.abs(q.age-r.age)).slice(0,3).map(p => p.inc)) : null; });
+    const used = meth === "drop" ? known : rows, vals = used.map(r => r.miss ? r.fill : r.inc);
+    const X = v => pad.l + (v-20)/50*(W-pad.l-pad.r), Y = v => H-pad.b - v/70000*(H-pad.t-pad.b);
+    axes(ctx, W, H, pad, "age", "income (HK$ / month)", [20,30,40,50,60,70].map(v => [v, X(v)]), [0,20000,40000,60000].map(v => [v/1000 + "k", Y(v)]));
+    miss.forEach(r => { if (r.fill != null){ ctx.strokeStyle = tok("--muted"); ctx.globalAlpha = .6; ctx.beginPath(); ctx.moveTo(X(r.age), Y(r.inc)); ctx.lineTo(X(r.age), Y(r.fill)); ctx.stroke(); ctx.globalAlpha = 1; } disc(ctx, X(r.age), Y(r.inc), 5); ctx.strokeStyle = tok("--muted"); ctx.lineWidth = 1.5; ctx.stroke(); ctx.lineWidth = 1; });
+    known.forEach(r => { disc(ctx, X(r.age), Y(r.inc), 4.5); ctx.fillStyle = tok("--c1"); ctx.fill(); });
+    miss.forEach(r => { if (r.fill == null) return; const x = X(r.age), y = Y(r.fill); ctx.fillStyle = tok("--c4"); ctx.beginPath(); ctx.moveTo(x, y-6); ctx.lineTo(x+6, y); ctx.lineTo(x, y+6); ctx.lineTo(x-6, y); ctx.fill(); });
+    ctx.font = `12px ${tok("--mono")}`; ctx.textAlign = "left"; ctx.fillStyle = tok("--c1"); ctx.fillText(`● known (${known.length})`, pad.l+10, pad.t+14); ctx.fillStyle = tok("--c4"); ctx.fillText(meth === "drop" ? `${miss.length} records ignored` : `◆ guessed (${miss.length})`, pad.l+10, pad.t+30);
+    $("#missUsed").textContent = `${used.length} of ${n}`;
+    $("#missMean").textContent = hk(mean(vals)); $("#missTrue").textContent = hk(trueMean);
+    $("#missErr").textContent = meth === "drop" ? "n/a" : hk(mean(miss.map(r => Math.abs(r.fill-r.inc))));
+  });
+  chipHost($("#missM"), m => { meth = m; draw(); });
+  $("#missRate").oninput = e => { rate = e.target.value/100; $("#missRateV").textContent = e.target.value + "%"; draw(); };
+})();
+
+/* ---------------- aggregation (slide 38) ---------------- */
+(function aggregate(){
+  const R = rng(13), trades = [];
+  for (let s=0; s<60; s++){ const burst = s >= 40 && s < 44 ? 4 : 1, n = Math.round((14 + R()*14)*burst); for (let i=0;i<n;i++) trades.push({t: s + R(), v: (20 + R()*80) * (1 + gauss(R)*.15)}); }
+  const Ws = [1,2,5,10,15,30,60]; let wi = 3;
+  const pad = {l:52,r:14,t:14,b:44};
+  $("#aggRaw").textContent = trades.length.toLocaleString("en-US");
+  const draw = live($("#cvAgg"), "agg", (ctx, W, H) => {
+    const w = Ws[wi], nb = 60/w, sums = new Array(nb).fill(0); trades.forEach(t => sums[Math.floor(t.t/w)] += t.v/1000);
+    const mx = Math.max(...sums)*1.1, bw = (W-pad.l-pad.r)/nb;
+    axes(ctx, W, H, pad, "time (s)", "turnover (HK$ M)", [0,10,20,30,40,50,60].map(v => [v, pad.l + v/60*(W-pad.l-pad.r)]), [0,.5,1].map(f => [(mx*f).toFixed(f ? 1 : 0), H-pad.b - f*(H-pad.t-pad.b)]));
+    ctx.fillStyle = tok("--c1"); sums.forEach((s,i) => { const h = s/mx*(H-pad.t-pad.b); ctx.fillRect(pad.l + i*bw + Math.min(2, bw*.1), H-pad.b-h, Math.max(1, bw - Math.min(4, bw*.2)), h); });
+    $("#aggWv").textContent = w + " s"; $("#aggRows").textContent = nb;
+  });
+  $("#aggW").oninput = e => { wi = +e.target.value; draw(); };
+})();
+
+/* ---------------- generalization (slides 39-40) ---------------- */
+(function gen(){
+  const ages = [11,12,13,14,15,16,17,18,19];
+  const show = g => {
+    $("#genRules").innerHTML = g === "age" ? ages.map(a => `<p class="mono">"People of age ${a} like to play video game"</p>`).join("") + `<p class="note">${ages.length} rules, one per age value.</p>` : `<p class="mono big">"Teens like to play video game"</p><p class="note">1 rule on the generalized attribute "age-group".</p>`;
+  };
+  chipGroup($$("#generalize [data-g]"), "aria-pressed", b => show(b.dataset.g));
+  show("age");
+})();
+
+/* ---------------- sampling (slide 43, rare class) ---------------- */
+(function sampling(){
+  const R = rng(19), N = 2000, cls = [];
+  for (let i=0;i<N;i++) cls.push(i < 998 ? 0 : i < 1996 ? 1 : 2);
+  for (let i=N-1;i>0;i--){ const j = Math.floor(R()*(i+1)); [cls[i], cls[j]] = [cls[j], cls[i]]; }
+  const strata = [0,1,2].map(c => cls.map((x,i) => x===c ? i : -1).filter(i => i >= 0));
+  let meth = "wo", n = 100, seed = 1, picks = [];
+  function draw1(r){
+    if (meth === "w") return Array.from({length:n}, () => Math.floor(r()*N));
+    const take = (arr, m) => { const a = arr.slice(); for (let i=0;i<m;i++){ const j = i + Math.floor(r()*(a.length-i)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, m); };
+    if (meth === "wo") return take(cls.map((_,i) => i), n);
+    return strata.flatMap(s => take(s, Math.max(1, Math.round(n*s.length/N))));
+  }
+  function newDraw(){ picks = draw1(rng(1000 + seed++)); }
+  const draw = live($("#cvSamp"), "samp", (ctx, W, H) => {
+    const c = Math.min(W/50, H/40), x0 = (W - c*50)/2, y0 = (H - c*40)/2, on = new Uint8Array(N);
+    picks.forEach(i => on[i] = 1);
+    const C = ["--c1","--c3","--c4"].map(tok);
+    for (let i=0;i<N;i++){ ctx.fillStyle = C[cls[i]]; ctx.globalAlpha = on[i] ? 1 : .16; ctx.fillRect(x0 + (i%50)*c + .5, y0 + Math.floor(i/50)*c + .5, c-1, c-1); }
+    ctx.globalAlpha = 1; strata[2].forEach(i => { disc(ctx, x0 + (i%50+.5)*c, y0 + (Math.floor(i/50)+.5)*c, c*1.6); ctx.strokeStyle = tok("--c4"); ctx.lineWidth = 2; ctx.stroke(); ctx.lineWidth = 1; });
+    const cnt = [0,0,0]; picks.forEach(i => cnt[cls[i]]++);
+    $("#sampMix").textContent = cnt.map(v => pct(v/picks.length)).join(" / ");
+    $("#sampDup").textContent = picks.length - new Set(picks).size;
+  });
+  function upd(){ $("#sampNv").textContent = n; newDraw(); draw(); $("#sampMiss").textContent = "press Run"; }
+  chipHost($("#sampM"), m => { meth = m; upd(); });
+  $("#sampN").oninput = e => { n = +e.target.value; upd(); };
+  $("#sampDraw").onclick = () => { newDraw(); draw(); };
+  $("#sampRun").onclick = () => { const r = rng(77); let none = 0; for (let k=0;k<1000;k++){ if (!draw1(r).some(i => cls[i]===2)) none++; } $("#sampMiss").textContent = `${none} of 1,000 (${pct(none/1000)})`; };
+  newDraw(); $("#sampMiss").textContent = "press Run";
+})();
+
+/* ---------------- curse of dimensionality (slide 45) ---------------- */
+(function curse(){
+  const D = [2,3,5,7,10,15,20,25,30,35,40,50], NB = 24; let res = [], sel = 4, gen = 0, running = false;
+  function compute(d, seed){
+    const R = rng(seed*100 + d), n = 500, X = new Float64Array(n*d); for (let i=0;i<X.length;i++) X[i] = R();
+    let mn = Infinity, mx = 0; const all = new Float64Array(n*(n-1)/2); let k = 0;
+    for (let i=0;i<n;i++) for (let j=i+1;j<n;j++){ let s = 0; for (let t=0;t<d;t++){ const z = X[i*d+t]-X[j*d+t]; s += z*z; } const v = Math.sqrt(s); all[k++] = v; if (v < mn) mn = v; if (v > mx) mx = v; }
+    const h = new Array(NB).fill(0); for (let i=0;i<all.length;i++) h[Math.min(NB-1, Math.floor(all[i]/mx*NB))]++;
+    return {d, mn, mx, r:(mx-mn)/mn, h:h.map(v => v/all.length)};
+  }
+  function run(){ if (running) return; running = true; res = []; gen++; let i = 0; const step = () => { res.push(compute(D[i], gen)); draw(); drawH(); if (++i < D.length) setTimeout(step, 0); else running = false; }; step(); }
+  const pad = {l:56,r:14,t:16,b:44};
+  const draw = live($("#cvCurse"), "curse", (ctx, W, H) => {
+    const X = d => pad.l + d/50*(W-pad.l-pad.r), Y = v => H-pad.b - v/3.5*(H-pad.t-pad.b);
+    axes(ctx, W, H, pad, "Number of dimensions", "log10((MAX_DIST − MIN_DIST) / MIN_DIST)", [2,10,20,30,40,50].map(v => [v, X(v)]), [0,1,2,3].map(v => [v, Y(v)]));
+    ctx.strokeStyle = tok("--c1"); ctx.lineWidth = 2.2; ctx.beginPath(); res.forEach((r,i) => { const y = Y(Math.max(0, Math.log10(r.r))); i ? ctx.lineTo(X(r.d), y) : ctx.moveTo(X(r.d), y); }); ctx.stroke(); ctx.lineWidth = 1;
+    res.forEach((r,i) => { disc(ctx, X(r.d), Y(Math.max(0, Math.log10(r.r))), i===sel ? 7 : 4); ctx.fillStyle = tok(i===sel ? "--c4" : "--c1"); ctx.fill(); });
+    if (res.length < D.length){ ctx.fillStyle = tok("--muted"); ctx.font = `12px ${tok("--mono")}`; ctx.textAlign = "right"; ctx.fillText(`computing… ${res.length}/${D.length}`, W-pad.r, pad.t+12); }
+  });
+  const hp = {l:14,r:10,t:10,b:30};
+  const drawH = live($("#cvHist"), "hist", (ctx, W, H) => {
+    const r = res[sel]; $("#curDv").textContent = D[sel];
+    ctx.strokeStyle = tok("--line"); ctx.beginPath(); ctx.moveTo(hp.l, H-hp.b); ctx.lineTo(W-hp.r, H-hp.b); ctx.stroke();
+    ctx.fillStyle = tok("--muted"); ctx.font = `11px ${tok("--mono")}`; ctx.textAlign = "center"; ctx.fillText("pair distance ÷ max distance", W/2, H-6); ctx.fillText("0", hp.l, H-hp.b+13); ctx.fillText("1", W-hp.r, H-hp.b+13);
+    if (!r){ ["#curMin","#curMax"].forEach(s => $(s).textContent = "…"); return; }
+    const mx = Math.max(...r.h), bw = (W-hp.l-hp.r)/NB; ctx.fillStyle = tok("--c2");
+    r.h.forEach((v,i) => { const h = v/mx*(H-hp.t-hp.b); ctx.fillRect(hp.l + i*bw + 1, H-hp.b-h, bw-2, h); });
+    $("#curMin").textContent = r.mn.toFixed(3); $("#curMax").textContent = r.mx.toFixed(3);
+  });
+  $("#curD").oninput = e => { sel = +e.target.value; draw(); drawH(); };
+  let started = false; visible($("#curse"), v => { if (v && !started){ started = true; run(); } });
+})();
+
+/* ---------------- feature creation: BMI (slide 47) ---------------- */
+(function bmi(){
+  const R = rng(47), P = [];
+  for (let i=0;i<220;i++){ const h = 1.52 + R()*.4, b = 18 + Math.abs(gauss(R))*6.5 + R()*3; P.push({h, w: b*h*h}); }
+  P.forEach(p => { p.bmi = p.w/(p.h*p.h); p.ow = p.bmi > 28; });
+  const nOw = P.filter(p => p.ow).length;
+  let mode = "hw", a = 170, b = 80, c = 28;
+  const ctl = $("#bmiCtl");
+  function ui(){
+    ctl.innerHTML = mode === "hw" ? `<div class="row"><label class="note" for="bmA">a = <b id="bmAv">${a}</b> cm</label><input type="range" id="bmA" min="150" max="195" value="${a}" style="flex:1"></div><div class="row"><label class="note" for="bmB">b = <b id="bmBv">${b}</b> kg</label><input type="range" id="bmB" min="50" max="120" value="${b}" style="flex:1"></div>` : `<div class="row"><label class="note" for="bmC">c = <b id="bmCv">${c}</b></label><input type="range" id="bmC" min="20" max="36" step="0.5" value="${c}" style="flex:1"></div>`;
+    if (mode === "hw"){ $("#bmA").oninput = e => { a = +e.target.value; $("#bmAv").textContent = a; draw(); }; $("#bmB").oninput = e => { b = +e.target.value; $("#bmBv").textContent = b; draw(); }; }
+    else $("#bmC").oninput = e => { c = +e.target.value; $("#bmCv").textContent = c; draw(); };
+    draw();
+  }
+  const pick = p => mode === "hw" ? (p.h*100 < a && p.w > b) : p.bmi > c;
+  const pad = {l:52,r:14,t:14,b:44};
+  const draw = live($("#cvBmi"), "bmi", (ctx, W, H) => {
+    const X = h => pad.l + (h-1.5)/.45*(W-pad.l-pad.r), Y = w => H-pad.b - (w-40)/90*(H-pad.t-pad.b);
+    axes(ctx, W, H, pad, "height (m)", "weight (kg)", [1.5,1.6,1.7,1.8,1.9].map(v => [v.toFixed(1), X(v)]), [40,70,100,130].map(v => [v, Y(v)]));
+    ctx.fillStyle = tok("--c5"); ctx.globalAlpha = .1;
+    if (mode === "hw"){ const x1 = X(a/100); ctx.fillRect(pad.l, pad.t, x1-pad.l, Y(b)-pad.t); }
+    else { ctx.beginPath(); ctx.moveTo(X(1.5), Y(c*1.5*1.5)); for (let h=1.5; h<=1.951; h+=.01) ctx.lineTo(X(h), Y(c*h*h)); ctx.lineTo(X(1.95), pad.t); ctx.lineTo(X(1.5), pad.t); ctx.fill(); }
+    ctx.globalAlpha = 1;
+    P.forEach(p => { disc(ctx, X(p.h), Y(p.w), pick(p) ? 5 : 3.6); ctx.fillStyle = tok(p.ow ? "--c4" : "--c1"); ctx.globalAlpha = .8; ctx.fill(); if (pick(p)){ ctx.globalAlpha = 1; ctx.strokeStyle = tok("--ink"); ctx.lineWidth = 1.2; ctx.stroke(); } ctx.globalAlpha = 1; });
+    const sel = P.filter(pick), tp = sel.filter(p => p.ow).length;
+    $("#bmiOut").innerHTML = `${mode === "hw" ? `If (height &lt; ${a} cm) &amp; (weight &gt; ${b} kg)` : `If (BMI &gt; ${c})`} ⇒ heart disease<br>picks ${sel.length} people: ${tp} of the ${nOw} orange, ${sel.length - tp} others`;
+  });
+  chipGroup($$("#featcreate [data-r]"), "aria-pressed", btn => { mode = btn.dataset.r; ui(); });
+  ui();
+})();
+
+/* ---------------- correlation (slides 48-49) ---------------- */
+(function correlation(){
+  const R = rng(30), n = 150, A = {height:[], foot:[], weight:[], BMI:[], acct:[]};
+  for (let i=0;i<n;i++){ const h = 168 + gauss(R)*9, w = .9*h - 88 + gauss(R)*8; A.height.push(h); A.foot.push(.152*h + gauss(R)*.8); A.weight.push(w); A.BMI.push(w/(h/100)**2); A.acct.push(Math.floor(1e7 + R()*9e7)); }
+  const K = Object.keys(A), unit = {height:"(cm)", foot:"size (cm)", weight:"(kg)", BMI:"", acct:"number"};
+  const M = K.map(a => K.map(b => corr(A[a], A[b])));
+  const pat = {}; [-1,0,1].forEach(s => { const r2 = rng(40 + s), x = [], y = []; for (let i=0;i<n;i++){ const a = gauss(r2); x.push(a); y.push(s*.85*a + (s ? .5 : 1)*gauss(r2)); } pat[s] = {x, y}; });
+  let si = 0, sj = 1, demo = null;
+  const host = $("#mtx"); host.style.gridTemplateColumns = `auto repeat(${K.length},minmax(0,1fr))`;
+  let html = "<span></span>" + K.map(k => `<span>${k}</span>`).join("");
+  K.forEach((a,i) => { html += `<span class="rl">${a}</span>`; K.forEach((b,j) => { const r = M[i][j], c = r >= 0 ? "--c1" : "--c4"; html += `<button data-i="${i}" data-j="${j}" style="background:color-mix(in srgb,var(${c}) ${Math.round(Math.abs(r)*45)}%,var(--surface))" aria-label="${a} and ${b}: ${r.toFixed(2)}">${r.toFixed(2)}</button>`; }); });
+  host.innerHTML = html;
+  const bs = $$("button", host), pb = $$("#corrPat .chip");
+  bs.forEach(b => b.onclick = () => { si = +b.dataset.i; sj = +b.dataset.j; demo = null; pb.forEach(x => x.setAttribute("aria-pressed","false")); draw(); });
+  chipHost($("#corrPat"), m => { demo = +m; draw(); });
+  const pad = {l:56,r:14,t:14,b:44};
+  const draw = live($("#cvCorr"), "corr", (ctx, W, H) => {
+    bs.forEach(b => b.setAttribute("aria-pressed", String(demo === null && +b.dataset.i===si && +b.dataset.j===sj)));
+    const x = demo === null ? A[K[sj]] : pat[demo].x, y = demo === null ? A[K[si]] : pat[demo].y, lo = a => Math.min(...a), hi = a => Math.max(...a);
+    const xl = demo === null ? `${K[sj]} ${unit[K[sj]]}` : "x", yl = demo === null ? `${K[si]} ${unit[K[si]]}` : "y";
+    const x0 = lo(x), x1 = hi(x), y0 = lo(y), y1 = hi(y), X = v => pad.l + (v-x0)/(x1-x0||1)*(W-pad.l-pad.r), Y = v => H-pad.b - (v-y0)/(y1-y0||1)*(H-pad.t-pad.b);
+    const fm = v => Math.abs(v) >= 1e6 ? (v/1e6).toFixed(0) + "M" : v.toFixed(Math.abs(v) < 40 ? 1 : 0);
+    const r = corr(x, y);
+    axes(ctx, W, H, pad, xl, yl, [x0,(x0+x1)/2,x1].map(v => [fm(v), X(v)]), [y0,(y0+y1)/2,y1].map(v => [fm(v), Y(v)]));
+    ctx.fillStyle = tok(r >= 0 ? "--c1" : "--c4"); ctx.globalAlpha = .7; x.forEach((v,i) => { disc(ctx, X(v), Y(y[i]), 3.5); ctx.fill(); }); ctx.globalAlpha = 1;
+    if (demo !== null){ $("#corrNote").innerHTML = `corr(x, y) = <b>${r.toFixed(3)}</b> · ${["negative correlation","independent","positive correlation"][demo+1]}. Synthetic pair.`; return; }
+    const extra = K[si]==="acct"||K[sj]==="acct" ? " Randomly assigned account numbers are not associated with any property of the customers." : (si !== sj && Math.abs(r) > .7 && !(K[si]==="BMI"||K[sj]==="BMI")) ? " Highly correlated: including only one of them may not affect the results much." : K[si]==="BMI"||K[sj]==="BMI" ? " BMI is a created feature: weight / height²." : "";
+    $("#corrNote").innerHTML = `corr(${K[si]}, ${K[sj]}) = <b>${r.toFixed(3)}</b>.${extra}`;
+  });
+})();
+
+/* ---------------- PCA in 3D (slide 50) ---------------- */
+(function pca3(){
+  const R = rng(50), P = [];
+  for (let i=0;i<300;i++){ const a = gauss(R)*1.5, b = gauss(R)*.7, c = gauss(R)*.22; P.push([.70*a - .35*b + .20*c, .55*a + .75*b - .15*c, .45*a + .10*b + .95*c].map(v => v*.95)); }
+  const m = [0,1,2].map(j => mean(P.map(p => p[j]))); P.forEach(p => { for (let j=0;j<3;j++) p[j] -= m[j]; });
+  const E = eigSym(covMat(P)), tot = E.reduce((s,e) => s + e.val, 0);
+  $("#pcaVar").innerHTML = E.map((e,i) => `<div class="stat"><div class="k">PC${i+1} share</div><div class="v">${pct(e.val/tot)}</div></div>`).join("");
+  const host = $("#pcaScene");
+  if (!hasGL){ noGL(host); return; }
+  const renderer = makeRenderer(host), scene = new THREE.Scene();
+  const cam = new THREE.PerspectiveCamera(40, 4/3, .1, 100); cam.position.set(5.2, 3.6, 6.4);
+  const ctl = new THREE.OrbitControls(cam, renderer.domElement); ctl.enableDamping = true; ctl.enablePan = false; ctl.autoRotate = !reduce; ctl.autoRotateSpeed = .5;
+  const geo = new THREE.BufferGeometry(), pos = new Float32Array(P.length*3); P.forEach((p,i) => pos.set(p, i*3));
+  geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({size:.13, map:dotTexture(), transparent:true, alphaTest:.2, depthWrite:false});
+  scene.add(new THREE.Points(geo, mat));
+  const proj = P.map(p => { const u = E[0].vec, v = E[1].vec, a = p[0]*u[0]+p[1]*u[1]+p[2]*u[2], b = p[0]*v[0]+p[1]*v[1]+p[2]*v[2]; return [a*u[0]+b*v[0], a*u[1]+b*v[1], a*u[2]+b*v[2]]; });
+  const arrows = E.map((e,i) => { const d = new THREE.Vector3(...e.vec), L = Math.sqrt(e.val)*2.6; const ar = new THREE.ArrowHelper(d, new THREE.Vector3(0,0,0), L, 0xffffff, .25, .14); scene.add(ar); const ar2 = new THREE.ArrowHelper(d.clone().negate(), new THREE.Vector3(0,0,0), L, 0xffffff, .001, .001); scene.add(ar2); return [ar, ar2]; });
+  const labs = E.map((e,i) => { const s = document.createElement("span"); s.className = "lbl3 t"; s.textContent = "PC" + (i+1); host.appendChild(s); return {s, v:new THREE.Vector3(...e.vec).multiplyScalar(Math.sqrt(e.val)*2.6 + .25)}; });
+  const plane = new THREE.Mesh(new THREE.PlaneGeometry(7, 4.4), new THREE.MeshBasicMaterial({transparent:true, opacity:.10, side:THREE.DoubleSide, depthWrite:false}));
+  const basis = new THREE.Matrix4().makeBasis(new THREE.Vector3(...E[0].vec), new THREE.Vector3(...E[1].vec), new THREE.Vector3(...E[2].vec)); plane.setRotationFromMatrix(basis); scene.add(plane);
+  let t = 0, target = 0;
+  function colors(){ mat.color.set(tok("--c1")); const C = ["--c4","--c3","--c5"]; arrows.forEach((a,i) => a.forEach(x => x.setColor(new THREE.Color(tok(C[i]))))); plane.material.color.set(tok("--c3")); labs.forEach((l,i) => l.s.style.color = tok(C[i])); }
+  onTheme(colors); colors();
+  chipGroup($$("#pca [data-pv]"), "aria-pressed", b => { target = +b.dataset.pv; });
+  function size(){ const w = host.clientWidth, h = host.clientHeight; renderer.setSize(w, h, false); cam.aspect = w/h; cam.updateProjectionMatrix(); }
+  new ResizeObserver(size).observe(host); size();
+  const v3 = new THREE.Vector3(); let on = true;
+  visible(host, v => { on = v; if (v) requestAnimationFrame(loop); });
+  function loop(){
+    if (!on) return;
+    if (Math.abs(t - target) > 1e-3){ t += (target - t)*(reduce ? 1 : .08); const a = geo.attributes.position.array; P.forEach((p,i) => { for (let j=0;j<3;j++) a[i*3+j] = p[j] + (proj[i][j]-p[j])*t; }); geo.attributes.position.needsUpdate = true; }
+    ctl.update(); renderer.render(scene, cam);
+    labs.forEach(l => { v3.copy(l.v).project(cam); l.s.style.transform = `translate(${(v3.x*.5+.5)*host.clientWidth}px,${(-v3.y*.5+.5)*host.clientHeight}px) translate(-50%,-50%)`; });
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+
+/* ---------------- PCA 2D rotation (slide 51) ---------------- */
+(function pca(){
+  const R = rng(4), P = [], th0 = 35*Math.PI/180;
+  for (let i=0;i<120;i++){ const a = gauss(R)*1.6, b = gauss(R)*.5; P.push([a*Math.cos(th0) - b*Math.sin(th0), a*Math.sin(th0) + b*Math.cos(th0)]); }
+  const mx = mean(P.map(p => p[0])), my = mean(P.map(p => p[1]));
+  const vx = vari(P.map(p => p[0])), vy = vari(P.map(p => p[1])), cxy = P.reduce((s,p) => s + (p[0]-mx)*(p[1]-my), 0)/(P.length-1);
+  const E = eigSym([[vx,cxy],[cxy,vy]]); let pc = Math.atan2(E[0].vec[1], E[0].vec[0])*180/Math.PI; pc = (pc+360)%180;
+  let ang = 0, sc = 1, cx = 0, cy = 0;
+  const draw = live($("#cvPca"), "pca", (ctx, W, H) => {
+    sc = Math.min(W, H)/9; cx = W/2; cy = H/2;
+    const t = ang*Math.PI/180, u = [Math.cos(t), Math.sin(t)], v = [-u[1], u[0]];
+    const U = P.map(p => (p[0]-mx)*u[0] + (p[1]-my)*u[1]), V = P.map(p => (p[0]-mx)*v[0] + (p[1]-my)*v[1]);
+    const X = a => cx + a*sc, Y = b => cy - b*sc;
+    ctx.strokeStyle = tok("--line"); ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke();
+    ctx.fillStyle = tok("--muted"); ctx.font = `12px ${tok("--mono")}`; ctx.textAlign = "left"; ctx.fillText("X", W-18, cy-6); ctx.fillText("Y", cx+6, 14);
+    const L = Math.hypot(W, H);
+    ctx.strokeStyle = tok("--c3"); ctx.setLineDash([6,5]); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(X(-v[0]*L), Y(-v[1]*L)); ctx.lineTo(X(v[0]*L), Y(v[1]*L)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = tok("--c4"); ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(X(-u[0]*L), Y(-u[1]*L)); ctx.lineTo(X(u[0]*L), Y(u[1]*L)); ctx.stroke(); ctx.lineWidth = 1;
+    P.forEach((p,i) => { const px = X(U[i]*u[0]), py = Y(U[i]*u[1]); ctx.strokeStyle = tok("--c4"); ctx.globalAlpha = .5; ctx.beginPath(); ctx.moveTo(px - v[0]*5, py + v[1]*5); ctx.lineTo(px + v[0]*5, py - v[1]*5); ctx.stroke(); });
+    ctx.globalAlpha = .8; ctx.fillStyle = tok("--c1"); P.forEach(p => { disc(ctx, X(p[0]-mx), Y(p[1]-my), 3.8); ctx.fill(); }); ctx.globalAlpha = 1;
+    ctx.fillStyle = tok("--c4"); ctx.fillText("U", X(u[0]*3.6)+6, Y(u[1]*3.6)-6); ctx.fillStyle = tok("--c3"); ctx.fillText("V", X(v[0]*2.6)+6, Y(v[1]*2.6)-6);
+    const vu = vari(U), vv = vari(V), cuv = U.reduce((s,a,i) => s + a*V[i], 0)/(U.length-1);
+    $("#pcaAv").textContent = (Math.round(ang*10)/10) + "°"; $("#pcaXY").textContent = (vx+vy).toFixed(3); $("#pcaUV").textContent = (vu+vv).toFixed(3);
+    $("#pcaSh").textContent = pct(vu/(vu+vv)); $("#pcaCov").textContent = cuv.toFixed(3);
+  });
+  const setA = a => { ang = ((Math.round(a) % 180) + 180) % 180; $("#pcaA").value = ang; draw(); };
+  $("#pcaA").oninput = e => setA(+e.target.value);
+  $("#pcaSnap").onclick = () => { ang = pc; $("#pcaA").value = Math.round(pc); draw(); };
+  const cv = $("#cvPca"); let drag = false;
+  const at = e => { const r = cv.getBoundingClientRect(); setA(Math.atan2(cy - (e.clientY-r.top), (e.clientX-r.left) - cx)*180/Math.PI); };
+  cv.addEventListener("pointerdown", e => { drag = true; cv.setPointerCapture(e.pointerId); at(e); });
+  cv.addEventListener("pointermove", e => { if (drag) at(e); });
+  cv.addEventListener("pointerup", () => drag = false);
+})();
+
+/* ---------------- why PCA: keep >= 85% (slide 52) ---------------- */
+(function why(){
+  const R = rng(52), P = [], L = [[.9,.3,.1],[.85,.35,0],[.8,-.2,.2],[.2,.9,.1],[.3,.8,-.2],[.1,.2,.9],[.15,-.1,.85],[.6,.5,.4]];
+  for (let i=0;i<400;i++){ const z = [gauss(R)*1.25, gauss(R)*1.05, gauss(R)*.95]; P.push(L.map(r => r[0]*z[0] + r[1]*z[1] + r[2]*z[2] + gauss(R)*.45)); }
+  const E = eigSym(covMat(P)), tot = E.reduce((s,e) => s + e.val, 0), sh = E.map(e => e.val/tot), cum = sh.map((_,i) => sh.slice(0,i+1).reduce((a,b) => a+b, 0));
+  const kMin = cum.findIndex(c => c >= .85) + 1;
+  let k = 3;
+  const pad = {l:52,r:14,t:16,b:40};
+  const draw = live($("#cvScree"), "scree", (ctx, W, H) => {
+    const n = sh.length, bw = (W-pad.l-pad.r)/n, Y = v => H-pad.b - v*(H-pad.t-pad.b);
+    axes(ctx, W, H, pad, "component", "share of total variance", sh.map((_,i) => ["y" + (i+1), pad.l + (i+.5)*bw]), [0,.25,.5,.75,1].map(v => [pct(v,0), Y(v)]));
+    sh.forEach((s,i) => { ctx.fillStyle = tok(i < k ? "--c1" : "--line"); ctx.fillRect(pad.l + i*bw + 6, Y(s), bw-12, Y(0)-Y(s)); });
+    ctx.strokeStyle = tok("--c4"); ctx.lineWidth = 2; ctx.beginPath(); cum.forEach((c,i) => { const x = pad.l + (i+.5)*bw; i ? ctx.lineTo(x, Y(c)) : ctx.moveTo(x, Y(c)); }); ctx.stroke(); ctx.lineWidth = 1;
+    cum.forEach((c,i) => { disc(ctx, pad.l + (i+.5)*bw, Y(c), 4); ctx.fillStyle = tok("--c4"); ctx.fill(); });
+    ctx.setLineDash([5,4]); ctx.strokeStyle = tok("--c3"); ctx.beginPath(); ctx.moveTo(pad.l, Y(.85)); ctx.lineTo(W-pad.r, Y(.85)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = tok("--c3"); ctx.font = `12px ${tok("--mono")}`; ctx.textAlign = "right"; ctx.fillText("85%", W-pad.r, Y(.85)-6);
+    ctx.fillStyle = tok("--c4"); ctx.textAlign = "left"; ctx.fillText("cumulative", pad.l + 6, pad.t + 12);
+    $("#wpKv").textContent = k;
+    $("#wpOut").innerHTML = `${k > 1 ? `The first ${k} components capture` : "The first component captures"} <b>${pct(cum[k-1])}</b> of the total variability. ${cum[k-1] >= .85 ? (k === kMin ? "This is the minimum k that reaches 85%." : `It reaches 85%, but k = ${kMin} already does.`) : `Below 85%: keep at least ${kMin}.`}`;
+  });
+  $("#wpK").oninput = e => { k = +e.target.value; draw(); };
+})();
+
+/* ---------------- feature subsets (slide 54) ---------------- */
+(function subsets(){
+  const out = () => { const n = +$("#selN").value, c = (1n << BigInt(n)) - 1n; $("#selNv").textContent = n; $("#selOut").textContent = `2^${n} − 1 = ${c.toLocaleString("en-US")} subsets to try`; };
+  $("#selN").oninput = out; out();
+})();
+
+/* ---------------- height ranges (slide 56) ---------------- */
+(function ranges(){
+  const S = [60,80,100,120,140,160,170,180,190], MAX = 220, svg = $("#hRanges");
+  const X = v => 20 + v/MAX*860;
+  function draw(h){
+    const r = S.filter(s => h >= s).length;
+    let o = `<line x1="${X(0)}" y1="50" x2="${X(MAX)}" y2="50" style="stroke:var(--ink)" stroke-width="2"/>`;
+    const b = [0, ...S, MAX];
+    b.slice(0,-1).forEach((s,i) => { o += `<rect x="${X(s)}" y="40" width="${X(b[i+1])-X(s)}" height="20" style="fill:var(${i===r ? "--marker" : "--surface"});stroke:var(--ink)" stroke-width="1.2"/><text x="${(X(s)+X(b[i+1]))/2}" y="80" text-anchor="middle" font-size="13" font-style="italic" style="fill:var(${i===r ? "--c4" : "--muted"})">R${i+1}</text>`; });
+    S.forEach(s => o += `<text x="${X(s)}" y="32" text-anchor="middle" font-size="11" font-family="monospace" style="fill:var(--muted)">${s}</text>`);
+    o += `<text x="${X(0)}" y="32" text-anchor="middle" font-size="11" font-family="monospace" style="fill:var(--muted)">0</text><path d="M${X(h)} 64 l-7 14 h14z" style="fill:var(--c4)"/><text x="${X(h)}" y="102" text-anchor="middle" font-size="12" font-weight="600" style="fill:var(--c4)">${h} cm → R${r+1} (${b[r]}-${r < S.length ? b[r+1] : ""})</text>`;
+    svg.innerHTML = o; $("#hInv").textContent = h;
+  }
+  $("#hIn").oninput = e => draw(+e.target.value); draw(172);
+})();
+
+/* ---------------- discretization playground (slide 57) ---------------- */
+(function discretize(){
+  const R = rng(17), v = [];
+  [[4.5,.7,60],[7.6,.35,30],[9.6,.3,30],[15,.7,60]].forEach(([m,s,n]) => { for (let i=0;i<n;i++) v.push(m + gauss(R)*s); });
+  v.push(.3, 19.6);
+  v.sort((a,b) => a-b); const n = v.length, lo = v[0], hi = v[n-1], jit = v.map(() => R());
+  let k = 4;
+  const width = () => Array.from({length:k-1}, (_,i) => lo + (i+1)*(hi-lo)/k);
+  const freq = () => Array.from({length:k-1}, (_,i) => { const j = Math.floor((i+1)*n/k); return (v[j-1] + v[j])/2; });
+  function kmeans1(){
+    let c = Array.from({length:k}, (_,i) => v[Math.floor((i+.5)*n/k)]);
+    for (let it=0; it<100; it++){
+      const g = c.map(() => []); v.forEach(x => { let b = 0; c.forEach((cc,i) => { if (Math.abs(x-cc) < Math.abs(x-c[b])) b = i; }); g[b].push(x); });
+      const nc = c.map((cc,i) => g[i].length ? mean(g[i]) : cc); const moved = nc.some((x,i) => Math.abs(x-c[i]) > 1e-9); c = nc; if (!moved) break;
+    }
+    c.sort((a,b) => a-b); return c.slice(1).map((x,i) => (x + c[i])/2);
+  }
+  const bin = (x, e) => e.filter(s => x > s).length;
+  const pal = ["--c1","--c3","--c5","--c2","--c4"];
+  const draw = live($("#cvDisc"), "disc", (ctx, W, H) => {
+    const ES = [null, width(), freq(), kmeans1()], names = ["Data","Equal-width","Equal frequency (equal-depth)","K-means"];
+    const pl = 14, pr = 14, X = x => pl + (x+.5)/21*(W-pl-pr), rh = (H-30)/4;
+    ctx.font = `12px ${tok("--mono")}`;
+    ES.forEach((e,r) => {
+      const y0 = 8 + r*rh;
+      ctx.fillStyle = tok("--muted"); ctx.textAlign = "left"; ctx.fillText(names[r], pl, y0 + 12);
+      ctx.strokeStyle = tok("--line"); ctx.beginPath(); ctx.moveTo(pl, y0 + rh - 8); ctx.lineTo(W-pr, y0 + rh - 8); ctx.stroke();
+      v.forEach((x,i) => { disc(ctx, X(x), y0 + 22 + jit[i]*(rh-50), W < 500 ? 2.6 : 3.4); ctx.fillStyle = tok(e ? pal[bin(x,e) % pal.length] : "--muted"); ctx.fill(); });
+      if (!e) return;
+      ctx.strokeStyle = tok("--ink"); ctx.lineWidth = 2; e.forEach(s => { ctx.beginPath(); ctx.moveTo(X(s), y0 + 16); ctx.lineTo(X(s), y0 + rh - 4); ctx.stroke(); }); ctx.lineWidth = 1;
+      const b = [-.5, ...e, 20.5], cnt = new Array(k).fill(0); v.forEach(x => cnt[bin(x,e)]++);
+      ctx.fillStyle = tok("--ink"); ctx.textAlign = "center";
+      cnt.forEach((c,i) => { const a = X(b[i]), z = X(b[i+1]); if (z - a > 18) ctx.fillText(c, (a+z)/2, y0 + rh - 13); });
+    });
+    ctx.fillStyle = tok("--muted"); ctx.textAlign = "center"; [0,5,10,15,20].forEach(t => ctx.fillText(t, X(t), H-6));
+    $("#discKv").textContent = k;
+  });
+  $("#discK").oninput = e => { k = +e.target.value; draw(); };
+})();
+
+/* ---------------- normalization: two persons (slide 58) ---------------- */
+const PEOPLE = [["Ann",55,30000],["Ben",90,30500],["Cat",56,38000],["Dan",60,31500],["Eve",72,52000],["Fay",50,21000]];
+(function nw(){
+  let mode = "raw";
+  function upd(){
+    const ws = PEOPLE.map(p => p[1]), ss = PEOPLE.map(p => p[2]);
+    const nW = x => mode === "raw" ? x : (x - Math.min(...ws))/(Math.max(...ws) - Math.min(...ws)), nS = x => mode === "raw" ? x : (x - Math.min(...ss))/(Math.max(...ss) - Math.min(...ss));
+    const a = PEOPLE[0], d = PEOPLE.map(p => Math.abs(nW(a[1]) - nW(p[1])) + Math.abs(nS(a[2]) - nS(p[2])));
+    const best = d.map((x,i) => [x,i]).slice(1).sort((x,y) => x[0]-y[0])[0][1];
+    const fw = x => mode === "raw" ? x : nW(x).toFixed(2), fs = x => mode === "raw" ? x.toLocaleString("en-US") : nS(x).toFixed(2);
+    $("#nwT").innerHTML = `<thead><tr><th>Person</th><th>w ${mode === "raw" ? "(kg)" : "′"}</th><th>s ${mode === "raw" ? "(HKD)" : "′"}</th><th>distance to Ann</th></tr></thead><tbody>${PEOPLE.map((p,i) => `<tr class="${i===best ? "hl" : ""}"><td>${p[0]}</td><td>${fw(p[1])}</td><td>${fs(p[2])}</td><td>${i ? (mode === "raw" ? Math.round(d[i]).toLocaleString("en-US") : d[i].toFixed(2)) : "–"}</td></tr>`).join("")}</tbody>`;
+    const p = PEOPLE[best];
+    $("#nwOut").innerHTML = mode === "raw" ? `Closest to Ann: ${p[0]}, ${Math.abs(p[1]-a[1])} kg heavier.<br>|w₁ − w₂| + |s₁ − s₂| is dominated by the salary: one dollar counts as much as one kilogram.` : `Closest to Ann: ${p[0]}.<br>After min-max normalization both attributes range over [0, 1], so weight and salary count equally.`;
+  }
+  chipGroup($$("#normalize [data-nw]"), "aria-pressed", b => { mode = b.dataset.nw; upd(); });
+  upd();
+})();
+
+/* ---------------- normalization formulas (slide 59) ---------------- */
+(function normalize(){
+  const rows = PEOPLE.map(p => p.slice());
+  let meth = "mm";
+  const body = $("#normBody");
+  body.innerHTML = rows.map((r,i) => `<tr><td>${r[0]}</td><td><input class="txt" type="number" data-i="${i}" data-c="1" value="${r[1]}" aria-label="weight of ${r[0]}" style="width:6em;padding:3px 6px"></td><td><input class="txt" type="number" data-i="${i}" data-c="2" value="${r[2]}" aria-label="salary of ${r[0]}" style="width:8em;padding:3px 6px"></td><td></td><td></td></tr>`).join("");
+  $$("input", body).forEach(inp => inp.addEventListener("input", () => { const x = parseFloat(inp.value); if (isFinite(x)){ rows[+inp.dataset.i][+inp.dataset.c] = x; render(); } }));
+  function render(){
+    const st = c => { const a = rows.map(r => r[c]), m = mean(a); return {mn:Math.min(...a), mx:Math.max(...a), m, s:Math.sqrt(vari(a))}; };
+    const S = [null, st(1), st(2)];
+    const tf = (x,c) => meth === "mm" ? (S[c].mx === S[c].mn ? 0 : (x - S[c].mn)/(S[c].mx - S[c].mn)) : (S[c].s ? (x - S[c].m)/S[c].s : 0);
+    $$("tr", body).forEach((tr,i) => { const td = tr.children; td[3].textContent = tf(rows[i][1],1).toFixed(3); td[4].textContent = tf(rows[i][2],2).toFixed(3); });
+    const f = v => Math.round(v*100)/100;
+    $("#normNote").innerHTML = meth === "mm" ? `weight: min = ${f(S[1].mn)}, max = ${f(S[1].mx)} · salary: min = ${f(S[2].mn).toLocaleString("en-US")}, max = ${f(S[2].mx).toLocaleString("en-US")}.` : `weight: X̄ = ${S[1].m.toFixed(2)}, σ = ${S[1].s.toFixed(2)} · salary: X̄ = ${Math.round(S[2].m).toLocaleString("en-US")}, σ = ${Math.round(S[2].s).toLocaleString("en-US")} (sample standard deviation).`;
+  }
+  chipHost($("#normM"), m => { meth = m; render(); });
+  render();
+})();
+
+/* ================= AI LAYER ================= */
+
+/* ---------------- LLM-assisted cleaning vs rules ---------------- */
+(function clean(){
+  const CO = [
+    ["harbour light trading co ltd", "Harbour Light Trading Co., Ltd.", "Harbour Light Trading Co., Ltd."],
+    ["HARBOUR LIGHT TRADING CO., LTD.", "Harbour Light Trading Co., Ltd.", "Harbour Light Trading Co., Ltd."],
+    ["Harbour Light Trdg Co", "Harbour Light Trading Co., Ltd.", "Harbour Light Trading Co., Ltd."],
+    ["Kowloon Bay Foods Limited", "Kowloon Bay Foods Ltd.", "Kowloon Bay Foods Ltd."],
+    ["kowloon bay foods ltd", "Kowloon Bay Foods Ltd.", "Kowloon Bay Foods Ltd."],
+    ["KB Foods", "Kowloon Bay Foods Ltd.", "KB Foods Ltd."],
+    ["Pearl River Logistics (HK) Ltd", "Pearl River Logistics (HK) Ltd.", "Pearl River Logistics (HK) Ltd."],
+    ["pearl river logistics hk limited", "Pearl River Logistics (HK) Ltd.", "Pearl River Logistics (HK) Ltd."],
+    ["Pearl River Logistic", "Pearl River Logistics (HK) Ltd.", "Pearl River Logistics (HK) Ltd."],
+    ["Sunrise Dental Clinic", "Sunrise Dental Clinic", "Sunrise Dental Clinic Ltd."],
+  ];
+  const CANON = [...new Set(CO.map(r => r[1]))];
+  const key = s => s.toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\blimited\b/g, "ltd").replace(/\bcompany\b/g, "co").replace(/\s+/g, " ").trim();
+  const ruleCo = s => CANON.find(c => key(c) === key(s)) || s;
+  const WT = [
+    ["5 kg", 5, "5.00 kg"], ["5000 g", 5, "5.00 kg"], ["11 lb", 4.99, "5.00 kg"], ["2.5 KG", 2.5, "2.50 kg"], ["750 grams", .75, "0.75 kg"],
+    ["3 lbs", 1.36, "1.36 kg"], ["1,200 g", 1.2, "1.20 kg"], ["half a kilo", .5, "0.50 kg"], ["2 lb 3 oz", .99, "1.00 kg"], ["5 kilo", 5, "5.00 kg"],
+  ];
+  const F = {kg:1, kgs:1, kilogram:1, kilograms:1, g:.001, gram:.001, grams:.001, lb:.45359237, lbs:.45359237, pound:.45359237, pounds:.45359237};
+  const ruleWt = s => { const m = s.trim().match(/^([\d.]+)\s*([a-z]+)$/i); const f = m && F[m[2].toLowerCase()]; return f ? (parseFloat(m[1])*f).toFixed(2) + " kg" : "? (no rule)"; };
+  const RULE = {
+    co: `<span class="tag" style="color:var(--c1)">The rules</span><p>Lowercase, drop punctuation, "limited" → "ltd", then look the name up in a list of known companies. A name not in the list is left unchanged.</p>`,
+    wt: `<span class="tag" style="color:var(--c1)">The rules</span><p class="mono" style="font-size:.8rem">^(number)\\s*(kg|g|lb|…)$</p><p>Then multiply by the unit's factor. Anything else gets no value.</p>`
+  };
+  let f = "co";
+  function draw(){
+    const rows = f === "co" ? CO.map(([r,t,l]) => [r, ruleCo(r), l, t]) : WT.map(([r,t,l]) => [r, ruleWt(r), l, t.toFixed(2) + " kg"]);
+    let er = 0, el = 0;
+    $("#clT").innerHTML = `<thead><tr><th>Raw value</th><th>Rules</th><th>LLM (illustrative)</th><th>Checked by hand</th></tr></thead><tbody>${rows.map(([r,a,b,t]) => { const oa = a === t, ob = b === t; er += !oa; el += !ob; return `<tr><td class="mono">${esc(r)}</td><td class="${oa ? "ok" : "bad"}">${oa ? "✓" : "✗"} ${esc(a)}</td><td class="${ob ? "ok" : "bad"}">${ob ? "✓" : "✗"} ${esc(b)}</td><td>${esc(t)}</td></tr>`; }).join("")}</tbody>`;
+    $("#clR").textContent = `${er} of ${rows.length} (${er*10}%)`; $("#clL").textContent = `${el} of ${rows.length} (${el*10}%)`;
+    $("#clRule").innerHTML = RULE[f];
+  }
+  chipGroup($$("#aiclean [data-f]"), "aria-pressed", b => { f = b.dataset.f; draw(); });
+  draw();
+})();
+
+/* ---------------- entity resolution: 3-gram Jaccard ---------------- */
+(function er(){
+  const PAIRS = [
+    ["Chan Tai Man", "CHAN, Tai-man", 1, 1], ["Peter Chan", "P. Chan", 1, 1], ["Wong Siu Ming", "Wong Siu-ming", 1, 1], ["Cheung Mei Ling", "Cheung Mei-ling Maggie", 1, 1],
+    ["Lau Wing Kei", "Lau Wingkei", 1, 1], ["Ho Ka Yan", "Ka Yan Ho", 1, 1], ["Ng Chi Keung", "Ng Chi-keung", 1, 1], ["Tsang Yuk Fan", "Tsang Y. F.", 1, 1],
+    ["Chan Tai Man", "Chan Tai Ming", 0, 0], ["Wong Siu Ming", "Wong Siu Wing", 0, 0], ["Lee Ka Wai", "Lee Ka Wing", 0, 0], ["Ho Ka Yan", "Ho Ka Yee", 0, 0],
+    ["Peter Chan", "Peter Chen", 0, 1], ["Lam Mei Ling", "Cheung Mei Ling", 0, 0], ["Ng Chi Keung", "Ng Chi Kwong", 0, 0], ["Yip Wai Lun", "Yip Wai Lam", 0, 0],
+  ];
+  const grams = s => { const t = " " + s.toLowerCase().replace(/[^a-z]+/g, " ").trim() + " "; const g = new Set(); for (let i=0;i<t.length-2;i++) g.add(t.slice(i,i+3)); return g; };
+  const jac = (a,b) => { const A = grams(a), B = grams(b); let s = 0; A.forEach(x => { if (B.has(x)) s++; }); return s/(A.size + B.size - s); };
+  PAIRS.forEach(p => p.push(jac(p[0], p[1])));
+  const prf = pred => { let tp = 0, fp = 0, fn = 0; PAIRS.forEach((p,i) => { if (pred[i] && p[2]) tp++; else if (pred[i]) fp++; else if (p[2]) fn++; }); return {tp, fp, fn, P: tp+fp ? tp/(tp+fp) : 0, R: tp/(tp+fn)}; };
+  const L = prf(PAIRS.map(p => p[3]));
+  $("#erLlm").innerHTML = `LLM (illustrative): ${L.tp} matches found, ${L.fp} wrong match, ${L.fn} missed<br>precision ${L.P.toFixed(2)} · recall ${L.R.toFixed(2)}`;
+  function draw(){
+    const th = +$("#erTh").value, pred = PAIRS.map(p => p[4] >= th - 1e-9), s = prf(pred);
+    $("#erThv").textContent = th.toFixed(2);
+    $("#erT").innerHTML = `<thead><tr><th>Record A</th><th>Record B</th><th>Same?</th><th>Jaccard</th><th>Rule</th><th>LLM</th></tr></thead><tbody>${PAIRS.map((p,i) => `<tr><td>${esc(p[0])}</td><td>${esc(p[1])}</td><td>${p[2] ? "yes" : "no"}</td><td class="num">${p[4].toFixed(2)}</td><td class="${pred[i] === !!p[2] ? "ok" : "bad"}">${pred[i] ? "match" : "–"}</td><td class="${!!p[3] === !!p[2] ? "ok" : "bad"}">${p[3] ? "match" : "–"}</td></tr>`).join("")}</tbody>`;
+    $("#erStats").innerHTML = [["matches found", `${s.tp} of 8`], ["wrong matches", s.fp], ["precision", s.tp+s.fp ? s.P.toFixed(2) : "–"], ["recall", s.R.toFixed(2)]].map(([k,v]) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join("");
+  }
+  $("#erTh").oninput = draw; draw();
+})();
+
+/* ---------------- feature extraction from free text ---------------- */
+(function ex(){
+  const D = [
+    ["Stainless kettle, 1.7 L, 2200 W, silver.", ["1.7","2200","silver"], ["1.7","2200","silver"]],
+    ["Compact travel kettle in white, 0.5 litre capacity, 1000 watts.", ["0.5","1000","white"], ["0.5","1000","white"]],
+    ["Clear glass kettle, one point seven litres, 2000W.", ["1.7","2000","clear"], ["1.7","2000","clear"]],
+    ["Matte black kettle, 1.2L. Boils in 3 minutes.", ["1.2","","black"], ["1.2","1500","black"]],
+    ["Retro kettle, cream colour, 1.5 litres, 1850 W.", ["1.5","1850","cream"], ["1.5","1850","beige"]],
+    ["Gooseneck pour-over kettle, 800 ml, 1200W, black.", ["0.8","1200","black"], ["0.8","1200","black"]],
+  ];
+  const COL = ["silver","white","black","clear","cream","red","blue","beige"];
+  const rx = t => {
+    const c = t.match(/(\d+(?:\.\d+)?)\s*(ml|l|litres?|liters?)\b/i), w = t.match(/(\d{3,4})\s*(w|watts?)\b/i), k = COL.find(x => new RegExp("\\b" + x + "\\b", "i").test(t));
+    return [c ? String(+(parseFloat(c[1]) / (c[2].toLowerCase() === "ml" ? 1000 : 1)).toFixed(2)) : "", w ? w[1] : "", k || ""];
+  };
+  const found = (t, v, j) => { if (!v) return true; if (j === 0) return t.includes(v) || t.includes(String(Math.round(parseFloat(v)*1000))); return t.toLowerCase().includes(v.toLowerCase()); };
+  let m = "rx";
+  function draw(){
+    let ok = 0, flag = 0, miss = 0, n = 0;
+    $("#exT").innerHTML = `<thead><tr><th>Description</th><th>Capacity (L)</th><th>Power (W)</th><th>Colour</th></tr></thead><tbody>${D.map(([t,truth,llm]) => { const out = m === "rx" ? rx(t) : llm; return `<tr><td>${esc(t)}</td>${out.map((v,j) => { n++; const good = v === truth[j], fl = !found(t, v, j); ok += good; flag += fl; miss += !good && !fl; return `<td class="${good ? "ok" : "bad"}">${good ? "✓" : "✗"} ${v || "<i>none</i>"}${fl ? " <b class='flag'>⚑</b>" : ""}</td>`; }).join("")}</tr>`; }).join("")}</tbody>`;
+    $("#exOk").textContent = `${ok} of ${n}`; $("#exFlag").textContent = flag; $("#exMiss").textContent = miss;
+  }
+  chipGroup($$("#extract [data-x]"), "aria-pressed", b => { m = b.dataset.x; draw(); });
+  draw();
+})();
+
+/* ---------------- synthetic data: fidelity checks ---------------- */
+(function syn(){
+  const R = rng(61), REAL = [];
+  for (let i=0;i<200;i++){ const age = 20 + R()*45; REAL.push([age, Math.exp(Math.log(13000) + .022*(age-20) + gauss(R)*.38)]); }
+  const ma = mean(REAL.map(r => r[0])), mi = mean(REAL.map(r => r[1])), sa = Math.sqrt(vari(REAL.map(r => r[0]))), si = Math.sqrt(vari(REAL.map(r => r[1])));
+  const rr = corr(REAL.map(r => r[0]), REAL.map(r => r[1]));
+  function gen(g){
+    const r = rng(62), S = [];
+    for (let i=0;i<200;i++){
+      if (g === "copy"){ const p = REAL[Math.floor(r()*REAL.length)]; S.push([p[0] + gauss(r)*.3, p[1]*(1 + gauss(r)*.005)]); }
+      else if (g === "indep") S.push([REAL[Math.floor(r()*200)][0], REAL[Math.floor(r()*200)][1]]);
+      else { const z1 = gauss(r), z2 = gauss(r); S.push([ma + sa*z1, mi + si*(rr*z1 + Math.sqrt(1-rr*rr)*z2)]); }
+    }
+    return S;
+  }
+  const NOTE = {
+    copy: "Looks perfect, which is the problem: most synthetic rows are near-copies of real people. No privacy gained.",
+    indep: "No copies, but sampling each column on its own breaks the link between age and income.",
+    gauss: "Keeps the correlation, but a bell-shaped fit to skewed incomes produces impossible values: ages under 18 and negative incomes."
+  };
+  let g = "copy";
+  const pad = {l:60,r:14,t:14,b:44};
+  const draw = live($("#cvSyn"), "syn", (ctx, W, H) => {
+    const S = gen(g), X = a => pad.l + (a-5)/70*(W-pad.l-pad.r), Y = v => H-pad.b - (v+20000)/120000*(H-pad.t-pad.b);
+    axes(ctx, W, H, pad, "age", "income (HK$ / month)", [10,20,30,40,50,60,70].map(v => [v, X(v)]), [-20000,0,40000,80000].map(v => [v/1000 + "k", Y(v)]));
+    ctx.strokeStyle = tok("--signal"); ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(pad.l, Y(0)); ctx.lineTo(W-pad.r, Y(0)); ctx.moveTo(X(18), pad.t); ctx.lineTo(X(18), H-pad.b); ctx.stroke(); ctx.setLineDash([]);
+    ctx.globalAlpha = .45; ctx.fillStyle = tok("--c1"); REAL.forEach(([a,v]) => { disc(ctx, X(a), Y(v), 3.2); ctx.fill(); });
+    ctx.globalAlpha = .85; ctx.strokeStyle = tok("--c4"); ctx.lineWidth = 1.6; S.forEach(([a,v]) => { disc(ctx, X(a), Y(v), 3.6); ctx.stroke(); }); ctx.globalAlpha = 1; ctx.lineWidth = 1;
+    ctx.font = `12px ${tok("--mono")}`; ctx.textAlign = "left"; ctx.fillStyle = tok("--c1"); ctx.fillText("● real", pad.l+8, pad.t+14); ctx.fillStyle = tok("--c4"); ctx.fillText("○ synthetic", pad.l+80, pad.t+14);
+    const near = S.filter(([a,v]) => REAL.some(([b,w]) => Math.abs(a-b)/sa < .05 && Math.abs(v-w)/si < .02)).length;
+    const bad = S.filter(([a,v]) => a < 18 || v < 0).length, rs = corr(S.map(s => s[0]), S.map(s => s[1]));
+    $("#synStats").innerHTML = [["near-copies of real rows", `${near} of 200`], ["corr(age, income)", `${rs.toFixed(2)} (real ${rr.toFixed(2)})`], ["impossible values", bad]].map(([k,v]) => `<div class="stat"><div class="k">${k}</div><div class="v" style="font-size:1.05rem">${v}</div></div>`).join("");
+    $("#synNote").textContent = NOTE[g] + " All records here are synthetic.";
+  });
+  chipGroup($$("#synG [data-g]"), "aria-pressed", b => { g = b.dataset.g; draw(); });
+})();
+
+/* ---------------- the error-rate rule ---------------- */
+(function errRule(){
+  const N = 500, z = 1.96;
+  function wilson(e, n){ const p = e/n, d = 1 + z*z/n, c = (p + z*z/(2*n))/d, h = z*Math.sqrt(p*(1-p)/n + z*z/(4*n*n))/d; return [p, Math.max(0, c-h), Math.min(1, c+h)]; }
+  let cur = [0,0,0];
+  const draw = live($("#cvErr"), "err", (ctx, W, H) => {
+    const pad = {l:40,r:20,t:30,b:40}, X = v => pad.l + v/.4*(W-pad.l-pad.r), y = H/2;
+    ctx.strokeStyle = tok("--line"); ctx.beginPath(); ctx.moveTo(pad.l, y+30); ctx.lineTo(W-pad.r, y+30); ctx.stroke();
+    ctx.fillStyle = tok("--muted"); ctx.font = `12px ${tok("--mono")}`; ctx.textAlign = "center"; [0,.1,.2,.3,.4].forEach(v => ctx.fillText(pct(v,0), X(v), y+48));
+    ctx.fillText("error rate of the cleaned column", (pad.l+W-pad.r)/2, H-8);
+    const [p, lo, hi] = cur;
+    ctx.fillStyle = tok("--c1"); ctx.globalAlpha = .25; ctx.fillRect(X(lo), y-18, Math.max(2, X(Math.min(hi,.4))-X(lo)), 36); ctx.globalAlpha = 1;
+    ctx.strokeStyle = tok("--c1"); ctx.lineWidth = 2; ctx.strokeRect(X(lo), y-18, Math.max(2, X(Math.min(hi,.4))-X(lo)), 36); ctx.lineWidth = 1;
+    disc(ctx, X(p), y, 8); ctx.fillStyle = tok("--c4"); ctx.fill();
+    ctx.fillStyle = tok("--ink"); ctx.font = `600 13px ${tok("--mono")}`; ctx.fillText(`${pct(lo)} – ${pct(hi)}`, X((lo+Math.min(hi,.4))/2), y-28);
+  });
+  function upd(){
+    const n = +$("#erN").value, eEl = $("#erE"); eEl.max = Math.min(40, n); const e = Math.min(+eEl.value, n);
+    $("#erNv").textContent = n; $("#erEv").textContent = e;
+    cur = wilson(e, n);
+    $("#erRate").innerHTML = [["estimated error rate", pct(cur[0])], ["95% range", `${pct(cur[1])} – ${pct(cur[2])}`], ["wrong rows expected in 500", `${Math.round(cur[1]*N)} – ${Math.round(cur[2]*N)}`], ["rows still unchecked", N - n]].map(([k,v]) => `<div class="stat"><div class="k">${k}</div><div class="v" style="font-size:1.05rem">${v}</div></div>`).join("");
+    draw();
+  }
+  $("#erN").oninput = upd; $("#erE").oninput = upd; upd();
+})();
+
+/* ================= LAB ================= */
+segBar("#labBar", "#labDetail", [
+  "<h3>Brief · 5 minutes</h3><p style='margin-top:6px'>Open the prepared notebook in Google Colab (see the next page). It holds 100 rows of a messy customer table and the code that scores a cleaned table against the hidden clean version.</p>",
+  "<h3>Guided work · 30 minutes</h3><ol class='clean' style='margin-top:6px'><li>Clean the table by hand with pandas: typos, units, duplicates, missing values. Note the time you take.</li><li>Pick one text column and clean it with an LLM. Keep the prompt and note the time.</li><li>Score both versions against the hidden clean table: the error rate per column.</li><li>Compare the two methods on the column you cleaned both ways.</li></ol>",
+  "<h3>Share-out · 10 minutes</h3><p style='margin-top:6px'>We collect the error rates and times for the column cleaned both ways. Where did the LLM help, and what did it get wrong?</p>"
+]);
+
+(function lr(){
+  const V = {eh:null, el:null, th:null, tl:null};
+  const D = [["eh","Error rate, by hand (%)",50],["el","Error rate, LLM (%)",50],["th","Time, by hand (min)",30],["tl","Time, LLM (min)",30]];
+  $("#lrCtl").innerHTML = D.map(([k,l,mx]) => `<div class="row"><label class="note" for="lr_${k}" style="min-width:13em">${l}: <b id="lr_${k}v">–</b></label><input type="range" id="lr_${k}" min="0" max="${mx}" value="0" style="flex:1"></div>`).join("") + `<div class="btnrow"><button class="btn ghost" id="lrClear">Clear</button></div>`;
+  const draw = live($("#cvLr"), "lr", (ctx, W, H) => {
+    const pad = {l:20,r:20,t:30,b:40}, gw = (W-pad.l-pad.r)/2;
+    [["Error rate (%)", "eh", "el", 50], ["Time (min)", "th", "tl", 30]].forEach(([t,a,b,mx],g) => {
+      const x0 = pad.l + g*gw, Y = v => H-pad.b - v/mx*(H-pad.t-pad.b);
+      ctx.fillStyle = tok("--muted"); ctx.font = `12px ${tok("--mono")}`; ctx.textAlign = "center"; ctx.fillText(t, x0 + gw/2, H-12);
+      ctx.strokeStyle = tok("--line"); ctx.beginPath(); ctx.moveTo(x0+10, Y(0)); ctx.lineTo(x0+gw-10, Y(0)); ctx.stroke();
+      [[a,"--c1","by hand"],[b,"--c3","LLM"]].forEach(([k,c,nm],j) => { const bw = gw*.28, bx = x0 + gw*.18 + j*(bw+gw*.08); ctx.fillStyle = tok("--muted"); ctx.fillText(nm, bx + bw/2, Y(0)+16); if (V[k] === null) return; ctx.fillStyle = tok(c); ctx.fillRect(bx, Y(V[k]), bw, Y(0)-Y(V[k])); ctx.fillStyle = tok("--ink"); ctx.fillText(V[k], bx + bw/2, Y(V[k]) - 6); });
+    });
+  });
+  D.forEach(([k]) => $("#lr_"+k).oninput = e => { V[k] = +e.target.value; $("#lr_"+k+"v").textContent = V[k]; draw(); });
+  $("#lrClear").onclick = () => { D.forEach(([k]) => { V[k] = null; $("#lr_"+k).value = 0; $("#lr_"+k+"v").textContent = "–"; }); draw(); };
+})();
+
+/* ---------------- presentation mode: one board per screen ---------------- */
+(function present(){
+  const root = document.documentElement, mainEl = $("main");
+  const slides = $$("main > section.board, main > .part-break");
+  if (!slides.length) return;
+  const ico = {
+    play:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>',
+    prev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+    next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>',
+    fs:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+    fsx:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>',
+    close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+  };
+  const mk = (tag, cls, html, label) => { const e = document.createElement(tag); e.className = cls; if (html) e.innerHTML = html; if (label){ e.setAttribute("aria-label", label); e.title = label; } return e; };
+  const startBtn = mk("button", "present-btn", ico.play + "<span>Present</span>", "Present: one board at a time, full screen (P)");
+  const prog = mk("div", "deck-ui deck-progress");
+  const sidePrev = mk("button", "deck-ui deck-side prev", ico.prev, "Previous board (←)");
+  const sideNext = mk("button", "deck-ui deck-side next", ico.next, "Next board (→)");
+  const bar = mk("div", "deck-ui deck-bar"); bar.setAttribute("role", "toolbar"); bar.setAttribute("aria-label", "Presentation controls");
+  const bPrev = mk("button", "", ico.prev, "Previous board (←)"), bNext = mk("button", "", ico.next, "Next board (→)");
+  const count = mk("span", "deck-count"); count.setAttribute("aria-live", "polite");
+  const bFs = mk("button", "", ico.fs, "Full screen (F)"), bExit = mk("button", "", ico.close, "End presentation (Esc)");
+  bar.append(bPrev, count, bNext, bFs, bExit);
+  document.body.append(startBtn, prog, sidePrev, sideNext, bar);
+  const spacer = mk("div", "deck-ui deck-spacer"); mainEl.appendChild(spacer);
+  const keysHint = $(".rail .keys");
+  if (keysHint) keysHint.innerHTML = 'Press <kbd>P</kbd> to present one board at a time, then <kbd>←</kbd> <kbd>→</kbd>. <kbd>F</kbd> toggles full screen.';
+
+  let idx = 0, on = false, fsByUs = false;
+  const label = el => el.dataset.nav || (el.querySelector("h2") ? el.querySelector("h2").textContent : "");
+  const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+  function enterFs(){ const f = root.requestFullscreen || root.webkitRequestFullscreen; if (!f || fsEl()) return; try { const p = f.call(root); fsByUs = true; if (p && p.catch) p.catch(() => { fsByUs = false; }); } catch(e){ fsByUs = false; } }
+  function exitFs(){ const f = document.exitFullscreen || document.webkitExitFullscreen; if (f && fsEl()){ try { const p = f.call(document); if (p && p.catch) p.catch(() => {}); } catch(e){} } }
+  function fsIcon(){ const isFs = !!fsEl(); bFs.innerHTML = isFs ? ico.fsx : ico.fs; bFs.title = isFs ? "Exit full screen (F)" : "Full screen (F)"; bFs.setAttribute("aria-label", bFs.title); }
+
+  function fit(){
+    if (!on) return;
+    const el = slides[idx], vw = innerWidth, vh = innerHeight;
+    const narrow = vw < 700, pad = narrow ? 18 : 84, barH = 70, topPad = 22;
+    const W = Math.min(1180, vw - 2*pad);
+    root.style.setProperty("--deck-w", W + "px");
+    root.style.setProperty("--deck-s", 1);
+    const h = el.offsetHeight;
+    // phones: keep full size and scroll; larger screens: scale the board to fit the screen
+    let s = narrow ? 1 : Math.max(0.6, Math.min(1.6, (vw - 2*pad) / W, (vh - barH - topPad) / h));
+    const top = Math.max(topPad, (vh - barH - h*s) / 2 + 6);
+    root.style.setProperty("--deck-s", s.toFixed(4));
+    root.style.setProperty("--deck-top", top + "px");
+    spacer.style.top = (top + h*s + barH + 10) + "px";
+    // canvases size themselves from their on-screen box, so nudge them to redraw at the new scale
+    $$("canvas.cv, .cv", el).forEach(c => { c.style.width = "calc(100% - 1px)"; requestAnimationFrame(() => { c.style.width = ""; }); });
+  }
+  function show(i){
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((el, k) => el.classList.toggle("is-current", k === idx));
+    mainEl.scrollTop = 0;
+    count.textContent = `${idx + 1} / ${slides.length} · ${label(slides[idx])}`;
+    prog.style.width = ((idx + 1) / slides.length * 100) + "%";
+    bPrev.disabled = sidePrev.disabled = idx === 0;
+    bNext.disabled = sideNext.disabled = idx === slides.length - 1;
+    const b = boards.indexOf(slides[idx]); if (b >= 0) current = b;
+    requestAnimationFrame(fit);
+  }
+  function start(){
+    if (on) return;
+    on = true; root.classList.add("presenting");
+    let i = slides.indexOf(boards[current]); if (i < 0) i = 0;
+    enterFs(); show(i);
+  }
+  function stop(){
+    if (!on) return;
+    on = false; root.classList.remove("presenting");
+    slides.forEach(el => el.classList.remove("is-current"));
+    if (fsByUs) exitFs(); fsByUs = false;
+    const el = slides[idx];
+    requestAnimationFrame(() => el.scrollIntoView({block: "start"}));
+  }
+  startBtn.onclick = start;
+  bPrev.onclick = sidePrev.onclick = () => show(idx - 1);
+  bNext.onclick = sideNext.onclick = () => show(idx + 1);
+  bExit.onclick = stop;
+  bFs.onclick = () => { if (fsEl()) { fsByUs = false; exitFs(); } else enterFs(); };
+  const onFs = () => { fsIcon(); if (on && !fsEl() && fsByUs){ fsByUs = false; stop(); } else requestAnimationFrame(fit); };
+  document.addEventListener("fullscreenchange", onFs); document.addEventListener("webkitfullscreenchange", onFs);
+  addEventListener("resize", () => requestAnimationFrame(fit));
+  new ResizeObserver(() => { if (on) requestAnimationFrame(fit); }).observe(mainEl);
+  slides.forEach(el => new ResizeObserver(() => { if (on && el.classList.contains("is-current")) fit(); }).observe(el));
+
+  // keys: capture phase so the scrolling navigation never sees them while presenting
+  addEventListener("keydown", e => {
+    const t = e.target, typing = t.closest && t.closest("input,textarea,select,[contenteditable]");
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!on){
+      if (!typing && (e.key === "p" || e.key === "P")){ e.preventDefault(); start(); }
+      return;
+    }
+    if (typing) return;
+    const onBtn = t.closest && t.closest("button,a,summary");
+    let handled = true;
+    if (e.key === "ArrowRight" || e.key === "PageDown" || (e.key === " " && !onBtn) || (e.key === "Enter" && !onBtn)) show(idx + 1);
+    else if (e.key === "ArrowLeft" || e.key === "PageUp" || e.key === "Backspace") show(idx - 1);
+    else if (e.key === "Home") show(0);
+    else if (e.key === "End") show(slides.length - 1);
+    else if (e.key === "Escape") stop();
+    else if (e.key === "f" || e.key === "F") bFs.onclick();
+    else if (e.key === "p" || e.key === "P") stop();
+    else handled = false;
+    if (handled){ e.preventDefault(); e.stopImmediatePropagation(); e.stopPropagation(); }
+  }, true);
+
+  // swipe on touch screens, but not on demos that use dragging
+  let sx = 0, sy = 0, swipe = false;
+  mainEl.addEventListener("touchstart", e => { if (!on || e.touches.length !== 1) return; swipe = !e.target.closest("canvas,.scene,input,select,button,svg,.tbl-wrap"); sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, {passive: true});
+  mainEl.addEventListener("touchend", e => { if (!on || !swipe) return; const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy; if (Math.abs(dx) > 60 && Math.abs(dy) < 50) show(idx + (dx < 0 ? 1 : -1)); }, {passive: true});
+})();
+})();
+</script>
+
+</body>
+</html>
