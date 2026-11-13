@@ -1,0 +1,2236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Classification I: Trees and Evaluation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&family=Unbounded:wght@600;700;800&display=swap">
+<style>
+/* Layout: a lecture rail on the left, one long column of numbered "boards" on the right; each board is one slide's idea, made interactive. */
+:root{
+  --bg:#F3F8F9; --surface:#FFFFFF; --surface-2:#E3F0F3; --ink:#0E2228; --muted:#4D666E; --line:#CBDDE2;
+  --accent:#04617B; --accent-2:#1489B0; --good:#0B8466; --signal:#BF2A2F; --warn:#B26A00;
+  --c1:#04617B; --c2:#1489B0; --c3:#0B8466; --c4:#BF2A2F; --c5:#7A5BB5;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#09161B; --surface:#0F2129; --surface-2:#153039; --ink:#E2F0F3; --muted:#92ADB5; --line:#244049;
+  --accent:#43C3DB; --accent-2:#8AD9EA; --good:#3FD69B; --signal:#FF6F6A; --warn:#F2B04A;
+  --c1:#43C3DB; --c2:#8AD9EA; --c3:#3FD69B; --c4:#FF6F6A; --c5:#B79BFF; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#09161B; --surface:#0F2129; --surface-2:#153039; --ink:#E2F0F3; --muted:#92ADB5; --line:#244049;
+  --accent:#43C3DB; --accent-2:#8AD9EA; --good:#3FD69B; --signal:#FF6F6A; --warn:#F2B04A;
+  --c1:#43C3DB; --c2:#8AD9EA; --c3:#3FD69B; --c4:#FF6F6A; --c5:#B79BFF; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;margin:0}
+.page{display:grid;grid-template-columns:210px minmax(0,1fr);gap:48px;max-width:1260px;margin:0 auto;padding-inline:24px;padding-block:28px 80px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.02;font-weight:700}
+h2{font-size:clamp(1.6rem,3vw,2.15rem);line-height:1.1;font-weight:700}
+h3{font-size:1.15rem;font-weight:600;line-height:1.25}
+p{margin:0}
+.lead{font-size:1.12rem;color:var(--muted);max-width:62ch}
+.mono{font-family:var(--mono)}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+
+/* rail */
+.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;max-height:calc(100vh - 48px);overflow:auto;font-size:.88rem}
+.rail .course{font-family:var(--mono);font-size:.75rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.rail .ltitle{font-family:var(--display);font-weight:700;font-size:1.05rem;line-height:1.2;margin:4px 0 18px}
+.rail ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.rail .part{font-family:var(--mono);font-size:.7rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin:14px 0 4px}
+.rail a{display:block;color:var(--muted);text-decoration:none;padding:4px 10px;border-radius:6px;border-left:2px solid transparent}
+.rail a:hover{color:var(--ink);background:var(--surface-2)}
+.rail a.on{color:var(--ink);background:var(--surface-2);font-weight:600}
+.rail .keys{margin-top:18px;color:var(--muted);font-size:.78rem}
+kbd{font-family:var(--mono);font-size:.75rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--surface)}
+
+main{min-width:0;display:grid;gap:88px}
+section.board{scroll-margin-top:24px;display:grid;gap:22px}
+.part-break{padding:26px 0 0;border-top:1px solid var(--line);display:grid;gap:6px}
+.part-break .n{font-family:var(--display);font-size:clamp(3rem,7vw,5rem);line-height:.9;color:var(--accent);font-weight:700}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:28px;align-items:center}
+.hero .meta{display:grid;gap:16px}
+.stage-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;cursor:pointer;font-size:.92rem}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"],.chip[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.scene{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:var(--r);background:radial-gradient(120% 90% at 30% 20%,var(--surface) 0%,var(--surface-2) 100%);overflow:hidden;touch-action:none}
+.scene canvas{display:block;width:100%!important;height:100%!important}
+.scene .hint{position:absolute;right:12px;bottom:10px;font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.scene .legend{position:absolute;left:12px;top:10px;font-family:var(--mono);font-size:.72rem;color:var(--muted);display:grid;gap:2px}
+.caption{min-height:4.8em;border-left:3px solid var(--accent);padding-left:14px}
+.caption b{font-weight:600}
+
+/* generic */
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:grid;gap:8px;align-content:start;min-width:0}
+.card .tag{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase}
+.card p{color:var(--muted)}
+.card.bad{background:color-mix(in srgb,var(--signal) 7%,var(--surface));border-color:color-mix(in srgb,var(--signal) 30%,var(--line))}
+.card.good{background:color-mix(in srgb,var(--good) 8%,var(--surface));border-color:color-mix(in srgb,var(--good) 30%,var(--line))}
+ul.clean{margin:0;padding-left:1.1em;display:grid;gap:6px}
+.note{font-size:.85rem;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;min-width:0}
+
+/* roadmap */
+.phases{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.phase{display:grid;gap:6px;align-content:start}
+.phase .pn{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-bottom:4px;border-bottom:2px solid var(--pc)}
+.wk{display:flex;gap:10px;align-items:baseline;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:.88rem;line-height:1.3}
+.wk .num{font-family:var(--mono);font-size:.8rem;color:var(--pc);font-weight:500;min-width:1.4em}
+.wk:hover{border-color:var(--pc)}
+.wk[aria-pressed="true"]{background:var(--surface-2);border-color:var(--pc);font-weight:600}
+.wkdetail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.wkdetail h4{margin:0 0 4px;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+/* assessment */
+.bars{display:grid;gap:14px}
+.barrow{display:grid;grid-template-columns:5.5em minmax(0,1fr);gap:12px;align-items:center}
+.barrow .lbl{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.bar{display:flex;height:54px;border-radius:8px;overflow:hidden;background:var(--surface-2)}
+.seg{display:flex;flex-direction:column;justify-content:center;padding:0 10px;color:#fff;font-size:.82rem;line-height:1.15;white-space:nowrap;overflow:hidden;transition:flex-basis .6s ease}
+.seg b{font-family:var(--mono);font-size:.95rem}
+.seg.ai{background:var(--c1)} .seg.ai2{background:var(--c3)} .seg.ex{background:#5B6F76}
+.legend-row{display:flex;gap:18px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* quiz */
+.quiz{display:grid;gap:12px}
+.q{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.q .opts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.q .opts button{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:6px 10px;font-size:.82rem;cursor:pointer}
+.q .opts button:hover{border-color:var(--accent)}
+.q .fb{grid-column:1/-1;font-size:.88rem;display:none}
+.q.done .fb{display:block}
+.q.right{border-color:var(--good)} .q.wrong{border-color:var(--signal)}
+.q.right .fb b{color:var(--good)} .q.wrong .fb b{color:var(--signal)}
+.q button.picked{background:var(--surface-2);font-weight:600}
+.score{font-family:var(--mono);font-size:.9rem;color:var(--muted)}
+
+/* playground */
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.play{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;align-items:start}
+.cv{width:100%;aspect-ratio:3/2;max-width:100%;display:block;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);touch-action:none;cursor:crosshair}
+.side{display:grid;gap:14px;min-width:0}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.stat .k{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stat .v{font-family:var(--mono);font-size:1.35rem;font-variant-numeric:tabular-nums}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--bg);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:.9rem;font-weight:500}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:hover{filter:brightness(1.08)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.items{display:flex;gap:6px;flex-wrap:wrap}
+.items button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:.85rem;cursor:pointer}
+.items button.a{background:var(--c1);border-color:var(--c1);color:var(--bg)}
+.items button.c{background:var(--c4);border-color:var(--c4);color:var(--bg)}
+.tx{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;font-family:var(--mono);font-size:.8rem}
+.tx div{border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--surface);color:var(--muted)}
+.tx div.hitA{border-color:var(--c1);color:var(--ink)}
+.tx div.hit{border-color:var(--c4);background:color-mix(in srgb,var(--c4) 10%,var(--surface));color:var(--ink)}
+.tx-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+
+/* kdd */
+.stage-panel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.stage-panel h4{margin:0 0 6px;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stage-panel .fail{color:var(--signal)}
+.scene.wide{aspect-ratio:16/7}
+
+/* stepper */
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.steps button{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 12px;cursor:pointer;display:grid;gap:2px}
+.steps button .s{font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.steps button[aria-selected="true"]{border-color:var(--accent);background:var(--surface-2)}
+.exflow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+
+/* case */
+.case{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.agent{font-family:var(--mono);font-size:.92rem;background:var(--surface-2);border-radius:8px;padding:14px 16px;line-height:1.5}
+.feat{display:grid;gap:8px}
+.feat label{display:flex;gap:10px;align-items:center;cursor:pointer;font-family:var(--mono);font-size:.88rem}
+.feat input{accent-color:var(--accent);width:18px;height:18px}
+.meter{height:12px;border-radius:6px;background:var(--surface-2);position:relative;overflow:hidden}
+.meter i{position:absolute;inset:0 auto 0 0;background:var(--accent);transition:width .5s ease}
+.meter .base{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.verdict{border-radius:8px;padding:12px 14px;font-size:.92rem}
+.verdict.leak{background:color-mix(in srgb,var(--signal) 12%,var(--surface));color:var(--ink);border:1px solid var(--signal)}
+.verdict.meh{background:color-mix(in srgb,var(--warn) 12%,var(--surface));border:1px solid var(--warn)}
+.verdict.ok{background:color-mix(in srgb,var(--good) 10%,var(--surface));border:1px solid var(--good)}
+
+/* table */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:.92rem;background:var(--surface)}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface-2)}
+td:first-child{font-weight:600}
+tr:last-child td{border-bottom:none}
+
+/* checklist */
+.checks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.check{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--good);margin-top:3px}
+.check:has(input:checked){border-color:var(--good);background:color-mix(in srgb,var(--good) 7%,var(--surface))}
+.check b{display:block;margin-bottom:2px}
+.check span{color:var(--muted);font-size:.92rem}
+.progress{font-family:var(--mono);font-size:.9rem;color:var(--muted)}
+
+.lab{counter-reset:s;display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.lab li{display:grid;grid-template-columns:2.4em minmax(0,1fr);gap:12px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.lab li::before{counter-increment:s;content:counter(s);font-family:var(--display);font-weight:700;font-size:1.5rem;color:var(--accent)}
+.lab li.key::before{color:var(--signal)}
+.next{background:var(--accent);color:var(--bg);border-radius:var(--r);padding:20px 22px;display:grid;gap:4px}
+.next .eyebrow{color:var(--bg);opacity:.8}
+
+@media (max-width:980px){
+  .page{grid-template-columns:minmax(0,1fr);gap:24px;padding-inline:16px}
+  .rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);max-height:none;padding-block:8px;border-bottom:1px solid var(--line);margin-inline:-16px;padding-inline:16px}
+  .rail .course,.rail .ltitle,.rail .part,.rail .keys{display:none}
+  .rail ol{display:flex;overflow-x:auto;gap:4px;scrollbar-width:none}
+  .rail a{white-space:nowrap}
+  .hero,.play,.case,.tx-wrap{grid-template-columns:minmax(0,1fr)}
+  .phases{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid4,.checks{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stage-panel,.wkdetail,.exflow{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:620px){
+  .grid3,.grid2,.grid4,.checks,.phases,.steps{grid-template-columns:minmax(0,1fr)}
+  .q{grid-template-columns:minmax(0,1fr)} .q .opts{justify-content:flex-start}
+  .scene.wide{aspect-ratio:4/3}
+  main{gap:64px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---- chapter 1 ---- */
+main a{color:var(--accent)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.lab-s{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);min-width:4.6em}
+.chip.sm{padding:4px 11px;font-size:.84rem}
+table.sm{min-width:0;font-size:.86rem}
+table.sm th,table.sm td{padding:7px 10px}
+table.sm td:first-child{font-weight:400}
+table.num td{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+table.num th{text-align:right}
+table.num td:first-child,table.num th:first-child{text-align:left}
+table .hl{background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
+table tr.tot td{font-weight:600;background:var(--surface-2)}
+.formula{background:var(--surface-2);border-radius:8px;padding:12px 16px;overflow-x:auto;font-size:1.05rem}
+.formula math{font-size:1.1em}
+.quote{border-left:3px solid var(--accent);padding-left:14px;font-size:1.05rem}
+.ill{width:100%;height:100%;display:block}
+.ill text{font-family:var(--mono);font-size:11px;fill:var(--muted);text-anchor:middle}
+.ill .ln{stroke:var(--muted);stroke-width:1.6;fill:none}
+.ill .ink{stroke:var(--ink);stroke-width:1.4;fill:var(--surface)}
+.ill .f1{fill:var(--c1)} .ill .f2{fill:var(--c2)} .ill .f3{fill:var(--c3)} .ill .f4{fill:var(--c4)} .ill .fw{fill:var(--warn)} .ill .fs{fill:var(--surface-2)}
+.ill .k{transition:opacity .4s}
+.ill .k.dim{opacity:.28}
+.ill .k.cur .ln{stroke:var(--accent);stroke-width:2.6}
+.ill .k.cur text{fill:var(--ink);font-weight:600}
+.ill .lane{font-size:10px;letter-spacing:.08em;text-anchor:start;fill:var(--accent)}
+.ill .mk{fill:var(--muted)}
+.ladder{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;align-items:end}
+.ladder div{border-radius:8px;padding:8px 10px;color:var(--bg);font-size:.86rem;line-height:1.25;font-weight:500}
+.axisrow{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.74rem;color:var(--muted);border-top:2px solid var(--line);padding-top:4px;margin-top:6px}
+.bar button.seg{border:0;cursor:pointer;text-align:left;font:inherit;color:var(--bg)}
+.mob{display:none}
+.bar button.seg[aria-pressed="true"]{box-shadow:inset 0 -5px 0 rgba(0,0,0,.35)}
+.tl{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:6px}
+.tl button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:0 0 8px;cursor:pointer;display:grid;gap:4px;overflow:hidden;font-size:.82rem}
+.tl button i{display:block;height:6px;background:var(--pc)}
+.tl button b{font-family:var(--mono);font-size:.95rem;color:var(--pc)}
+.tl button[aria-pressed="true"]{border-color:var(--pc);background:var(--surface-2)}
+.tl button .t{color:var(--muted);font-size:.72rem;line-height:1.2;padding:0 4px}
+.wkdetail h4,.flowtxt h4{margin:0 0 4px;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.steps.s5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.steps.s7{grid-template-columns:repeat(7,minmax(0,1fr))}
+.pane{display:grid;gap:14px}
+.strike{text-decoration:line-through;opacity:.5}
+.tok{display:inline-block;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 11px;font-family:var(--mono);font-size:.82rem;margin:2px}
+.tok.on{border-color:var(--accent);background:var(--accent);color:var(--bg)}
+.arrow{font-family:var(--mono);color:var(--accent);padding:0 6px}
+#clsBoard[data-show="ind"] .ci,#clsBoard[data-show="cls"] .cc{background:color-mix(in srgb,var(--accent) 16%,var(--surface))}
+#clsBoard[data-show="train"] #tTrain,#clsBoard[data-show="test"] #tTest{outline:3px solid var(--accent);outline-offset:-1px}
+.cc{color:var(--signal);font-weight:600}
+.lbl3{position:absolute;left:0;top:0;font-family:var(--mono);font-size:.72rem;color:var(--muted);pointer-events:none;white-space:nowrap;transform:translate(-50%,-50%)}
+.lbl3.t{color:var(--accent);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase}
+.flowwrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.flow{width:100%;min-width:560px;height:auto;display:block}
+.flow text{font-family:var(--mono);font-size:12px;fill:var(--muted);text-anchor:middle}
+.flow .nd rect,.flow .nd circle,.flow .nd path{fill:var(--surface);stroke:var(--accent-2);stroke-width:1.5;transition:fill .3s}
+.flow .nd text{fill:var(--ink)}
+.flow .nd.hi rect,.flow .nd.hi circle,.flow .nd.hi path{fill:color-mix(in srgb,var(--warn) 35%,var(--surface));stroke:var(--warn)}
+.flow .ed path{fill:none;stroke:var(--muted);stroke-width:1.6}
+.flow .ed.hi path{stroke:var(--warn);stroke-width:3.2}
+.flow .ed.hi text{fill:var(--signal);font-weight:600}
+.flow .rf path{stroke:var(--accent-2);stroke-width:1;opacity:.45;fill:none}
+.flow .rf.hi path{opacity:1;stroke-width:2;stroke:var(--signal)}
+.flow .mk{fill:var(--muted)}
+.flowtxt{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:980px){.ladder{grid-template-columns:minmax(0,1fr)} .ladder div{margin:0!important} .axisrow{display:none} .mob{display:block} .tl{grid-template-columns:repeat(6,minmax(0,1fr))} .steps.s7{grid-template-columns:repeat(4,minmax(0,1fr))} .flowtxt{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){.steps.s5,.steps.s7{grid-template-columns:repeat(3,minmax(0,1fr))} .steps.s5 button,.steps.s7 button{padding:8px} .tl{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* ---------- presentation mode: one board per screen, like slides ---------- */
+.present-btn{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 14px);z-index:20;display:inline-flex;gap:8px;align-items:center;border:1px solid var(--accent);background:var(--accent);color:var(--bg);border-radius:999px;padding:8px 16px 8px 13px;font:500 .9rem var(--body);cursor:pointer;box-shadow:0 2px 12px color-mix(in srgb,var(--ink) 18%,transparent)}
+.present-btn:hover{filter:brightness(1.08)}
+.present-btn svg,.deck-bar svg{width:18px;height:18px;display:block}
+html:not(.presenting) .deck-ui{display:none!important}
+html.presenting .present-btn{display:none}
+html.presenting,html.presenting body{height:100%;overflow:hidden}
+html.presenting .rail{display:none}
+html.presenting .page{display:block;max-width:none;padding:0;margin:0}
+html.presenting main{position:fixed;inset:0;display:block;background:var(--bg);overflow-x:hidden;overflow-y:auto;z-index:10;padding:0}
+html.presenting main > section.board,html.presenting main > .part-break{display:none}
+html.presenting main > section.board.is-current,html.presenting main > .part-break.is-current{display:grid;position:absolute;left:50%;top:var(--deck-top,24px);width:var(--deck-w,1180px);margin:0;transform-origin:top center;transform:translateX(-50%) scale(var(--deck-s,1))}
+html.presenting main > .part-break.is-current{border-top:none;padding:0;gap:14px}
+html.presenting main > .part-break.is-current .n{font-size:8rem}
+html.presenting main > .part-break.is-current h2{font-size:3.4rem}
+.deck-bar{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);z-index:30;display:flex;gap:2px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;box-shadow:0 2px 14px color-mix(in srgb,var(--ink) 14%,transparent);opacity:.45;transition:opacity .2s}
+.deck-bar:hover,.deck-bar:focus-within{opacity:1}
+.deck-bar button{border:none;background:transparent;color:var(--ink);border-radius:999px;width:38px;height:38px;display:grid;place-items:center;cursor:pointer}
+.deck-bar button:hover{background:var(--surface-2)}
+.deck-bar button:disabled{opacity:.3;cursor:default;background:transparent}
+.deck-count{font-family:var(--mono);font-size:.8rem;color:var(--muted);padding:0 10px;white-space:nowrap;max-width:46vw;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.deck-side{position:fixed;top:0;bottom:0;width:64px;z-index:25;border:none;background:transparent;cursor:pointer;color:var(--muted);display:grid;place-items:center;opacity:0;transition:opacity .2s}
+.deck-side svg{width:34px;height:34px}
+.deck-side.prev{left:0}
+.deck-side.next{right:0}
+.deck-side:hover,.deck-side:focus-visible{opacity:1}
+.deck-side:disabled{display:none}
+.deck-spacer{position:absolute;left:0;width:1px;height:1px;pointer-events:none}
+.deck-progress{position:fixed;left:0;top:0;height:3px;background:var(--accent);z-index:30;transition:width .3s ease}
+@media (max-width:700px){.deck-side{display:none!important}.present-btn{padding:7px 12px}}
+@media (prefers-reduced-motion:reduce){.deck-progress,.deck-bar,.deck-side{transition:none}}
+
+/* ================= "sticker pop" theme layer (chapter 1) =================
+   Layout stays the same. Bold ink outlines, hard offset shadows, sticker labels,
+   marker-pen headings and a dotted notebook background. */
+:root{
+  --bg:#F3EFFF; --surface:#FFFFFF; --surface-2:#ECE5FF; --ink:#17132B; --muted:#585074; --line:#D6CCF5;
+  --accent:#6A35FF; --accent-2:#E8307F; --good:#0E9A6E; --signal:#E5372B; --warn:#FFB703;
+  --c1:#6A35FF; --c2:#E8307F; --c3:#0C946C; --c4:#E8590C; --c5:#1883CC;
+  --edge:#17132B; --shadow:#17132B; --dot:#CFC4F2; --marker:#FFD54A; --sticker:#FFD54A; --sticker-ink:#17132B;
+  --display:"Unbounded", "Arial Black", "Segoe UI", system-ui, sans-serif;
+  --body:"Rubik", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"Space Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:16px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#110D22; --surface:#1C1736; --surface-2:#28214D; --ink:#F4F0FF; --muted:#B3A8DB; --line:#3A3166;
+  --accent:#A68BFF; --accent-2:#FF6AAE; --good:#33E0A1; --signal:#FF6B63; --warn:#FFC93D;
+  --c1:#A68BFF; --c2:#FF6AAE; --c3:#33E0A1; --c4:#FF9F55; --c5:#55C8FF;
+  --edge:#7B67D6; --shadow:#05030C; --dot:#2A2350; --marker:#7A4FE0; --sticker:#FFC93D; --sticker-ink:#17132B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#110D22; --surface:#1C1736; --surface-2:#28214D; --ink:#F4F0FF; --muted:#B3A8DB; --line:#3A3166;
+  --accent:#A68BFF; --accent-2:#FF6AAE; --good:#33E0A1; --signal:#FF6B63; --warn:#FFC93D;
+  --c1:#A68BFF; --c2:#FF6AAE; --c3:#33E0A1; --c4:#FF9F55; --c5:#55C8FF;
+  --edge:#7B67D6; --shadow:#05030C; --dot:#2A2350; --marker:#7A4FE0; --sticker:#FFC93D; --sticker-ink:#17132B; color-scheme:dark}
+
+body{background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.3px,transparent 1.5px);background-size:22px 22px;font-size:17.5px}
+h1{font-size:clamp(2rem,4.4vw,3.1rem);font-weight:800;letter-spacing:-.02em;line-height:1.08}
+h2{font-size:clamp(1.35rem,2.6vw,1.85rem);font-weight:700;letter-spacing:-.015em;line-height:1.2;
+   text-decoration:underline;text-decoration-color:var(--marker);text-decoration-thickness:.32em;text-underline-offset:-.12em;text-decoration-skip-ink:none}
+h3{font-family:var(--body);font-weight:600;font-size:1.12rem}
+.lead{color:var(--muted)}
+
+/* sticker labels */
+.eyebrow{display:inline-block;justify-self:start;width:fit-content;background:var(--sticker);color:var(--sticker-ink);border:2px solid var(--edge);border-radius:8px;padding:3px 10px 2px;font-weight:700;font-size:.72rem;letter-spacing:.06em;transform:rotate(-1.5deg);box-shadow:2px 2px 0 var(--shadow)}
+section.board:nth-of-type(even) .eyebrow{transform:rotate(1.2deg)}
+.card .tag{font-weight:700}
+
+/* hero squiggle */
+.hero h1::after,.hero-title h1::after{content:"";display:block;width:150px;height:16px;margin-top:12px;background:var(--accent-2);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 16'%3E%3Cpath d='M3 10c12-10 22 8 34 0s22-10 34 0 22 8 34 0 22-10 34 0' fill='none' stroke='black' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 16'%3E%3Cpath d='M3 10c12-10 22 8 34 0s22-10 34 0 22 8 34 0 22-10 34 0' fill='none' stroke='black' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
+
+/* chunky outlined surfaces */
+.card,.panel,.stat,.q,.check,.lab li,.tbl-wrap,.flowwrap,.tl button,.wk,.steps button{border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow)}
+.card,.panel{border-radius:var(--r)}
+.card.bad{border-color:var(--signal);box-shadow:4px 4px 0 var(--signal)}
+.card.good{border-color:var(--good);box-shadow:4px 4px 0 var(--good)}
+.stat{border-radius:12px}
+.stat .v{font-weight:700}
+.scene,.cv{border:2px solid var(--edge);box-shadow:6px 6px 0 var(--accent-2);border-radius:var(--r)}
+.scene{background:radial-gradient(120% 90% at 30% 20%,var(--surface) 0%,var(--surface-2) 100%)}
+.formula{border:2px dashed var(--accent);background:var(--surface)}
+.quote{border-left:5px solid var(--accent-2)}
+.caption{border-left:5px solid var(--accent-2)}
+table{background:var(--surface)}
+th{background:var(--accent);color:#FFFFFF;font-weight:700}
+.tbl-wrap{border-radius:12px}
+.tok{border:2px solid var(--edge)}
+.tok.on{background:var(--accent-2);border-color:var(--edge);color:#FFFFFF}
+
+/* buttons that feel pressable */
+.chip,.btn,.items button,.q .opts button{border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);font-weight:500;transition:transform .12s ease,box-shadow .12s ease,background .15s}
+.chip:hover,.btn:hover,.items button:hover,.q .opts button:hover{transform:translate(-1px,-1px) rotate(-1deg);box-shadow:4px 4px 0 var(--shadow);filter:none}
+.chip:active,.btn:active,.items button:active,.q .opts button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--shadow)}
+.chip[aria-pressed="true"],.chip[aria-selected="true"]{background:var(--accent-2);border-color:var(--edge);color:#FFFFFF}
+.btn{background:var(--accent);color:#FFFFFF;border-color:var(--edge)}
+.btn.ghost{background:var(--surface);color:var(--ink)}
+.steps button[aria-selected="true"],.wk[aria-pressed="true"],.tl button[aria-pressed="true"]{background:var(--marker);border-color:var(--edge);color:var(--sticker-ink)}
+.steps button[aria-selected="true"] .s,.tl button[aria-pressed="true"] .t{color:var(--sticker-ink)}
+.q.right{border-color:var(--good);box-shadow:4px 4px 0 var(--good)}
+.q.wrong{border-color:var(--signal);box-shadow:4px 4px 0 var(--signal)}
+.check:has(input:checked){box-shadow:4px 4px 0 var(--good)}
+
+/* bars and ladder */
+.bar{border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow);border-radius:12px}
+.ladder div{border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);border-radius:10px;color:#FFFFFF;font-weight:600}
+
+/* part dividers: outlined giant numbers */
+.part-break{border-top:3px dashed var(--edge)}
+.part-break .n{color:var(--surface);-webkit-text-stroke:3px var(--edge);text-shadow:7px 7px 0 var(--accent-2);font-weight:800;font-size:clamp(3.4rem,8vw,6rem)}
+.part-break:nth-of-type(2n) .n{text-shadow:7px 7px 0 var(--c3)}
+
+/* rail */
+.rail .ltitle{font-weight:800;font-size:1rem}
+.rail a{border-radius:999px;border:2px solid transparent;padding:4px 12px}
+.rail a:hover{background:var(--surface);border-color:var(--edge)}
+.rail a.on{background:var(--accent);color:#FFFFFF;border-color:var(--edge);box-shadow:2px 2px 0 var(--shadow)}
+.rail .part{color:var(--accent-2);font-weight:700}
+
+/* next block */
+.next{border:2px solid var(--edge);box-shadow:6px 6px 0 var(--accent-2);background:var(--accent);color:#FFFFFF}
+.next .eyebrow{color:var(--sticker-ink)}
+
+/* presentation controls */
+.present-btn{background:var(--accent-2);color:#FFFFFF;border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);font-weight:600}
+.present-btn:hover{transform:translate(-1px,-1px) rotate(-2deg)}
+.deck-bar{border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);opacity:.6}
+.deck-progress{height:5px;background:var(--accent-2)}
+html.presenting main > .part-break.is-current .n{font-size:9rem;-webkit-text-stroke:4px var(--edge);text-shadow:10px 10px 0 var(--accent-2)}
+html.presenting main > .part-break.is-current h2{font-size:3rem}
+
+@media (prefers-reduced-motion:reduce){.chip:hover,.btn:hover,.items button:hover,.q .opts button:hover,.present-btn:hover{transform:none}}
+html.presenting main{background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.3px,transparent 1.5px);background-size:22px 22px}
+
+.steps button{min-width:0}
+.steps button b{overflow-wrap:anywhere;hyphens:auto}
+@media (max-width:620px){.steps button b{font-size:.8rem!important}}
+
+/* ===== green palette variant: overrides the sticker-pop colours only ===== */
+:root{--bg:#EDF8F0; --surface:#FFFFFF; --surface-2:#DFF2E5; --ink:#10241A; --muted:#4C6656; --line:#C6E6CF; --accent:#0B8A4F; --accent-2:#8BD100; --good:#0B8A4F; --signal:#E5372B; --warn:#FFB703; --c1:#0B8A4F; --c2:#5FA800; --c3:#0F8C8C; --c4:#E8590C; --c5:#6A35FF; --edge:#10241A; --shadow:#10241A; --dot:#BCE0C6; --marker:#FFD54A; --sticker:#FFD54A; --sticker-ink:#10241A; --on-accent:#FFFFFF; --on-accent-2:#10241A;}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0A1912; --surface:#12271C; --surface-2:#1A3727; --ink:#ECFBF1; --muted:#9DC4AB; --line:#2A4D38; --accent:#3EDB8A; --accent-2:#B6F23C; --good:#3EDB8A; --signal:#FF6B63; --warn:#FFC93D; --c1:#3EDB8A; --c2:#B6F23C; --c3:#3FD4D4; --c4:#FF9F55; --c5:#A68BFF; --edge:#3E9E6A; --shadow:#020805; --dot:#173323; --marker:#2E8F55; --sticker:#FFC93D; --sticker-ink:#10241A; --on-accent:#0A1912; --on-accent-2:#0A1912; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0A1912; --surface:#12271C; --surface-2:#1A3727; --ink:#ECFBF1; --muted:#9DC4AB; --line:#2A4D38; --accent:#3EDB8A; --accent-2:#B6F23C; --good:#3EDB8A; --signal:#FF6B63; --warn:#FFC93D; --c1:#3EDB8A; --c2:#B6F23C; --c3:#3FD4D4; --c4:#FF9F55; --c5:#A68BFF; --edge:#3E9E6A; --shadow:#020805; --dot:#173323; --marker:#2E8F55; --sticker:#FFC93D; --sticker-ink:#10241A; --on-accent:#0A1912; --on-accent-2:#0A1912; color-scheme:dark}
+/* class colours (purple filled = yes/positive, grey hollow = no/negative); green/red are kept for correct/wrong only */
+:root{--k1:#6A35FF;--k2:#7A8A80}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--k1:#B79BFF;--k2:#8FA597}}
+:root[data-theme="dark"]{--k1:#B79BFF;--k2:#8FA597}
+.btn,.rail a.on,div.next,div.next h3,div.next p,th{color:var(--on-accent)}
+.chip[aria-pressed="true"],.chip[aria-selected="true"],.tok.on,.present-btn{color:var(--on-accent-2)}
+</style>
+<style>
+/* ===== Lecture 1 additions: block schedule, AI checks, lab audit form (green tokens only) ===== */
+.blk{display:grid;grid-template-columns:4.6em repeat(5,minmax(0,1fr));gap:8px;align-items:stretch}
+.blk .dh{font-family:var(--mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;font-weight:700}
+.blk .wl{font-family:var(--mono);font-size:.78rem;font-weight:700;color:var(--accent);display:grid;align-content:center}
+.blk .cell{min-width:0;display:grid}
+.blk .lec{display:grid;gap:3px;align-content:start;text-align:left;border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);background:var(--surface);border-radius:12px;padding:8px 10px;cursor:pointer;font-size:.8rem;line-height:1.25;min-height:92px;transition:transform .12s ease,box-shadow .12s ease}
+.blk .lec:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--shadow)}
+.blk .lec b{font-family:var(--mono);font-size:.95rem;color:var(--accent)}
+.blk .lec .t{color:var(--ink)}
+.blk .lec .d{display:none;font-family:var(--mono);font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.blk .lec[aria-pressed="true"]{background:var(--marker);color:var(--sticker-ink)}
+.blk .lec[aria-pressed="true"] b,.blk .lec[aria-pressed="true"] .t,.blk .lec[aria-pressed="true"] .d{color:var(--sticker-ink)}
+.blk .ev{justify-self:start;font-family:var(--mono);font-size:.64rem;font-weight:700;letter-spacing:.03em;background:var(--sticker);color:var(--sticker-ink);border:1.5px solid var(--edge);border-radius:6px;padding:1px 6px;margin-top:2px}
+.blk .free{display:grid;place-items:center;text-align:center;border:2px dashed var(--line);border-radius:12px;padding:8px;font-size:.78rem;color:var(--muted);min-height:92px;background:color-mix(in srgb,var(--surface) 55%,transparent)}
+.blk .free .d{display:none}
+.aichk{font-size:.92rem;color:var(--ink)!important;border-top:2px dashed var(--line);padding-top:8px;margin-top:2px}
+.aichk b{display:block;font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--c3)}
+.labgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+.labgrid .claims{grid-template-columns:repeat(2,minmax(0,1fr))}
+html.presenting .labgrid{grid-template-columns:minmax(0,.8fr) minmax(0,1.5fr)}
+html.presenting .labgrid .claims{grid-template-columns:minmax(0,1fr)}
+.claims{display:grid;gap:8px;margin-top:8px}
+.claims button{display:grid;gap:2px;text-align:left;font:inherit;font-family:var(--body);font-size:.86rem;line-height:1.35;color:var(--ink);background:var(--surface);border:2px solid var(--edge);border-radius:10px;padding:7px 10px;cursor:pointer;box-shadow:2px 2px 0 var(--shadow)}
+.claims button:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--shadow)}
+.claims button[disabled]{opacity:.45;cursor:default;transform:none;box-shadow:none}
+.claims .hint{display:none;font-size:.78rem;color:var(--c3);font-family:var(--mono)}
+.claims.showhints .hint{display:block}
+table.audit{min-width:620px;font-size:.88rem}
+table.audit td{padding:8px;vertical-align:top}
+table.audit td:first-child{font-family:var(--mono);color:var(--muted);width:2.2em;padding-top:14px}
+table.audit textarea,table.audit select{width:100%;font:inherit;font-size:.86rem;color:var(--ink);background:var(--bg);border:2px solid var(--edge);border-radius:8px;padding:6px 8px;resize:vertical}
+table.audit textarea{min-height:3.6em}
+table.audit select{cursor:pointer;min-width:8.5em}
+table.audit td.claim{font-size:.95rem;line-height:1.45;color:var(--ink);padding-top:12px}
+table.audit .step{font-family:var(--mono);font-size:.72rem;color:var(--muted);white-space:nowrap}
+table.audit .vchips{display:flex;flex-wrap:nowrap;gap:6px;width:max-content;padding-right:4px}
+table.audit .vchips .chip{white-space:nowrap}
+table.audit .vchips .chip{font-size:.8rem;padding:4px 10px}
+table.audit tr[data-v="unk"] td{background:color-mix(in srgb,var(--c5) 12%,var(--surface))}
+table.audit tr[data-v="ok"] td{background:color-mix(in srgb,var(--good) 12%,var(--surface))}
+table.audit tr[data-v="part"] td{background:color-mix(in srgb,var(--warn) 16%,var(--surface))}
+table.audit tr[data-v="wrong"] td{background:color-mix(in srgb,var(--signal) 12%,var(--surface))}
+.pf{display:inline-flex;gap:6px;align-items:center;font-size:.88rem;cursor:pointer}
+.pf input{width:18px;height:18px;accent-color:var(--accent)}
+@media (max-width:980px){html.presenting .labgrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){.labgrid .claims{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){
+  .blk{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .blk .dh,.blk .corner{display:none}
+  .blk .wl{grid-column:1/-1;margin-top:6px}
+  .blk .lec .d,.blk .free .d{display:block}
+  .blk .lec,.blk .free{min-height:0}
+}
+/* fix: classification table headers stay readable when a column is highlighted (inherited from Ch1) */
+#clsBoard th.ci,#clsBoard th.cc{color:var(--on-accent)}
+#clsBoard[data-show="ind"] th.ci,#clsBoard[data-show="cls"] th.cc{color:var(--ink)}
+/* segmented bars: truncate labels in narrow segments */
+.bar button.seg span{overflow:hidden;text-overflow:ellipsis}
+/* "new this year" additions and replaced lines */
+.add{border:2px dashed var(--c3);border-radius:var(--r);padding:14px 16px;display:grid;gap:10px;background:color-mix(in srgb,var(--c3) 5%,transparent)}
+.add .addt{font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--c3)}
+.panel .add{margin-top:14px}
+.was del{color:var(--muted);text-decoration-thickness:1.5px}
+.repl{display:inline-block;font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.03em;color:var(--sticker-ink);background:var(--sticker);border:1.5px solid var(--edge);border-radius:6px;padding:0 6px;margin-top:2px}
+
+/* hero: data -> pattern -> knowledge (2D) */
+#aiHeroScene canvas{cursor:crosshair}
+#aiHeroScene .hint{top:8px;bottom:auto}
+.hero-rule{position:absolute;display:grid;gap:3px;background:var(--surface);border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow);border-radius:12px;padding:10px 14px;font-size:.95rem;line-height:1.35}
+.hero-rule .k{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.hero-rule b{color:var(--accent)}
+.hero-rule .n{font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+.hero-tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-family:var(--mono);font-size:.74rem;padding:4px 8px;border-radius:6px;white-space:nowrap}
+
+.hero-title .instructor{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin:0}
+.hero-title .instructor .k{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.hero-title .instructor .name{font-weight:600;font-size:1.05rem;color:var(--ink);border:2px var(--muted);border-radius:8px;padding:2px 10px}
+
+.title-board{padding-block:10vh 8vh}
+.hero-title{display:grid;justify-items:center;text-align:center;gap:20px;max-width:920px;margin:0 auto}
+.hero-title .eyebrow{justify-self:center}
+.hero-title h1{font-size:clamp(2.4rem,6.2vw,4.6rem)}
+.hero-title h1::after{margin-left:auto;margin-right:auto}
+.hero-title .lead{max-width:52ch}
+.hero-title .instructor{justify-content:center;margin-top:6px}
+
+/* ================= Lecture 2 components ================= */
+.qlist{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.dq{display:grid;gap:6px;align-content:start;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:2px solid var(--edge);border-radius:12px;padding:12px;cursor:pointer;box-shadow:3px 3px 0 var(--shadow)}
+.dq .n{font-family:var(--display);font-weight:800;font-size:1.6rem;color:var(--accent)}
+.dq b{font-size:.98rem;line-height:1.3}
+.dq .when{font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;color:var(--good)}
+.dq.later{background:var(--surface-2)}
+.dq.later .when{color:var(--muted)}
+.dq[aria-pressed="true"]{background:var(--marker);color:var(--sticker-ink)}
+.dq[aria-pressed="true"] .n,.dq[aria-pressed="true"] .when{color:var(--sticker-ink)}
+.qgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.sel{font:inherit;font-size:.9rem;border:2px solid var(--edge);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 10px;max-width:100%}
+.txt{font:inherit;font-size:.95rem;width:100%;border:2px solid var(--edge);background:var(--surface);color:var(--ink);border-radius:8px;padding:8px 10px}
+.lbl3.lq{color:var(--c4);font-weight:700;font-size:.82rem;z-index:3}
+.lbl3.ln{color:var(--c1);font-weight:600;z-index:2}
+ol.nn{margin:6px 0;padding-left:1.4em;font-family:var(--mono);font-size:.85rem;display:grid;gap:1px}
+table.pick th,table.pick td,table.pick tr{cursor:pointer}
+table tr.sub td{color:var(--muted);font-size:.8rem}
+.vecrow{display:grid;grid-template-columns:5.6em repeat(var(--n,10),minmax(0,1fr));gap:4px;align-items:center}
+.vecrow .nm{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.vecrow .hd{font-family:var(--mono);font-size:.66rem;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bit,.vecrow input{min-width:0;width:100%;font-family:var(--mono);font-size:.95rem;text-align:center;border:2px solid var(--edge);background:var(--surface);color:var(--ink);border-radius:6px;padding:6px 0;cursor:pointer}
+.vecrow input{cursor:text;-moz-appearance:textfield;appearance:textfield}
+.vecrow input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.bit.on{background:var(--accent);color:#FFFFFF}
+.bit.zz{background:var(--surface-2);color:var(--muted)}
+.mcell{font-family:var(--mono);font-size:.66rem;text-align:center;border-radius:4px;padding:3px 0}
+.m11{background:color-mix(in srgb,var(--good) 28%,var(--surface))}
+.m00{background:var(--surface-2);color:var(--muted)}
+.m10,.m01{background:color-mix(in srgb,var(--signal) 20%,var(--surface))}
+.bag{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-family:var(--mono);font-size:.95rem}
+.bag span{border:2px solid var(--edge);background:var(--surface);border-radius:999px;padding:3px 10px}
+.bag span.br{border:none;background:none;padding:0;font-size:1.4rem;color:var(--muted)}
+.bag span b{color:var(--accent)}
+.words{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;min-height:4.6em}
+.wd{display:grid;gap:4px;justify-items:center}
+.wd b{font-size:1.5rem;font-weight:600;border-bottom:3px solid transparent;padding:0 2px}
+.wd.ch b{color:var(--c4);border-color:var(--c4)}
+.wd i{font-style:normal;font-family:var(--mono);font-size:.7rem;color:var(--muted);max-width:9em;text-align:center}
+.seq{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-family:var(--mono);font-size:.85rem;margin:6px 0}
+.seq span{border:2px solid var(--c1);border-radius:6px;padding:3px 8px}
+svg.traj{width:100%;height:auto;display:block}
+#tmSvg,#weSvg,#prMini{width:100%;height:auto;display:block;overflow:hidden}
+#coWork,#prWork,#euWork,#mWork{overflow-wrap:anywhere}
+#weSvg{max-width:360px;justify-self:center}
+.fig{margin:0;display:grid;gap:6px;justify-items:center}
+.fig img{width:100%;height:auto;max-height:52vh;object-fit:contain;background:#FFFFFF;border:2px solid var(--edge);border-radius:12px;box-shadow:4px 4px 0 var(--shadow)}
+.fig figcaption{font-weight:600;font-size:.95rem}
+.mats{display:grid;grid-template-columns:minmax(0,.7fr) repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+svg.venn{width:min(320px,100%);height:auto;justify-self:center;display:block}
+.pair{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:1rem}
+.pair .mono{background:var(--surface);border:2px solid var(--edge);border-radius:8px;padding:6px 10px}
+.pair .vs{font-family:var(--mono);color:var(--muted)}
+.ladder5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.ladder5 button{display:grid;gap:2px;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:2px solid var(--edge);border-radius:10px;padding:10px 12px;cursor:pointer;box-shadow:3px 3px 0 var(--shadow);min-width:0}
+.ladder5 button .s{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.ladder5 button b{overflow-wrap:anywhere}
+.ladder5 button[aria-selected="true"]{background:var(--marker);color:var(--sticker-ink)}
+.strip-row{display:grid;grid-template-columns:6.5em minmax(0,1fr);gap:4px 10px;align-items:center}
+.strip-row .note{grid-column:2}
+canvas.strip{width:100%;height:46px;display:block;border-radius:6px}
+.res{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.res li{display:grid;grid-template-columns:minmax(0,1fr) 3.4em;gap:8px;align-items:center;border:2px solid var(--edge);background:var(--surface);border-radius:8px;padding:7px 10px;font-size:.9rem;position:relative;overflow:hidden}
+.res li i{position:absolute;left:0;bottom:0;height:4px;background:var(--accent)}
+.res li .sc{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.res li.zero{color:var(--muted)}
+.hitrow{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:start;cursor:pointer}
+.hitrow input{width:17px;height:17px;margin-top:2px;accent-color:var(--good)}
+.stepper{display:inline-flex;align-items:center;gap:8px}
+.stepper button{width:28px;height:28px;border:2px solid var(--edge);border-radius:8px;background:var(--surface);color:var(--ink);font:600 1rem var(--body);cursor:pointer;box-shadow:2px 2px 0 var(--shadow)}
+.stepper b{min-width:1.2em;text-align:center}
+#cvBias{aspect-ratio:4/3}
+table th.hl{background:var(--marker);color:var(--sticker-ink)}
+#topSl input{width:100%}
+#topSl>div{min-width:0}
+#dense .side{min-width:0}
+#dense .sel{width:100%;min-width:0}
+.prmini{display:grid;gap:4px;justify-items:center;align-content:start}
+#prMini{max-width:320px}
+#spScene .lbl3{font-size:.64rem;opacity:.65}
+#spScene .lbl3.lq,#spScene .lbl3.ln{opacity:1}
+.tfgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px;align-items:start}
+#cvLr{aspect-ratio:3/2}
+.lab li .mono{font-family:var(--mono)}
+@media (max-width:900px){
+  .qlist{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ladder5{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:620px){
+  .qlist,.qgrid,.mats{grid-template-columns:minmax(0,1fr)}
+  .vecrow{grid-template-columns:3.6em repeat(var(--n,10),minmax(0,1fr));gap:2px}
+  .bit,.vecrow input{font-size:.78rem;padding:5px 0;border-width:1px}
+  .wd b{font-size:1.15rem}
+  .strip-row{grid-template-columns:minmax(0,1fr)}
+  .strip-row .note{grid-column:1}
+  .stats[style]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .tfgrid{grid-template-columns:minmax(0,1fr)}
+}
+
+/* ================= Lecture 4 components ================= */
+math{font-size:1.08em}
+.pseudo{margin:0;white-space:pre;overflow-x:auto;font-family:var(--mono);font-size:.78rem;background:var(--surface-2);border:2px solid var(--edge);border-radius:10px;padding:12px 16px;line-height:1.5;color:var(--ink)}
+.pseudo .k{color:var(--accent);font-weight:700}
+.pseudo .c{color:var(--muted)}
+table.dtab{min-width:0;font-family:var(--mono);font-size:.8rem}
+.dtab th,.dtab td{padding:4px 8px;white-space:nowrap}
+.dtab td:first-child{font-weight:400;color:var(--muted)}
+.dtab tr.on td{background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
+.dtab tr.best td{background:color-mix(in srgb,var(--good) 14%,var(--surface))}
+.dtab .btn{padding:3px 10px;font-size:.76rem}
+.dtab th.lbl{background:var(--k1)}
+.dtab tfoot td{border:none;padding-top:6px;font-family:var(--body)}
+.dtab td.hi{background:color-mix(in srgb,var(--good) 18%,var(--surface));font-weight:700}
+.dtab.num td{text-align:right}.dtab.num td:first-child{text-align:left}
+.cy{color:var(--k1);font-weight:700}.cn{color:var(--k2);font-weight:700}
+.tree-wrap{overflow-x:auto;border:2px solid var(--edge);border-radius:var(--r);background:var(--surface);box-shadow:4px 4px 0 var(--shadow)}
+.tree-wrap canvas{display:block;cursor:pointer}
+.cv.sq{aspect-ratio:1/1;max-width:400px}.cv.wide{aspect-ratio:6/1}.cv.mid{aspect-ratio:2/1}
+.gbar{display:flex;height:22px;border-radius:5px;overflow:hidden;background:var(--surface-2);min-width:4px}
+.gbar.big{height:30px;margin:8px 0}
+.gbar i{display:block;height:100%}
+.grp{display:grid;grid-template-columns:7em minmax(0,1fr);gap:6px 12px;align-items:center;font-size:.88rem}
+.grp .mono{font-size:.8rem;color:var(--muted)}
+.dots6{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.dots6 span{font-family:var(--mono);font-size:.72rem;text-align:center;border:2px solid var(--edge);border-radius:8px;padding:6px 0}
+.dots6 .ok{background:var(--k1);color:#fff;border-color:var(--k1)}
+.dots6 .no{background:var(--surface);color:var(--ink);border-color:var(--k2);border-style:dashed}
+#gsTree{width:100%;height:auto;display:block}
+.impcards .card{padding:10px 14px;gap:4px}
+.impcards .card p{font-size:.86rem;line-height:1.4}
+.kids{display:grid;gap:8px}
+.kid{display:grid;grid-template-columns:4.6em minmax(0,1fr) minmax(0,1fr) 2.2em;gap:8px;align-items:center;font-family:var(--mono);font-size:.82rem}
+.kid button{border:2px solid var(--edge);background:var(--surface);border-radius:6px;cursor:pointer;padding:3px 0}
+.kid input,.mtx input{font:inherit;font-family:var(--mono);font-size:.9rem;background:var(--surface);color:var(--ink);border:2px solid var(--edge);border-radius:6px;padding:4px 8px;width:100%;min-width:0}
+.mtx{display:grid;grid-template-columns:7em repeat(2,minmax(0,1fr));gap:4px;font-family:var(--mono);font-size:.85rem}
+.mtx>div{padding:8px 6px;border-radius:6px;background:var(--surface);border:2px solid var(--line);text-align:center;font-variant-numeric:tabular-nums}
+.mtx .h{background:transparent;border:none;color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;padding:4px;display:flex;align-items:center;justify-content:center}
+.mtx .ok{background:color-mix(in srgb,var(--good) 14%,var(--surface));border-color:color-mix(in srgb,var(--good) 50%,var(--line))}
+.mtx .bd{background:color-mix(in srgb,var(--signal) 10%,var(--surface));border-color:color-mix(in srgb,var(--signal) 40%,var(--line))}
+.mtx input{border:none;background:transparent;text-align:center;padding:0;font-size:1.1rem}
+.mtx small{display:block;font-size:.66rem;color:var(--muted)}
+.mtx.big{grid-template-columns:8.5em repeat(2,minmax(0,1fr))}
+.rocg{display:grid;grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr);gap:20px;align-items:start}
+.strip{display:grid;gap:3px}
+.srow{display:grid;grid-template-columns:repeat(20,minmax(0,1fr));gap:2px;align-items:center}
+.cell{height:18px;border-radius:3px;background:var(--surface-2);font-family:var(--mono);font-size:.62rem;color:#fff;display:flex;align-items:center;justify-content:center}
+.cell.tr{background:var(--c1)}.cell.te{background:var(--c4)}.cell.bt{background:var(--c5)}
+.srow .acc{font-family:var(--mono);font-size:.74rem;color:var(--muted);text-align:right}
+ol.rules{margin:0;padding-left:1.3em;display:grid;gap:6px;font-size:.95rem;color:var(--muted)}
+ol.rules li.hit{color:var(--ink);font-weight:700}
+.ctl{display:grid;gap:2px}
+.steps4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.splitbar{display:flex;border:2px solid var(--edge);border-radius:10px;overflow:hidden;box-shadow:3px 3px 0 var(--shadow)}
+.splitbar span{padding:8px 12px;color:#fff;font-weight:700;font-family:var(--mono);font-size:.85rem}
+.ent-stream{font-family:var(--mono);font-size:1.05rem;letter-spacing:.12em;word-break:break-all;line-height:1.7;margin:0}
+.ent-stream b{color:var(--k1);font-weight:700}.ent-stream i{color:var(--k2);font-style:normal}.ent-stream u{color:var(--c3);text-decoration:none}
+.calc{font-family:var(--mono);font-size:.86rem;background:var(--surface-2);border:2px solid var(--edge);border-radius:8px;padding:10px 14px;overflow-x:auto;line-height:1.6}
+.pill{display:inline-block;font-family:var(--mono);font-size:.7rem;border-radius:999px;padding:1px 8px;background:var(--good);color:#fff;vertical-align:1px}
+#llT td.msg{white-space:normal;font-family:var(--body);font-size:.85rem;color:var(--ink);min-width:16em}
+#llT td.wrong{background:color-mix(in srgb,var(--signal) 16%,var(--surface));color:var(--signal);font-weight:700}
+#llT td.sel{outline:2px solid var(--accent);outline-offset:-2px}
+#cvNz,#cvDp{aspect-ratio:4/3}
+#cvOf{aspect-ratio:4/3}
+#cvOfC{aspect-ratio:2/1}
+@media (max-width:980px){.rocg,.steps4{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){.cv.wide{aspect-ratio:2/1}.cv.mid{aspect-ratio:3/2}.grp{grid-template-columns:minmax(0,1fr)}.mtx,.mtx.big{grid-template-columns:5.6em repeat(2,minmax(0,1fr))}.steps4{grid-template-columns:minmax(0,1fr)}}
+</style>
+
+<div class="page">
+<nav class="rail" aria-label="Lecture sections">
+  <div class="course">COMP7103 Data Mining</div>
+  <div class="ltitle">Lecture 4 · Classification I: trees and evaluation</div>
+  <ol id="toc"></ol>
+  <p class="keys">Press <kbd>←</kbd> <kbd>→</kbd> to step through boards while lecturing.</p>
+</nav>
+
+<main>
+<!-- ============ OPENING ============ -->
+<!-- source: title board in the style of Lectures 1 and 2 -->
+<section class="board title-board" id="opening" data-part="Opening" data-nav="Title">
+  <div class="hero-title">
+    <span class="eyebrow">COMP7103B Data Mining · Lecture 4</span>
+    <h1>Classification I: <br/> Trees and Evaluation</h1>
+    <p class="lead">How a decision tree is built from labelled records, <br/> and how to tell whether a classifier really works.</p>
+    <p class="instructor"><span class="name">Prof. Bo Dai</span></p>
+    <p class="instructor"><span class="name">School of Computing and Data Science, The University of Hong Kong</span></p>
+  </div>
+</section>
+
+<!-- source: new (session format, same as Lectures 1-2) + classification1.pptx slide 2 -->
+<section class="board" id="plan" data-part="Opening" data-nav="Today's plan">
+  <span class="eyebrow">One 2.5-hour session</span>
+  <h2>Today's Plan</h2>
+  <p class="lead">Every lecture in the block has the same shape. Click a part of the bar.</p>
+  <div class="bar" id="planBar">
+    <button class="seg" style="flex-basis:43.3%;background:var(--c1)" aria-pressed="true"><b>~65 min</b><span>Classical core</span></button>
+    <button class="seg" style="flex-basis:20%;background:var(--c3)" aria-pressed="false"><b>~30 min</b><span>AI layer</span></button>
+    <button class="seg" style="flex-basis:6.7%;background:var(--muted);padding:0 5px" aria-pressed="false"><b>10</b><span>Break</span></button>
+    <button class="seg" style="flex-basis:30%;background:var(--c4)" aria-pressed="false"><b>~45 min</b><span>Lab</span></button>
+  </div>
+  <div class="panel" id="planDetail"></div>
+  <div class="grid3">
+    <a class="card" href="#classification" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c1)">Part 1</span><h3>Basic decision tree classifier construction</h3><p>Entropy, finding a good test, build-tree and the 14-record example.</p></a>
+    <a class="card" href="#issues" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c2)">Part 2</span><h3>Some technical issues of DT classification</h3><p>Splitting attributes, the best cut on a number, impurity measures.</p></a>
+    <a class="card" href="#evaluating" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c3)">Part 3</span><h3>Evaluating classifiers</h3><p>Confusion matrix, imbalanced classes, precision and recall, ROC, and getting a training set and a test set.</p></a>
+    <a class="card" href="#generr" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c4)">Part 4</span><h3>Overfitting</h3><p>Training versus generalization error, pruning, decision boundaries.</p></a>
+    <a class="card" href="#leakforms" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c5)">Part 5 · AI layer</span><h3>Leakage and AI labels</h3><p>Three forms of leakage, benchmark contamination, LLM labels as predictions.</p></a>
+    <a class="card" href="#labbrief" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c4)">Part 6 · Lab</span><h3>Audit a pipeline for leakage</h3><p>Find the leaks in a provided pipeline and fix them.</p></a>
+  </div>
+  <p class="note">Reading assignment: Tan, Chapter 3 up to Section 3.6, except 3.5.3.</p>
+</section>
+
+<!-- ============ PART 1 ============ -->
+<div class="part-break"><span class="n">01</span><span class="eyebrow">Part 1</span><h2>Basic Decision Tree Classifier Construction</h2></div>
+
+<!-- source: classification1.pptx slides 3-6 -->
+<section class="board" id="classification" data-part="Part 1 · Decision trees" data-nav="Classification">
+  <span class="eyebrow">Classification</span>
+  <h2>Classification</h2>
+  <p class="lead">What common characteristics are shared by one group of people, and not by the other? A <b>test (model)</b> separates them.</p>
+  <div class="play">
+    <div class="tbl-wrap"><table class="dtab" id="d14"></table></div>
+    <div class="side">
+      <div class="card"><span class="tag" style="color:var(--c1)">Data model</span><ul class="clean"><li>A dataset consists of a number of records.</li><li>Each record consists of several attribute values.</li><li>One particular (nominal) attribute is called the <b>label</b> (or <b>class</b> or <b>dependent attribute</b>).</li><li>Records that share the same label value form a <i>class</i>.</li><li>We want to discover rules that help predict, given a future (unclassified) record, which class the record belongs.</li></ul></div>
+      <div class="card"><span class="tag" style="color:var(--c3)">Example rules</span><ul class="clean"><li>If age &lt; 30 and is not a student ⇒ not a computer owner</li><li>If age &lt; 30 and is a student ⇒ a computer owner</li><li>If age is between 30 to 40 ⇒ a computer owner</li><li>If age &gt; 40 with a good credit rating ⇒ not a computer owner</li><li>If age &gt; 40 with a bad credit rating ⇒ a computer owner</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: classification1.pptx slide 7 -->
+<section class="board" id="supervised" data-part="Part 1 · Decision trees" data-nav="Supervised learning">
+  <span class="eyebrow">Our general approach</span>
+  <h2>Supervised Learning</h2>
+  <div class="steps4">
+    <div class="card"><span class="tag" style="color:var(--muted)">Step 1</span><h3>Labeled records</h3><p>Prepare a dataset of labeled records.</p></div>
+    <div class="card"><span class="tag" style="color:var(--muted)">Step 2</span><h3>Training set</h3><p>Draw a random sample (e.g., 80%), call it the <b>training set</b>.</p></div>
+    <div class="card"><span class="tag" style="color:var(--muted)">Step 3</span><h3>Train</h3><p>Use the training set to train a classifier.</p></div>
+    <div class="card"><span class="tag" style="color:var(--muted)">Step 4</span><h3>Test set</h3><p>Apply the classifier to the rest (e.g., 20%) of the records (the <b>test set</b>) to evaluate the accuracy of the classifier.</p></div>
+  </div>
+  <div class="splitbar" aria-label="Data split into training 80 percent and testing 20 percent"><span style="flex:80;background:var(--c1)">Training · 80%</span><span style="flex:20;background:var(--c3)">Testing · 20%</span></div>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c2)">Supervised</span><p>During the training phase, the machine is fed with labeled records (<i>examples of each class</i>), the learning is supervised. This machine learning approach is called <b>supervised learning</b>.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c5)">Parameter tuning</span><p>For the purpose of parameter tuning, we may divide the data into <b>training-validation-test</b> sets.</p></div>
+  </div>
+</section>
+
+<!-- source: classification1.pptx slides 8-10 -->
+<section class="board" id="dtclass" data-part="Part 1 · Decision trees" data-nav="Decision-tree classifier">
+  <span class="eyebrow">Decision-tree classifier (DT)</span>
+  <h2>Decision-Tree Classifier</h2>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">Internal node</span><p>Each internal node denotes a <b>test</b> on an independent attribute.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Branch</span><p>Each branch from a node represents an <b>outcome</b> of a test.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Leaf node</span><p>Each leaf node is associated with a <b>class label</b>.</p></div>
+  </div>
+  <div class="tree-wrap"><canvas id="cvDt" aria-label="Example decision tree for computer ownership"></canvas></div>
+  <p class="note">We (first) assume that independent attributes are all nominal (or ordinal): they only take on a finite set of named values. Numeric attributes can be mapped to nominal attributes by <b>discretization</b>. Example: income can be grouped into low (&lt; 80K), medium (&gt;=80K, &lt;250K), high (&gt;=250K); a person's height can be very short, short, average, tall, very tall (with a suitable mapping).</p>
+</section>
+
+<!-- source: classification1.pptx slides 11-17 -->
+<section class="board" id="entropy" data-part="Part 1 · Decision trees" data-nav="Entropy">
+  <span class="eyebrow">Measuring uncertainty · pick a source</span>
+  <h2>Entropy</h2>
+  <p class="lead">(Shannon) Entropy is a quantitative measure of <b>uncertainty</b> or randomness. An information source generates symbols; how certain is the recipient in predicting the next one? It depends on the probabilities with which the source generates the symbols.</p>
+  <div class="formula"><math display="block"><mi>H</mi><mo stretchy="false">(</mo><mi>S</mi><mo stretchy="false">)</mo><mo>=</mo><munder><mo>∑</mo><mi>i</mi></munder><msub><mi>p</mi><mi>i</mi></msub><msub><mi>log</mi><mn>2</mn></msub><mfrac><mn>1</mn><msub><mi>p</mi><mi>i</mi></msub></mfrac></math></div>
+  <p class="note">where <i>p<sub>i</sub></i> is the probability that the <i>i</i>-th symbol occurs. Larger entropy ⇔ higher uncertainty.</p>
+  <div class="play">
+    <div class="side">
+      <div class="tabs" id="entPre"></div>
+      <div class="ctl"><label class="note" for="wA">Weight of <b style="color:var(--k1)">a</b></label><input type="range" id="wA" min="0" max="100"></div>
+      <div class="ctl"><label class="note" for="wB">Weight of <b style="color:var(--k2)">b</b></label><input type="range" id="wB" min="0" max="100"></div>
+      <div class="ctl"><label class="note" for="wC">Weight of <b style="color:var(--c3)">c</b></label><input type="range" id="wC" min="0" max="100"></div>
+      <p class="ent-stream" id="entStream"></p>
+    </div>
+    <div class="side">
+      <div class="stats"><div class="stat"><div class="k">Entropy</div><div class="v" id="entV">–</div></div><div class="stat"><div class="k">The recipient is</div><div class="v" id="entW" style="font-size:1rem">–</div></div></div>
+      <div class="calc" id="entCalc"></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: classification1.pptx slides 16-17 -->
+<section class="board" id="entropy2" data-part="Part 1 · Decision trees" data-nav="Entropy of a dataset">
+  <span class="eyebrow">Entropy</span>
+  <h2>Entropy of a Dataset</h2>
+  <p class="lead">The concept of entropy is used to select tests in a decision tree. If you are given a new record (the 100,001st) and you are asked to give it a label, how uncertain are you?</p>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">100,000 records · 50,000 'a', 50,000 'b'</span><div class="gbar big"><i style="flex:1;background:var(--k1)"></i><i style="flex:1;background:var(--k2)"></i></div><p>Using entropy, your amount of uncertainty (without any additional information) is <b>1.0</b>.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c1)">100,000 records · 90,000 'a', 10,000 'b'</span><div class="gbar big"><i style="flex:9;background:var(--k1)"></i><i style="flex:1;background:var(--k2)"></i></div><p>Using entropy, the amount of uncertainty (without any additional information) is only <b>0.469</b>. In fact, you are somewhat sure that the record should be labeled 'a'.</p></div>
+  </div>
+</section>
+
+<!-- source: classification1.pptx slides 18-25 -->
+<section class="board" id="goodtest" data-part="Part 1 · Decision trees" data-nav="Finding a good test">
+  <span class="eyebrow">Finding a good test · pick a test</span>
+  <h2>Finding a Good Test</h2>
+  <p class="lead">Start from 50,000 'a' records and 50,000 'b' records (entropy 1.0). A test partitions the records into groups. Weight each group's entropy by its share to get the <b>expected entropy</b>; 1 − expected entropy is the <b>information gain</b> of the test.</p>
+  <div class="tabs" id="testTabs"></div>
+  <div class="play">
+    <div class="panel"><div class="grp" id="testGroups"></div></div>
+    <div class="side">
+      <div class="calc" id="testCalc"></div>
+      <div class="tbl-wrap"><table class="dtab"><thead><tr><th>Rank</th><th>Test</th><th>Expected entropy</th><th>Gain</th></tr></thead><tbody id="testRank"></tbody></table></div>
+      <p class="note" id="testNote"></p>
+    </div>
+  </div>
+</section>
+
+<!-- source: classification1.pptx slides 26-29, 43 -->
+<section class="board" id="buildtree" data-part="Part 1 · Decision trees" data-nav="build-tree(D, L)">
+  <span class="eyebrow">A recursive construction algorithm</span>
+  <h2>Build a Decision Tree: build-tree(D, L)</h2>
+  <p class="lead"><b>D</b> is a training set of data records whose class labels are known. <b>L</b> is a list of nominal independent attributes. Goal: build a decision tree using tests on independent attributes' values.</p>
+  <div class="grid3">
+    <div class="card good"><span class="tag" style="color:var(--good)">Base case</span><h3>D is pure</h3><p>All records in D are of the same label K: return a tree with only a leaf node labeled K. No test is needed.</p></div>
+    <div class="card good"><span class="tag" style="color:var(--good)">Base case</span><h3>L is empty</h3><p>No tests can be derived: return a leaf node labeled M, where M = most common label among the records in D.</p></div>
+    <div class="card good"><span class="tag" style="color:var(--good)">Base case</span><h3>No meaningful test</h3><p>All records in D share the same attribute values for all attributes in L: same action as when L is empty.</p></div>
+  </div>
+<pre class="pseudo"><span class="k">Algorithm</span> build-tree(D, L) {
+  <span class="k">If</span> all records in D share the same label 'K'  <span class="k">Return</span> a leaf node with the label 'K';
+  <span class="k">If</span> ((L is empty) || (all records in D share the same attribute values)) {
+      Let 'K' be the most common label in D;  <span class="k">Return</span> a leaf node with the label 'K'; }
+  <span class="k">For each</span> attribute A in L <span class="k">do</span> Compute the expected entropy achieved by using A as the test on D;
+  Let A be the attribute which achieves the smallest expected entropy;
+  Create a node N with label "A = ?";      <span class="c">// assume A has n possible values a1, …, an</span>
+  Partition D into D1, …, Dn, where Di contains all the records with A = ai;
+  <span class="k">For each</span> ai <span class="k">do</span> {
+      <span class="k">If</span> Di is empty { Let 'K' be the most common label in D; Attach a leaf node to N labeled 'K'; }
+      <span class="k">Else</span> Attach the sub-tree obtained by calling build-tree(Di, L-{A}) to N; }
+  <span class="k">Return</span> the tree rooted at N;
+}</pre>
+</section>
+
+<!-- source: classification1.pptx slides 30-39 -->
+<section class="board" id="example" data-part="Part 1 · Decision trees" data-nav="Worked example: 14 records">
+  <span class="eyebrow">Worked example · pick a test for each node</span>
+  <h2>Example: Build the Tree on 14 Records</h2>
+  <p class="lead">Label attribute "Own-computer" (O.C.): 9 computer owners, 5 non-owners. Entropy of D = 5/14 × log<sub>2</sub>(14/5) + 9/14 × log<sub>2</sub>(14/9) = 0.940. L = {Age, Income, Student, Credit-rating}.</p>
+  <div class="tree-wrap" id="bWrap"><canvas id="cvBuild" aria-label="Decision tree being built"></canvas></div>
+  <div class="grid2" style="align-items:start">
+    <div class="side">
+      <p id="bHead"></p>
+      <div class="tbl-wrap"><table class="dtab"><thead><tr><th>attribute test</th><th>expected entropy</th><th>gain</th><th></th></tr></thead><tbody id="bCand"></tbody></table></div>
+      <p class="note" id="bGroups"></p>
+      <div class="btnrow"><button class="btn ghost" id="bLeaf">Make leaf</button><button class="btn" id="bAuto">Finish with build-tree</button><button class="btn ghost" id="bReset">Reset</button></div>
+    </div>
+    <div class="tbl-wrap"><table class="dtab"><thead><tr><th>Record id</th><th>Age</th><th>Income</th><th>Student</th><th>Credit-rating</th><th>Own-computer</th></tr></thead><tbody id="bData"></tbody></table></div>
+  </div>
+</section>
+
+<!-- source: classification1.pptx slides 40-42 -->
+<section class="board" id="rules" data-part="Part 1 · Decision trees" data-nav="Rules">
+  <span class="eyebrow">Final tree, rules, applying rules</span>
+  <h2>Rules</h2>
+  <p class="lead">We derive classification rules from the decision tree by <b>walking</b> the tree from the root to every leaf.</p>
+  <div class="play">
+    <div class="tree-wrap" id="rWrap"><canvas id="cvRules" aria-label="Final tree with the path of record X"></canvas></div>
+    <div class="side">
+      <ol class="rules" id="rList"></ol>
+      <div class="panel">
+        <p><b>Applying rules.</b> Given a record X: is X a computer-owner or not?</p>
+        <div class="tbl-wrap"><table class="dtab"><thead><tr><th>Age</th><th>Income</th><th>Student</th><th>Credit-rating</th></tr></thead><tbody><tr><td>&lt; 30</td><td>medium</td><td>yes</td><td>fair</td></tr></tbody></table></div>
+        <p class="note">Note: this record is not an example in D.</p>
+        <div class="btnrow"><button class="btn" id="rWalk">Walk the tree</button></div>
+        <div class="verdict ok small" id="rOut" hidden></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PART 2 ============ -->
+<div class="part-break"><span class="n">02</span><span class="eyebrow">Part 2</span><h2>Some Technical Issues of DT Classification</h2></div>
+
+<!-- source: classification1.pptx slides 44-46 -->
+<section class="board" id="issues" data-part="Part 2 · Technical issues" data-nav="Issues">
+  <span class="eyebrow">Issues</span>
+  <h2>Issues</h2>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">1</span><p style="color:var(--ink)">How to derive a test based on an attribute?</p></div>
+    <div class="card"><span class="tag" style="color:var(--c1)">2</span><p style="color:var(--ink)">How to measure the purity (certainty, uncertainty) of a dataset?</p></div>
+    <div class="card"><span class="tag" style="color:var(--c1)">3</span><p style="color:var(--ink)">How to measure the performance of a classifier?</p></div>
+    <div class="card"><span class="tag" style="color:var(--c1)">4</span><p style="color:var(--ink)">How to deal with numerical attributes?</p></div>
+    <div class="card bad"><span class="tag" style="color:var(--signal)">5</span><p style="color:var(--ink)">Overfitting: data subsets at the bottom of a large tree could contain very few objects.</p></div>
+  </div>
+  <div class="panel">
+    <h3>How to derive a test? Depends on attribute types, and on the number of ways to split (fanout: number of outcomes of a test)</h3>
+    <div class="grid2" style="margin-top:12px">
+      <div class="ctl"><label class="note" for="fanF">Fanout = <b id="fanFv"></b></label><input type="range" id="fanF" min="0" max="4" value="0"></div>
+      <div class="ctl"><label class="note" for="fanD">Depth = <b id="fanDv"></b></label><input type="range" id="fanD" min="1" max="4" value="2"></div>
+    </div>
+    <p style="margin-top:10px" id="fanOut"></p>
+  </div>
+</section>
+
+<!-- source: classification1.pptx slides 47-50 -->
+<section class="board" id="splits" data-part="Part 2 · Technical issues" data-nav="Splitting attributes">
+  <span class="eyebrow">How to derive a test</span>
+  <h2>Splitting Nominal, Ordinal and Continuous Attributes</h2>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">Nominal · CarType</span><p><b style="color:var(--ink)">Multi-way split:</b> use as many partitions as number of distinct values: Family | Sports | Luxury.</p><p><b style="color:var(--ink)">Binary split:</b> divides values into two subsets: {Sports, Luxury} | {Family}, or {Family, Luxury} | {Sports}, or {Sports, Family} | {Luxury}.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Ordinal · Size</span><p><b style="color:var(--ink)">Multi-way split:</b> Small | Medium | Large.</p><p><b style="color:var(--ink)">Binary split, order preserving:</b> {Small, Medium} | {Large}, or {Small} | {Medium, Large}. The split point sits on the order large, medium, small.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Continuous · Taxable Income</span><p><b style="color:var(--ink)">Discretization:</b> transform it to an ordinal attribute, e.g. a multi-way split &lt; 10K, [10K, 25K), [25K, 50K), [50K, 80K), &gt; 80K.</p><p><b style="color:var(--ink)">Binary decision:</b> (A &lt; v) or (A ≥ v), e.g. Taxable Income &gt; 80K? Consider all possible splits and find the best cut: N values give N − 1 possible split points. More computationally expensive.</p></div>
+  </div>
+</section>
+
+<!-- source: classification1.pptx slides 51-56, 59-60 -->
+<section class="board" id="impurity" data-part="Part 2 · Technical issues" data-nav="Impurity measures">
+  <span class="eyebrow">Impurity measures · move the slider</span>
+  <h2>Impurity Measures: Gini, Entropy, Classification Error</h2>
+  <p class="lead">Different decision-tree algorithms use different purity/impurity measures. Example: a node with 6 loan applicants, some who repaid and some who defaulted.</p>
+  <div class="formula"><math display="block"><mi>GINI</mi><mo stretchy="false">(</mo><mi>S</mi><mo stretchy="false">)</mo><mo>=</mo><mn>1</mn><mo>−</mo><munder><mo>∑</mo><mi>i</mi></munder><msup><mrow><mo stretchy="false">(</mo><msub><mi>p</mi><mi>i</mi></msub><mo stretchy="false">)</mo></mrow><mn>2</mn></msup><mspace width="2em"/><mi>Entropy</mi><mo stretchy="false">(</mo><mi>S</mi><mo stretchy="false">)</mo><mo>=</mo><munder><mo>∑</mo><mi>i</mi></munder><msub><mi>p</mi><mi>i</mi></msub><msub><mi>log</mi><mn>2</mn></msub><mo stretchy="false">(</mo><mn>1</mn><mo>/</mo><msub><mi>p</mi><mi>i</mi></msub><mo stretchy="false">)</mo><mspace width="2em"/><mi>Error</mi><mo stretchy="false">(</mo><mi>S</mi><mo stretchy="false">)</mo><mo>=</mo><mn>1</mn><mo>−</mo><msub><mi>max</mi><mi>i</mi></msub><mo stretchy="false">(</mo><msub><mi>p</mi><mi>i</mi></msub><mo stretchy="false">)</mo></math></div>
+  <div class="play">
+    <div class="side">
+      <label class="note" for="impK">Applicants in the node who <b>repaid</b>: <b id="impKv">1</b> of 6 (the other <b id="impDv">5</b> defaulted)</label>
+      <input type="range" id="impK" min="0" max="6" step="1" value="1">
+      <div class="dots6" id="impDots" aria-hidden="true"></div>
+      <div class="tbl-wrap"><table class="sm num"><thead><tr><th>Measure</th><th>Working</th><th>Value</th></tr></thead><tbody id="impTab"></tbody></table></div>
+    </div>
+    <canvas class="cv" id="cvImp" aria-label="Gini, entropy and classification error as the share who repaid goes from 0 to 1"></canvas>
+  </div>
+  <div class="grid3 impcards">
+    <div class="card"><span class="tag" style="color:var(--c2)">Gini · used in CART</span><p>Maximum (1 − 1/n<sub>c</sub>), where n<sub>c</sub> is the number of classes. Minimum (0.0) when all records belong to one class.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c1)">Entropy · used in ID3</span><p>Maximum (log<sub>2</sub> n<sub>c</sub>). Minimum (0.0) when all records belong to one class.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Classification error</span><p>Label all records with the most popular label, and count the mistakes. Maximum (1 − 1/n<sub>c</sub>); minimum (0.0). E.g. 70% "a", 30% "b": Error = 0.3.</p></div>
+  </div>
+</section>
+
+<!-- source: classification1.pptx slide 54 (same counts; attribute and classes renamed at the instructor's request) -->
+<section class="board" id="ginisplit" data-part="Part 2 · Technical issues" data-nav="Gini of a split">
+  <span class="eyebrow">Impurity of a split · edit the counts</span>
+  <h2>Gini of a Split: An Example</h2>
+  <p class="lead">12 loan applicants: 6 repaid and 6 defaulted. Split them on the test <b>Owns a home?</b>. Is each child node purer than the parent?</p>
+  <div class="play">
+    <div class="side">
+      <svg id="gsTree" viewBox="0 0 440 222" role="img" aria-label="The test Owns a home splits 12 applicants into two nodes"></svg>
+    </div>
+    <div class="side">
+      <div class="tbl-wrap"><table class="sm num"><thead><tr><th>Node</th><th>Repaid</th><th>Defaulted</th><th>Gini</th></tr></thead><tbody id="gsTab"></tbody></table></div>
+      <p class="mono note" id="gsWork"></p>
+      <div class="btnrow"><button class="btn ghost" id="gsReset">Slide example</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: classification1.pptx slides 57-58, computed on the 14-record data -->
+<section class="board" id="gainratio" data-part="Part 2 · Technical issues" data-nav="Gain ratio">
+  <span class="eyebrow">Gain ratio</span>
+  <h2>Gain Ratio</h2>
+  <p class="lead">Entropy/information gain has a disadvantage: it tends to prefer splits that result in large numbers of partitions, each being small but pure.</p>
+  <div class="formula"><math display="block"><mi>GainRATIO</mi><mo>=</mo><mfrac><mi>GAIN</mi><mi>SplitINFO</mi></mfrac><mspace width="2em"/><mi>SplitINFO</mi><mo>=</mo><mo>−</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>k</mi></munderover><mfrac><msub><mi>n</mi><mi>i</mi></msub><mi>n</mi></mfrac><msub><mi>log</mi><mn>2</mn></msub><mfrac><msub><mi>n</mi><mi>i</mi></msub><mi>n</mi></mfrac></math></div>
+  <ul class="clean"><li>Parent node's data is split into <i>k</i> partitions; <i>n<sub>i</sub></i> is the number of records in partition <i>i</i>; <i>n</i> = total number of records. Gain = reduction in entropy due to the test.</li><li>Adjust information gain (GAIN) by the entropy of the partitioning (SplitINFO). Higher entropy partitioning (large number of small partitions) is penalized! Used in C4.5. Designed to overcome the disadvantage of information gain.</li></ul>
+  <p class="lab-s">The four tests on the 14 records</p>
+  <div class="tbl-wrap"><table class="dtab num" id="grT"></table></div>
+  <p class="note" id="grNote"></p>
+</section>
+
+<!-- source: classification1.pptx slides 74-75 -->
+<section class="board" id="numerical" data-part="Part 2 · Technical issues" data-nav="Numerical attribute">
+  <span class="eyebrow">Numerical attribute · step the split</span>
+  <h2>Numerical Attribute: Finding the Best Cut</h2>
+  <p class="lead">Binary test on a value, called a split-point test: (A &gt; v ?). A more efficient method: sort the attribute on values, then linearly scan these values, each time updating the count matrix and computing the Gini index at each split point.</p>
+  <div class="play">
+    <canvas class="cv mid" id="cvScan" aria-label="Sorted taxable income values with the Gini index of each split"></canvas>
+    <div class="side">
+      <div class="mtx" id="scanMtx"></div>
+      <div class="calc" id="scanCalc"></div>
+      <div class="btnrow"><button class="btn" id="scanStep">Next split</button><button class="btn ghost" id="scanBest">Best cut</button></div>
+      <p class="note">Ten taxpayers: Taxable Income and Cheat (Yes/No). Bars show the Gini index at each split position.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PART 3 ============ -->
+<div class="part-break"><span class="n">03</span><span class="eyebrow">Part 3</span><h2>Evaluating Classifiers</h2></div>
+
+<!-- source: classification1.pptx slides 61-65 (three boards) -->
+<section class="board" id="evaluating" data-part="Part 3 · Evaluating classifiers" data-nav="Confusion matrix">
+  <!-- source: classification1.pptx slides 62-63 -->
+  <span class="eyebrow">Accuracy metrics · type the counts</span>
+  <h2>Accuracy Metrics: the Confusion Matrix</h2>
+  <p class="lead">2 classes: "Yes" is the positive (or target) class, the class of interest; "No" is the negative class.</p>
+  <div class="play">
+    <div class="side">
+      <div class="mtx big">
+        <div class="h"></div><div class="h">Predicted Class=Yes</div><div class="h">Predicted Class=No</div>
+        <div class="h">Actual Class=Yes</div><div class="ok"><input type="number" min="0" id="mA" aria-label="a, true positives"><small>a <br/> True Positive</small></div><div class="bd"><input type="number" min="0" id="mB" aria-label="b, false negatives"><small>b <br/> False Negative</small></div>
+        <div class="h">Actual Class=No</div><div class="bd"><input type="number" min="0" id="mC" aria-label="c, false positives"><small>c <br/> False Positive</small></div><div class="ok"><input type="number" min="0" id="mD" aria-label="d, true negatives"><small>d <br/> True Negative</small></div>
+      </div>
+      <div class="formula" style="font-size:.9rem"><math display="block"><mi>Accuracy</mi><mo>=</mo><mfrac><mrow><mi>a</mi><mo>+</mo><mi>d</mi></mrow><mrow><mi>a</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>c</mi><mo>+</mo><mi>d</mi></mrow></mfrac><mo>=</mo><mfrac><mrow><mi>TP</mi><mo>+</mo><mi>TN</mi></mrow><mrow><mi>TP</mi><mo>+</mo><mi>TN</mi><mo>+</mo><mi>FP</mi><mo>+</mo><mi>FN</mi></mrow></mfrac><mspace width="1.5em"/><mtext>Error rate (e) = 1 − accuracy</mtext></math></div>
+    </div>
+    <div class="side">
+      <div class="card"><span class="tag" style="color:var(--c1)">The four cells</span><ul class="clean"><li><b>a</b>: TP (true positive)</li><li><b>b</b>: FN (false negative)</li><li><b>c</b>: FP (false positive)</li><li><b>d</b>: TN (true negative)</li><li>a and d are <b>correct</b> (green); b and c are <b>incorrect</b> (red).</li></ul></div>
+      <div class="stats" id="mStats"></div>
+    </div>
+  </div>
+</section>
+
+<section class="board" id="imbalanced" data-part="Part 3 · Evaluating classifiers" data-nav="Imbalanced classes">
+  <!-- source: classification1.pptx slide 64 -->
+  <span class="eyebrow">Classification · move the slider</span>
+  <h2>When Accuracy Misleads: Imbalanced Classes</h2>
+  <p class="lead">The simple "accuracy" measure may be misleading especially when the classes are "imbalanced".</p>
+  <div class="play">
+    <div class="side">
+      <div class="card"><span class="tag" style="color:var(--c1)">Example</span><ul class="clean"><li>Two class labels: cancer (+ve) / no cancer (−ve).</li><li>Only <b id="zrP">1%</b> of test records are with cancer.</li><li>A simple classifier (<b>ZeroR</b>): just say "no cancer". ZeroR ignores every attribute and always predicts the majority class.</li><li>Classification accuracy <b id="zrAcc">99%</b>.</li></ul></div>
+      <label class="mono" style="font-size:.85rem">Share of the 1,000 test records with cancer: <b id="zrPv">1%</b><input type="range" id="zrS" min="1" max="50" value="1" aria-label="Share of test records with cancer"></label>
+    </div>
+    <div class="side">
+      <div class="mtx big" id="zrM" aria-label="Confusion matrix of ZeroR"></div>
+      <div class="verdict meh small" id="zrNote"></div>
+    </div>
+  </div>
+</section>
+
+<section class="board" id="othermetrics" data-part="Part 3 · Evaluating classifiers" data-nav="Other metrics">
+  <!-- source: classification1.pptx slide 65 -->
+  <span class="eyebrow">Other metrics · type the counts</span>
+  <h2>Other Metrics: Precision, Recall, F Measure</h2>
+  <p class="lead">Assume two class labels (<b style="color:var(--k1)">positive</b>, negative). The positive class is the <b>target class</b>.</p>
+  <div class="tabs" id="oPre"></div>
+  <div class="play">
+    <div class="side">
+      <div class="card"><ul class="clean">
+        <li><span class="mono">precision = TP / (TP + FP)</span><br>The fraction of "positive class predictions" that are truly positives.</li>
+        <li><span class="mono">recall = TP / (TP + FN)</span><br>The fraction of "positives" that are predicted positives.</li>
+        <li><span class="mono">F measure = (2 × precision × recall) / (precision + recall)</span></li>
+        <li><span class="mono">sensitivity (true positive rate) = recall</span></li>
+        <li><span class="mono">specificity (true negative rate) = TN / (TN + FP)</span></li>
+        <li>ROC curves: next board.</li>
+      </ul></div>
+    </div>
+    <div class="side">
+      <div class="mtx big">
+        <div class="h"></div><div class="h">Predicted Class=Yes</div><div class="h">Predicted Class=No</div>
+        <div class="h">Actual Class=Yes</div><div class="ok"><input type="number" min="0" id="oA" aria-label="a, true positives"><small>a <br/> True Positive</small></div><div class="bd"><input type="number" min="0" id="oB" aria-label="b, false negatives"><small>b <br/> False Negative</small></div>
+        <div class="h">Actual Class=No</div><div class="bd"><input type="number" min="0" id="oC" aria-label="c, false positives"><small>c <br/> False Positive</small></div><div class="ok"><input type="number" min="0" id="oD" aria-label="d, true negatives"><small>d <br/> True Negative</small></div>
+      </div>
+      <div class="stats" id="oStats" style="grid-template-columns:repeat(3,minmax(0,1fr))"></div>
+      <div class="verdict meh small" id="oNote"></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: classification1.pptx slides 66-68 -->
+<section class="board" id="roc" data-part="Part 3 · Evaluating classifiers" data-nav="ROC curves">
+  <span class="eyebrow">ROC (Receiver Operating Characteristic) · drag the threshold</span>
+  <h2>ROC Curve and Model Comparison</h2>
+  <p class="lead">Developed in 1950s for signal detection theory to analyze noisy signals. ROC curve plots TPR (a/(a+b); recall) on the y-axis against FPR (c/(c+d); false alarm) on the x-axis. Changing the parameters of the algorithm changes the location of the point.</p>
+  <canvas class="cv wide" id="cvStrip" aria-label="Scores of test records with the threshold"></canvas>
+  <div class="rocg">
+    <canvas class="cv sq" id="cvRoc" aria-label="ROC curves of two models" style="cursor:default"></canvas>
+    <div class="side">
+      <div class="tabs" id="rocTabs"><button class="chip" aria-selected="true">Model M1</button><button class="chip" aria-selected="false">Model M2</button></div>
+      <div class="ctl"><label class="note" for="rocT">Threshold = <b id="rocTv"></b></label><input type="range" id="rocT" min="-350" max="450" value="60"></div>
+      <div class="mtx" id="rocMtx"></div>
+      <p class="mono" style="font-size:.72rem;color:var(--muted);margin:0">Cells: green = correct prediction, red = wrong prediction.</p>
+      <div class="stats" id="rocStats"></div>
+      <p class="note">A classifier with (TPR, FPR): (0, 0) declares everything −ve; (1, 1) declares everything +ve; (1, 0) is ideal. Diagonal line: random guessing. Use the "area under curve" (AUC) to measure overall performance; the ideal model has AUC = 1. Synthetic scores: 50 positive and 150 negative test records.</p>
+    </div>
+  </div>
+</section>
+
+<!-- source: classification1.pptx slides 69-73 -->
+<section class="board" id="pairs" data-part="Part 3 · Evaluating classifiers" data-nav="Training and test sets">
+  <span class="eyebrow">Getting a (training set, test set) pair · step through</span>
+  <h2>Holdout, Random Subsampling, Cross-Validation, Bootstrap</h2>
+  <p class="lead">Twenty labeled records, one per column. Each row is one round: <b style="color:var(--c1)">training</b>, <b style="color:var(--c4)">test</b>, or unused. Training set and test set should be disjoint.</p>
+  <div class="tabs" id="pTabs"></div>
+  <div class="play">
+    <div class="side">
+      <div class="strip" id="pStrip"></div>
+      <div class="btnrow"><button class="btn" id="pStep">Next round</button><button class="btn" id="pRun">Run all</button><button class="btn ghost" id="pReset">Reset</button></div>
+    </div>
+    <div class="side">
+      <p id="pText"></p>
+      <div class="stats"><div class="stat"><div class="k">Rounds</div><div class="v" id="pR">–</div></div><div class="stat"><div class="k">Mean accuracy</div><div class="v" id="pAcc">–</div></div><div class="stat"><div class="k">Never tested</div><div class="v" id="pNever">–</div></div><div class="stat"><div class="k">Tested most</div><div class="v" id="pMost">–</div></div></div>
+    </div>
+  </div>
+  <p class="note">The classifier is a fully grown tree on synthetic data, retrained every round. Numbers in bootstrap cells count how often a record was drawn.</p>
+</section>
+
+<!-- ============ PART 4 ============ -->
+<div class="part-break"><span class="n">04</span><span class="eyebrow">Part 4</span><h2>Overfitting and Underfitting</h2></div>
+
+<!-- source: classification1.pptx slides 45, 76-79, 81 -->
+<section class="board" id="generr" data-part="Part 4 · Overfitting" data-nav="Training and generalization error">
+  <span class="eyebrow">Training, test, and generalization errors</span>
+  <h2>Training, Test, and Generalization Errors</h2>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">Training error e<sub>X</sub></span><p>Given a training set X, we derive a model M. We can apply M on X and measure the error rate of the model in classifying X's records.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c4)">Test error e<sub>Y</sub></span><p>We can apply the model M on a test set Y.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c5)">Generalization error e<sub>G</sub></span><p>Expected error when M is applied to a future, previously-unseen record. (e<sub>G</sub> is unknown.)</p></div>
+  </div>
+  <p class="lead">Since M is derived from X, it naturally fits X. In general, e<sub>G</sub> &gt; e<sub>X</sub>. We hope that e<sub>G</sub> ≈ e<sub>Y</sub>.</p>
+  <div class="grid2" style="align-items:start">
+    <div class="card bad"><span class="tag" style="color:var(--signal)">Overfitting</span><p>When we build M, we aim at reducing the impurity of a tree node: we build a model M that reduces e<sub>X</sub>. M may be fitting the training set too well that it becomes <b>too specific</b> to the training set. Model overfitting ⇒ M is not generally applicable to records other than the training set ⇒ large e<sub>G</sub>. The more complex the model is, the more likely that the model overfits the training data.</p><p class="mono" style="font-size:.82rem">Income = 60? No → Income = 70? No → Income = 75? No → Income = 85? Yes → …</p><p class="note">A tree that tests one income value at a time reaches e<sub>X</sub> = 0.</p><p>Overfitting results from decision trees that are more complex than necessary. Training error no longer provides a good estimate of how well the tree will perform on future unseen records.</p></div>
+    <div class="card"><span class="tag" style="color:var(--warn)">Underfitting</span><p>If the model M is too simple, then it probably won't fit even the training set. This is called <b>model underfitting</b>: both training and test errors are large.</p></div>
+  </div>
+</section>
+
+<!-- source: classification1.pptx slides 80-83 -->
+<section class="board" id="overfit" data-part="Part 4 · Overfitting" data-nav="Overfitting and pruning">
+  <span class="eyebrow">Grow the tree · drag the depth</span>
+  <h2>Overfitting and Pruning</h2>
+  <div class="play">
+    <div class="side" style="gap:6px">
+      <canvas class="cv" id="cvOf" aria-label="The decision tree at the chosen depth" style="cursor:default;aspect-ratio:16/10"></canvas>
+      <p class="note" style="margin:0">The tree learned from 120 training records (attributes A1, A2). Leaves: <b style="color:var(--k1)">■</b> predicts class 1, <b style="color:var(--k2)">■</b> predicts class 0; the number is how many training records end there. Deep trees end in tiny leaves fitted to single, often noisy, records.</p>
+    </div>
+    <div class="side">
+      <div class="ctl"><label class="note" for="ofD">Maximum depth = <b id="ofDv"></b></label><input type="range" id="ofD" min="1" max="14" value="3"></div>
+      <div class="ctl"><label class="note" for="ofM">Pre-pruning: minimum records per leaf = <b id="ofMv"></b></label><input type="range" id="ofM" min="1" max="20" value="1"></div>
+      <div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div class="stat"><div class="k">Training error</div><div class="v" id="ofTr">–</div></div><div class="stat"><div class="k">Test error</div><div class="v" id="ofTe">–</div></div><div class="stat"><div class="k">Leaves</div><div class="v" id="ofL">–</div></div></div>
+      <div class="btnrow"><button class="btn" id="ofPrune" aria-pressed="false">Post-prune with validation set</button></div>
+      <canvas class="cv" id="cvOfC" aria-label="Training and test error against depth" style="cursor:default"></canvas>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c3)">Pre-pruning (early stopping rule)</span><p>Stop the algorithm early before the model becomes a fully-grown tree: stop if the number of instances in a node is less than some user-specified threshold (e.g., 5-10); stop if expanding the current node does not improve impurity measures (e.g., Gini or information gain) by much; limit the tree depth.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Post-pruning</span><p>Grow the decision tree to its entirety, then trim the nodes in a bottom-up fashion. Estimate a cost complexity R(T) + α|T| (error rate + size); if the cc of the pruned tree T' &lt; cc of T, prune. Class label of a leaf node: majority class of instances in the sub-tree.</p></div>
+  </div>
+  <p class="note">Synthetic data: 120 training, 80 validation and 600 test records.</p>
+</section>
+
+<!-- source: classification1.pptx slides 84-85 -->
+<section class="board" id="boundary" data-part="Part 4 · Overfitting" data-nav="Decision boundaries">
+  <span class="eyebrow">Decision boundary · switch the tree</span>
+  <h2>Decision Boundary and Oblique Decision Trees</h2>
+  <p class="lead">Each test in a decision tree derives a <b>decision boundary</b>. Decision boundaries are rectilinear with fixed orientations. In an <b>oblique</b> decision tree, a test condition may involve multiple attributes, such as x + y &lt; 1.</p>
+  <div class="play">
+    <canvas class="cv" id="cvBd" aria-label="Decision boundary for data split by x plus y less than 1"></canvas>
+    <div class="side">
+      <div class="tabs" id="bdTabs"><button class="chip" aria-selected="true">Axis-parallel tree</button><button class="chip" aria-selected="false">Oblique: x + y &lt; 1</button></div>
+      <div class="ctl" id="bdCtl"><label class="note" for="bdD">Maximum depth = <b id="bdDv"></b></label><input type="range" id="bdD" min="1" max="10" value="3"></div>
+      <div class="stats"><div class="stat"><div class="k">Tests</div><div class="v" id="bdT">–</div></div><div class="stat"><div class="k">Training accuracy</div><div class="v" id="bdA">–</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: classification1.pptx slide 86 -->
+<section class="board" id="dtpros" data-part="Part 4 · Overfitting" data-nav="Decision tree pros and cons">
+  <span class="eyebrow">Decision tree based classification</span>
+  <h2>Decision Tree Based Classification</h2>
+  <div class="grid2" style="align-items:start;font-size:1.15rem">
+        <div class="card good"><span class="tag" style="color:var(--good)">Advantages</span><ul class="clean"><li>Baseline algorithm is non-parametric</li><li>Inexpensive to construct</li><li>Extremely fast at classifying unknown records</li><li>Interpretable models</li><li>Accuracy is comparable to other classification techniques for many simple data sets</li></ul></div>
+        <div class="card bad"><span class="tag" style="color:var(--signal)">Disadvantages</span><ul class="clean"><li>Subject to overfitting</li><li>Decision boundaries are only rectilinear</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ PART 5 · AI LAYER ============ -->
+<div class="part-break"><span class="n">05</span><span class="eyebrow">Part 5 · AI layer</span><h2>Leakage and AI Labels</h2></div>
+
+<!-- source: new (spec AI layer: three forms of leakage) -->
+<section class="board" id="leakforms" data-part="Part 5 · Leakage and AI labels" data-nav="Three forms of leakage">
+  <span class="eyebrow">AI as a subject · evaluation that lies</span>
+  <h2>Data Leakage in Three Forms</h2>
+  <p class="lead">Leakage: information that would not be available at prediction time gets into training or evaluation. The test accuracy then looks better than the model really is.</p>
+  <div class="grid3">
+    <div class="card bad"><span class="tag" style="color:var(--signal)">1 · Target leakage</span><h3>A feature known only after the outcome</h3><p>Example: "cancellation fee charged" when predicting churn (Lab 1's 97.7% model). The model reads the answer.</p><p class="note"><b>Check:</b> for every feature, ask when it is recorded.</p></div>
+    <div class="card bad"><span class="tag" style="color:var(--signal)">2 · Train/test contamination</span><h3>A step that looks at the test set</h3><p>Example: selecting features, or fitting a scaler, on all the data before the split. The test set has already shaped the model.</p><p class="note"><b>Check:</b> every fitted step goes after the split, inside each fold.</p></div>
+    <div class="card bad"><span class="tag" style="color:var(--signal)">3 · Duplicates across splits</span><h3>The same record in training and test</h3><p>Example: a customer exported twice lands once in each set. The model is tested on what it memorized.</p><p class="note"><b>Check:</b> remove duplicates, or split by customer, before anything else.</p></div>
+  </div>
+</section>
+
+<!-- source: new (spec demo: selecting features before cross-validation on pure noise) -->
+<section class="board" id="noise" data-part="Part 5 · Leakage and AI labels" data-nav="Leakage on pure noise">
+  <span class="eyebrow">Demo · computed in your browser</span>
+  <h2>Selecting Features before Cross-Validation on Pure Noise</h2>
+  <p class="lead">60 records, thousands of random features, random labels. No feature can predict the label, so honest accuracy is about 50%. Pick the 10 features most correlated with the label, then run 5-fold cross-validation with a nearest-centroid classifier.</p>
+  <div class="play">
+    <div class="side">
+      <div class="row" role="group" aria-label="Where to select"><span class="lab-s">Select</span><button class="chip" data-w="before" aria-pressed="true">on all data, then CV</button><button class="chip" data-w="inside" aria-pressed="false">inside each fold</button></div>
+      <div class="row" role="group" aria-label="Number of noise features"><span class="lab-s">Features</span><button class="chip" data-p="100" aria-pressed="false">100</button><button class="chip" data-p="1000" aria-pressed="true">1,000</button><button class="chip" data-p="5000" aria-pressed="false">5,000</button></div>
+      <div class="btnrow"><button class="btn" id="nzRun">Run 20 new datasets</button></div>
+      <div class="stats"><div class="stat"><div class="k">Mean CV accuracy</div><div class="v" id="nzAcc">–</div></div><div class="stat"><div class="k">Chance</div><div class="v">50%</div></div></div>
+      <p class="note" id="nzNote"></p>
+    </div>
+    <canvas class="cv" id="cvNz" aria-label="Cross-validation accuracy on noise, per dataset"></canvas>
+  </div>
+</section>
+
+<!-- source: new (spec: duplicates across splits) -->
+<section class="board" id="dups" data-part="Part 5 · Leakage and AI labels" data-nav="Duplicates across splits">
+  <span class="eyebrow">Demo · computed in your browser</span>
+  <h2>Duplicates across Splits</h2>
+  <p class="lead">100 records of pure noise with random labels. Copy some of them, then make a random 70/30 split and classify each test record by its nearest training record (1-nearest neighbour).</p>
+  <div class="play">
+    <div class="side">
+      <div class="ctl"><label class="note" for="dpF">Records copied = <b id="dpFv"></b></label><input type="range" id="dpF" min="0" max="100" step="10" value="50"></div>
+      <div class="btnrow"><button class="btn" id="dpRun">Run 20 new datasets</button></div>
+      <div class="stats"><div class="stat"><div class="k">Mean test accuracy</div><div class="v" id="dpAcc">–</div></div><div class="stat"><div class="k">Test records with a copy in training</div><div class="v" id="dpShare">–</div></div></div>
+      <p class="note">With no copies the accuracy stays near chance. Each copy that lands in both sets is a free correct answer.</p>
+    </div>
+    <canvas class="cv" id="cvDp" aria-label="Test accuracy against the share of copied records"></canvas>
+  </div>
+</section>
+
+<!-- source: new (spec: benchmark contamination, 5 minutes) -->
+<section class="board" id="contam" data-part="Part 5 · Leakage and AI labels" data-nav="Benchmark contamination">
+  <span class="eyebrow">AI as a subject</span>
+  <h2>Benchmark Contamination</h2>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">The problem</span><p>Famous public datasets, and often their answers, are all over the web. A large language model trained on web text may have seen them.</p></div>
+    <div class="card bad"><span class="tag" style="color:var(--signal)">The risk</span><p>When the model "predicts" the label of a record from such a dataset, it may be <b>recalling</b> it. The score measures memory, not skill.</p></div>
+    <div class="card good"><span class="tag" style="color:var(--good)">What to do</span><p>Test AI methods on <b>fresh or private hold-out data</b>: records collected after the model was trained, or data that was never published.</p></div>
+  </div>
+  <div class="panel"><p><b>The same rule as Part 3:</b> training set and test set should be disjoint. With a pre-trained model you do not control its training set, so you have to choose a test set it cannot have seen.</p></div>
+</section>
+
+<!-- source: new (spec: evaluating LLM outputs as a classifier, with the tree baseline) -->
+<section class="board" id="llmlabels" data-part="Part 5 · Leakage and AI labels" data-nav="LLM labels as predictions">
+  <span class="eyebrow">AI as a method · pick a labeller</span>
+  <h2>Scoring LLM Labels like a Classifier</h2>
+  <p class="lead">Task: is a customer message a complaint? Treat zero-shot LLM labels as predictions, and score them against a human-labelled sample with the same metrics as any classifier.</p>
+  <div class="play">
+    <div class="tbl-wrap"><table class="dtab" id="llT"></table></div>
+    <div class="side">
+      <div class="tabs" id="llTabs"><button class="chip" aria-selected="true">LLM run 1</button><button class="chip" aria-selected="false">LLM run 2</button><button class="chip" aria-selected="false">Decision tree</button></div>
+      <div class="mtx" id="llMtx"></div>
+      <div class="stats" id="llStats" style="grid-template-columns:repeat(3,minmax(0,1fr))"></div>
+      <div class="verdict ok small" id="llRun"></div>
+      <p class="note" id="llTree"></p>
+    </div>
+  </div>
+  <p class="note">The 40 messages were written for this lecture. The two LLM runs are illustrative example output, not from a real model. The decision tree is built in your browser with build-tree on 24 other labelled messages (word present or not).</p>
+</section>
+
+<!-- ============ PART 6 · LAB ============ -->
+<div class="part-break"><span class="n">06</span><span class="eyebrow">Part 6 · Lab, 45 minutes</span><h2>Audit a Pipeline for Leakage</h2></div>
+
+<!-- source: new (spec lab, in-class version) -->
+<section class="board" id="labbrief" data-part="Part 6 · Lab" data-nav="Lab brief">
+  <span class="eyebrow">Lab 4 · ungraded practice for the exams</span>
+  <h2>Audit a pipeline for leakage</h2>
+  <p class="lead">An AI assistant wrote a decision-tree pipeline for a churn-style dataset. It reports a high test accuracy. Find the leaks, fix them, and measure the accuracy again.</p>
+  <div class="bar" id="labBar">
+    <button class="seg" style="flex-basis:11.1%;background:var(--c1)" aria-pressed="true"><b>5 min</b><span>Brief</span></button>
+    <button class="seg" style="flex-basis:66.7%;background:var(--c3)" aria-pressed="false"><b>30 min</b><span>Guided work: audit for 3 leakage forms</span></button>
+    <button class="seg" style="flex-basis:22.2%;background:var(--c4)" aria-pressed="false"><b>10 min</b><span>Share-out</span></button>
+  </div>
+  <div class="panel" id="labDetail"></div>
+  <div class="grid3">
+    <div class="card bad"><span class="tag" style="color:var(--signal)">Look for</span><h3>Target leakage</h3><p>A feature known only after the outcome.</p></div>
+    <div class="card bad"><span class="tag" style="color:var(--signal)">Look for</span><h3>Train/test contamination</h3><p>Feature selection or scaling fitted before the split.</p></div>
+    <div class="card bad"><span class="tag" style="color:var(--signal)">Look for</span><h3>Duplicates across splits</h3><p>The same customer in training and test.</p></div>
+  </div>
+</section>
+
+<!-- source: new (same steps as the Lecture 1-2 Colab boards) -->
+<section class="board" id="labsetup" data-part="Part 6 · Lab" data-nav="Open the notebook in Colab">
+  <span class="eyebrow">Lab 4 · getting started</span>
+  <h2>Open the notebook in Google Colab</h2>
+  <p class="lead">Same steps as before. There is nothing to install.</p>
+  <ol class="lab">
+    <li><div><b>Open the Lab 4 link on Github.</b> The notebook opens in Colab.</div></li>
+    <li><div><b>File → Save a copy in Drive.</b> Work in your copy. Changes to the shared notebook are not saved.</div></li>
+    <li><div><b>Run the cells from top to bottom</b> with <kbd>Shift</kbd> + <kbd>Enter</kbd>, and replace each <span class="mono">___</span> with your own code.</div></li>
+  </ol>
+  <p class="note">No Google account? Download the Lab 4 from Github and open the notebook in Jupyter or VS Code.</p>
+</section>
+
+<!-- source: new (share-out display for the lab) -->
+<section class="board" id="labresults" data-part="Part 6 · Lab" data-nav="Class results">
+  <span class="eyebrow">Lab 4 · share-out</span>
+  <h2>Class Results: Leaks Found and Accuracy</h2>
+  <p class="lead">For each leakage form: did the pipeline have it? Then enter the class's test accuracy before and after the fix.</p>
+  <div class="tbl-wrap"><table class="audit" id="lkT"><thead><tr><th>#</th><th>Leakage form</th><th>Verdict</th></tr></thead><tbody></tbody></table></div>
+  <div class="grid2">
+    <div class="side"><span class="lab-s">Test accuracy before the fix (%)</span><input class="txt" type="number" min="0" max="100" step="0.1" id="lkBefore" aria-label="Test accuracy before the fix"></div>
+    <div class="side"><span class="lab-s">Test accuracy after the fix (%)</span><input class="txt" type="number" min="0" max="100" step="0.1" id="lkAfter" aria-label="Test accuracy after the fix"></div>
+  </div>
+  <p class="progress" id="lkSum"></p>
+  <div class="btnrow"><button class="btn ghost" id="lkClear">Clear</button></div>
+</section>
+
+<!-- ============ SUMMARY ============ -->
+<!-- source: classification1.pptx slide 86; learning outcomes, readings and exam scope from the spec -->
+<section class="board" id="summary" data-part="Summary" data-nav="Summary">
+  <span class="eyebrow">Summary</span>
+  <h2>Summary</h2>
+  <div class="grid4">
+    <div class="card"><span class="tag" style="color:var(--c1)">Decision trees</span><p style="color:var(--ink)">build-tree picks, at each node, the test with the smallest expected entropy. Impurity measures: entropy (information gain), Gini, classification error, gain ratio.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Evaluation</span><p style="color:var(--ink)">Confusion matrix, accuracy and its limits, precision, recall, F measure, ROC. Holdout, random subsampling, cross-validation, bootstrap.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c4)">Overfitting</span><p style="color:var(--ink)">Too complex a tree fits the training set too well. Pre-pruning and post-pruning keep it general.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c5)">Leakage and AI labels</span><p style="color:var(--ink)">Target leakage, train/test contamination, duplicates across splits, benchmark contamination. Score LLM labels like any classifier.</p></div>
+  </div>
+  <p class="lab-s" style="color:var(--c3);font-weight:700">What you can do after today</p>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">Build</span><p style="color:var(--ink)">Build a decision tree by hand using entropy or Gini.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Evaluate</span><p style="color:var(--ink)">Evaluate a classifier with a confusion matrix, ROC and cross-validation.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c4)">Recognize</span><p style="color:var(--ink)">Recognize overfitting, data leakage and benchmark contamination, and score LLM-generated labels with the same metrics.</p></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">Key readings</span><p style="color:var(--ink)">Tan, chapter 3. Kaufman et al. (2012), "Leakage in data mining", ACM TKDD.</p></div>
+    <div class="card"><span class="tag" style="color:var(--signal)">Exam-relevant</span><p style="color:var(--ink)">Building a tree by hand, impurity calculations, gain ratio, the confusion matrix and metrics, ROC, CV and bootstrap, overfitting. Also identifying leakage in a described pipeline.</p></div>
+  </div>
+  <div class="next"><span class="eyebrow">Next</span><h3>Lecture 5 · Classification II: models and ensembles (Monday)</h3><p>Assignment 1 · Preprocess and classify (20%) is released today, after this lecture.</p></div>
+</section>
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+"use strict";
+// ===== shared lecture kit: utilities, nav, theme hooks, three.js + canvas helpers =====
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const themeHooks = [];
+function onTheme(f){ themeHooks.push(f); }
+function fireTheme(){ themeHooks.forEach(f => { try { f(); } catch(e){} }); }
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", fireTheme);
+new MutationObserver(fireTheme).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
+
+// seeded RNG so every class sees the same data
+function rng(seed){ let s = seed >>> 0; return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function gauss(r){ let u = 0, v = 0; while(!u) u = r(); while(!v) v = r(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+
+/* ---------------- navigation ---------------- */
+const boards = $$("section.board");
+const toc = $("#toc");
+let lastPart = "";
+boards.forEach(b => {
+  if (b.dataset.part !== lastPart){ lastPart = b.dataset.part; const li = document.createElement("li"); li.className = "part"; li.textContent = lastPart; toc.appendChild(li); }
+  const li = document.createElement("li"); const a = document.createElement("a");
+  a.href = "#" + b.id; a.textContent = b.dataset.nav; a.dataset.id = b.id; li.appendChild(a); toc.appendChild(li);
+});
+const links = $$("#toc a");
+let current = 0;
+const io = new IntersectionObserver(es => {
+  es.forEach(e => { if (e.isIntersecting){ current = boards.indexOf(e.target); links.forEach(l => l.classList.toggle("on", l.dataset.id === e.target.id)); const on = links[current]; if (on && innerWidth < 980) on.scrollIntoView({block:"nearest", inline:"center"}); } });
+}, {rootMargin:"-40% 0px -55% 0px"});
+boards.forEach(b => io.observe(b));
+addEventListener("keydown", e => {
+  if (e.target.closest("input,textarea,select") || e.metaKey || e.ctrlKey || e.altKey) return;
+  let n = null;
+  if (e.key === "ArrowRight" || e.key === "PageDown") n = Math.min(boards.length-1, current+1);
+  if (e.key === "ArrowLeft" || e.key === "PageUp") n = Math.max(0, current-1);
+  if (n === null) return;
+  e.preventDefault(); current = n;
+  boards[n].scrollIntoView({behavior: reduce ? "auto" : "smooth", block:"start"});
+});
+
+/* ---------------- three.js helpers ---------------- */
+const hasGL = typeof THREE !== "undefined";
+function dotTexture(){
+  const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d");
+  const grd = g.createRadialGradient(32,32,0,32,32,30); grd.addColorStop(0,"rgba(255,255,255,1)"); grd.addColorStop(.7,"rgba(255,255,255,1)"); grd.addColorStop(1,"rgba(255,255,255,0)");
+  g.fillStyle = grd; g.beginPath(); g.arc(32,32,30,0,Math.PI*2); g.fill();
+  const t = new THREE.CanvasTexture(c); return t;
+}
+function makeRenderer(host){
+  const r = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  r.setPixelRatio(Math.min(devicePixelRatio, 2)); host.prepend(r.domElement);
+  return r;
+}
+function visible(el, cb){ const o = new IntersectionObserver(es => es.forEach(e => cb(e.isIntersecting))); o.observe(el); }
+function noGL(host){ const p = document.createElement("p"); p.className = "note"; p.style.padding = "24px"; p.textContent = "This 3D view needs WebGL, which this browser has turned off."; host.appendChild(p); }
+
+/* ---------------- canvas helpers ---------------- */
+function setupCanvas(cv){
+  const ctx = cv.getContext("2d");
+  const fit = () => { const r = cv.getBoundingClientRect(); const d = Math.min(devicePixelRatio,2); cv.width = Math.max(1, r.width*d); cv.height = Math.max(1, r.height*d); ctx.setTransform(d,0,0,d,0,0); return r; };
+  return {ctx, fit};
+}
+function axes(ctx, w, h, pad, xl, yl, xt, yt){
+  ctx.strokeStyle = tok("--line"); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, h-pad.b); ctx.lineTo(w-pad.r, h-pad.b); ctx.stroke();
+  ctx.fillStyle = tok("--muted"); ctx.font = `12px ${tok("--mono")}`;
+  ctx.textAlign = "center"; ctx.fillText(xl, (pad.l + w - pad.r)/2, h-8);
+  xt.forEach(([v,x]) => ctx.fillText(v, x, h-pad.b+16));
+  ctx.textAlign = "right"; yt.forEach(([v,y]) => ctx.fillText(v, pad.l-6, y+4));
+  ctx.save(); ctx.translate(14, (pad.t + h - pad.b)/2); ctx.rotate(-Math.PI/2); ctx.textAlign = "center"; ctx.fillText(yl, 0, 0); ctx.restore();
+}
+const redraws = {};
+onTheme(() => Object.values(redraws).forEach(f => f()));
+
+
+function live(cv, key, paint){
+  const {ctx, fit} = setupCanvas(cv);
+  const draw = () => { const r = fit(); if (!r.width) return; ctx.clearRect(0,0,r.width,r.height); paint(ctx, r.width, r.height); };
+  redraws[key] = draw; new ResizeObserver(draw).observe(cv); return draw;
+}
+const at = (cv, e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+
+/* ---------------- generic tabsets ---------------- */
+$$(".tabset").forEach(root => {
+  const bs = $$("[data-tab]", root), ps = $$("[data-pane]", root);
+  const go = id => { bs.forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === id))); ps.forEach(p => p.hidden = p.dataset.pane !== id); root.dataset.show = id; };
+  bs.forEach(b => b.onclick = () => go(b.dataset.tab)); go(bs[0].dataset.tab);
+});
+
+/* ---------------- quiz helper ---------------- */
+function quiz(host, O, Q, scoreEl){
+  let answered = 0, right = 0;
+  const upd = () => { if (scoreEl) scoreEl.textContent = answered < Q.length ? `${answered} of ${Q.length} answered · ${right} correct` : `Done: ${right} of ${Q.length} correct`; };
+  Q.forEach(([q, a, why]) => {
+    const d = document.createElement("div"); d.className = "q";
+    d.innerHTML = `<p>${q}</p><div class="opts">${O.map((o,i)=>`<button data-i="${i}">${o}</button>`).join("")}</div><p class="fb"></p>`;
+    $$("button", d).forEach(b => b.onclick = () => {
+      if (d.classList.contains("done")) return;
+      const i = +b.dataset.i; b.classList.add("picked"); d.classList.add("done", i===a ? "right" : "wrong");
+      answered++; if (i===a) right++;
+      $(".fb", d).innerHTML = `<b>${i===a ? "Correct." : "Not quite: " + O[a] + "."}</b> ${why}`; upd();
+    });
+    host.appendChild(d);
+  });
+  upd();
+}
+
+/* ---------------- segmented bars (plan, assessment, lab) ---------------- */
+function segBar(bar, detail, D){
+  const bs = $$(".seg", $(bar));
+  const go = i => { bs.forEach((b,k) => b.setAttribute("aria-pressed", String(k===i))); $(detail).innerHTML = D[i]; };
+  bs.forEach((b,i) => b.onclick = () => go(i)); go(0);
+}
+
+/* ================= LECTURE 4 MODULES ================= */
+function chipGroup(btns, attr, cb){ btns.forEach(b => b.addEventListener("click", () => { btns.forEach(x => x.setAttribute(attr, String(x===b))); cb(b); })); }
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---------------- shared math ---------------- */
+const sum = a => a.reduce((s,v) => s+v, 0);
+const Hn = cs => { const n = sum(cs); let h = 0; cs.forEach(c => { if (c > 0){ const p = c/n; h -= p*Math.log2(p); } }); return h; };
+const Gn = cs => { const n = sum(cs); return n ? 1 - cs.reduce((s,c) => s + (c/n)**2, 0) : 0; };
+const En = cs => { const n = sum(cs); return n ? 1 - Math.max(...cs)/n : 0; };
+const f3 = v => v.toFixed(3), pct = v => (v*100).toFixed(1) + "%";
+const shuffle = (a, R) => { for (let i = a.length-1; i > 0; i--){ const j = Math.floor(R()*(i+1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const stat = (k, v, st) => `<div class="stat"><div class="k">${k}</div><div class="v"${st ? ` style="${st}"` : ""}>${v}</div></div>`;
+function mtx(el, tp, fn, fp, tn, lab){ const L = lab || ["Pred. +","Pred. −","Actual +","Actual −"]; el.innerHTML = `<div class="h"></div><div class="h">${L[0]}</div><div class="h">${L[1]}</div><div class="h">${L[2]}</div><div class="ok">${tp}<small>TP</small></div><div class="bd">${fn}<small>FN</small></div><div class="h">${L[3]}</div><div class="bd">${fp}<small>FP</small></div><div class="ok">${tn}<small>TN</small></div>`; }
+function rr(ctx, x, y, w, h, r){ ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); }
+function tabs(host, f){ const bs = $$(".chip", host); bs.forEach((b,i) => b.onclick = () => { bs.forEach(x => x.setAttribute("aria-selected", String(x===b))); f(i); }); }
+
+/* CART on numeric features, Gini, binary splits */
+function cart(P, y, idx, o, dep=0){
+  const n = idx.length; let c = 0; for (const i of idx) c += y[i];
+  const node = {n, c, lab: 2*c > n ? 1 : 0};
+  if (dep >= o.maxD || c === 0 || c === n || n < 2*o.minLeaf) return node;
+  let best = n*(1 - (c/n)**2 - ((n-c)/n)**2) - 1e-9, bd = -1, bt = 0;
+  const dims = P[idx[0]].length;
+  for (let d = 0; d < dims; d++){
+    const s = idx.slice().sort((a,b) => P[a][d] - P[b][d]); let lc = 0;
+    for (let k = 1; k < n; k++){
+      lc += y[s[k-1]];
+      if (k < o.minLeaf || n-k < o.minLeaf) continue;
+      const v0 = P[s[k-1]][d], v1 = P[s[k]][d]; if (v0 === v1) continue;
+      const rc = c-lc, nr = n-k, imp = k*(1-(lc/k)**2-((k-lc)/k)**2) + nr*(1-(rc/nr)**2-((nr-rc)/nr)**2);
+      if (imp < best){ best = imp; bd = d; bt = (v0+v1)/2; }
+    }
+  }
+  if (bd < 0) return node;
+  node.d = bd; node.t = bt;
+  node.l = cart(P, y, idx.filter(i => P[i][bd] < bt), o, dep+1);
+  node.r = cart(P, y, idx.filter(i => P[i][bd] >= bt), o, dep+1);
+  return node;
+}
+function drawCart(ctx, W, H, root, md){
+  const leaves = [], nodes = [];
+  (function walk(n, d){ const o = {n, d, leaf: !n.l || d >= md}; nodes.push(o);
+    if (o.leaf){ o.x = leaves.length; leaves.push(o); } else { o.L = walk(n.l, d+1); o.R = walk(n.r, d+1); o.x = (o.L.x + o.R.x)/2; }
+    return o; })(root, 0);
+  const K = leaves.length, depth = Math.max(1, ...nodes.map(o => o.d)), padX = 12, top = 22, bot = 36;
+  const lw = (W - 2*padX)/K, X = x => padX + (x + .5)*lw, Y = d => top + d/depth*(H - top - bot);
+  const few = K <= 8, wordy = K <= 4, bw = Math.max(4, Math.min(lw - 4, wordy ? 86 : 40)), bh = few ? 22 : K <= 20 ? 18 : 12;
+  ctx.strokeStyle = tok("--muted"); ctx.lineWidth = 1.2;
+  nodes.forEach(o => { if (!o.leaf) [o.L, o.R].forEach(c => { ctx.beginPath(); ctx.moveTo(X(o.x), Y(o.d)); ctx.lineTo(X(c.x), Y(c.d) - (c.leaf ? bh/2 : 0)); ctx.stroke(); }); });
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  nodes.forEach(o => { const x = X(o.x), y = Y(o.d);
+    if (o.leaf){
+      rr(ctx, x - bw/2, y - bh/2, bw, bh, 4); ctx.fillStyle = tok(o.n.lab ? "--k1" : "--k2"); ctx.fill();
+      if (bw >= 14){ ctx.fillStyle = "#fff"; ctx.font = `${few ? 12 : 10}px ${tok("--mono")}`; ctx.fillText(wordy ? `${o.n.n} records` : o.n.n, x, y + 1); }
+    } else if (few){
+      const t = `A${o.n.d + 1} < ${o.n.t.toFixed(2)}?`; ctx.font = `600 11px ${tok("--mono")}`; const w = ctx.measureText(t).width + 14;
+      rr(ctx, x - w/2, y - 11, w, 22, 11); ctx.fillStyle = tok("--marker"); ctx.fill(); ctx.strokeStyle = tok("--edge"); ctx.lineWidth = 1.2; ctx.stroke(); ctx.fillStyle = tok("--sticker-ink"); ctx.fillText(t, x, y + 1);
+    } else { ctx.beginPath(); ctx.arc(x, y, o.d ? 3.5 : 5, 0, 7); ctx.fillStyle = tok("--ink"); ctx.fill(); }
+  });
+  ctx.textBaseline = "alphabetic"; ctx.font = `11px ${tok("--mono")}`; ctx.fillStyle = tok("--muted"); ctx.textAlign = "left";
+  ctx.fillText(`${K} leaves · depth ${nodes.reduce((m,o) => Math.max(m, o.d), 0)}`, padX, H - 8);
+}
+function predict(n, p, md=1e9){ let d = 0; while (n.l && d < md){ n = p[n.d] < n.t ? n.l : n.r; d++; } return n.lab; }
+function leafCount(n, md=1e9, d=0){ return (!n.l || d >= md) ? 1 : leafCount(n.l, md, d+1) + leafCount(n.r, md, d+1); }
+const errOf = (T, S, md) => S.P.filter((p,i) => predict(T, p, md) !== S.y[i]).length / S.P.length;
+function prune(n, S, ids){
+  const eLeaf = ids.filter(i => S.y[i] !== n.lab).length;
+  if (!n.l) return {node:n, e:eLeaf};
+  const L = prune(n.l, S, ids.filter(i => S.P[i][n.d] < n.t)), Rr = prune(n.r, S, ids.filter(i => S.P[i][n.d] >= n.t));
+  if (eLeaf <= L.e + Rr.e) return {node:{n:n.n, c:n.c, lab:n.lab}, e:eLeaf};
+  return {node:{...n, l:L.node, r:Rr.node}, e:L.e + Rr.e};
+}
+function regions(ctx, n, md, b, X, Y, d=0){
+  if (!n.l || d >= md){ ctx.fillStyle = tok(n.lab ? "--k1" : "--k2"); ctx.globalAlpha = .13; ctx.fillRect(X(b[0]), Y(b[3]), X(b[1])-X(b[0]), Y(b[2])-Y(b[3])); ctx.globalAlpha = 1; return; }
+  const t = n.t;
+  if (n.d === 0){ regions(ctx, n.l, md, [b[0],t,b[2],b[3]], X, Y, d+1); regions(ctx, n.r, md, [t,b[1],b[2],b[3]], X, Y, d+1); }
+  else { regions(ctx, n.l, md, [b[0],b[1],b[2],t], X, Y, d+1); regions(ctx, n.r, md, [b[0],b[1],t,b[3]], X, Y, d+1); }
+  ctx.strokeStyle = tok("--muted"); ctx.globalAlpha = .55; ctx.lineWidth = 1; ctx.beginPath();
+  if (n.d === 0){ ctx.moveTo(X(t), Y(b[2])); ctx.lineTo(X(t), Y(b[3])); } else { ctx.moveTo(X(b[0]), Y(t)); ctx.lineTo(X(b[1]), Y(t)); }
+  ctx.stroke(); ctx.globalAlpha = 1;
+}
+function dots(ctx, S, X, Y, r=4.5, alpha=1){
+  const c1 = tok("--k2"), c4 = tok("--k1"); ctx.globalAlpha = alpha;
+  S.P.forEach((p,i) => { ctx.beginPath(); ctx.arc(X(p[0]), Y(p[1]), r, 0, 7); if (S.y[i]){ ctx.fillStyle = c4; ctx.fill(); } else { ctx.strokeStyle = c1; ctx.lineWidth = 1.8; ctx.stroke(); } });
+  ctx.globalAlpha = 1;
+}
+function rocPts(S, key, NP, NN){ const s = S.slice().sort((u,v) => v[key]-u[key]); const pts = [[0,0]]; let tp = 0, fp = 0; s.forEach((r,i) => { r.y ? tp++ : fp++; if (i === s.length-1 || s[i+1][key] !== r[key]) pts.push([fp/NN, tp/NP]); }); return pts; }
+function rocAxes(ctx, W, H, pad){
+  axes(ctx, W, H, pad, "false positive rate", "true positive rate", [0,.25,.5,.75,1].map(v => [v, pad.l + v*(W-pad.l-pad.r)]), [0,.25,.5,.75,1].map(v => [v, H-pad.b - v*(H-pad.t-pad.b)]));
+  ctx.setLineDash([5,5]); ctx.strokeStyle = tok("--line"); ctx.beginPath(); ctx.moveTo(pad.l, H-pad.b); ctx.lineTo(W-pad.r, pad.t); ctx.stroke(); ctx.setLineDash([]);
+  return [v => pad.l + v*(W-pad.l-pad.r), v => H-pad.b - v*(H-pad.t-pad.b)];
+}
+function line(ctx, pts, X, Y, col, w=2.5, dash){ ctx.strokeStyle = col; ctx.lineWidth = w; if (dash) ctx.setLineDash(dash); ctx.beginPath(); pts.forEach(([a,b],i) => i ? ctx.lineTo(X(a), Y(b)) : ctx.moveTo(X(a), Y(b))); ctx.stroke(); ctx.setLineDash([]); }
+function wave(R, n){ const P = [], y = []; for (let i = 0; i < n; i++){ const a = R(), b = R(), f = b - (.5 + .2*Math.sin(2*Math.PI*a)); P.push([a,b]); y.push(R() < 1/(1+Math.exp(-f*7)) ? 1 : 0); } return {P, y}; }
+
+/* ---------------- today's plan ---------------- */
+segBar("#planBar", "#planDetail", [
+  "<h3>Classical core · about 65 minutes</h3><p style='margin-top:6px'>Today: classification and supervised learning, building a decision tree with entropy, splitting attributes and impurity measures, evaluating classifiers, and overfitting.</p>",
+  "<h3>AI layer · about 30 minutes</h3><p style='margin-top:6px'>AI as a subject and as a method: three forms of data leakage, feature selection on pure noise, benchmark contamination, and scoring LLM labels like any classifier, against a decision-tree baseline.</p>",
+  "<h3>Break · 10 minutes</h3><p style='margin-top:6px'>A 10-minute break mid-session, every session.</p>",
+  "<h3>Lab · about 45 minutes</h3><p style='margin-top:6px'>A guided notebook: a 5-minute brief, 30 minutes of guided work and a 10-minute share-out. Today: audit an AI-written decision-tree pipeline for the three forms of leakage, fix them, and compare the test accuracy before and after. Labs are ungraded practice.</p>"
+]);
+
+/* ---------------- the 14-record dataset (slide 4) ---------------- */
+const ATTR = ["Age","Income","Student","Credit-rating"], SHORT = ["Age","Income","Student","C.R."];
+const VALS = [["< 30","30..40","> 40"],["High","Medium","Low"],["No","Yes"],["Good","Bad"]];
+const BR = [["< 30","30..40","> 40"],["high","medium","low"],["no","yes"],["good","bad"]];
+const D = [["< 30","High","No","Bad","No"],["< 30","High","No","Good","No"],["30..40","High","No","Bad","Yes"],["> 40","Medium","No","Bad","Yes"],["> 40","Low","Yes","Bad","Yes"],["> 40","Low","Yes","Good","No"],["30..40","Low","Yes","Good","Yes"],["< 30","Medium","No","Bad","No"],["< 30","Low","Yes","Bad","Yes"],["> 40","Medium","Yes","Bad","Yes"],["< 30","Medium","Yes","Good","Yes"],["30..40","Medium","No","Good","Yes"],["30..40","High","Yes","Bad","Yes"],["> 40","Medium","No","Good","No"]];
+$("#d14").innerHTML = `<thead><tr><th>Record id</th>${ATTR.map(a => `<th>${a}</th>`).join("")}<th class="lbl">Own-computer</th></tr></thead><tbody>${D.map((r,i) => `<tr><td>${i+1}</td>${r.slice(0,4).map(v => `<td>${v}</td>`).join("")}<td class="${r[4]==="Yes" ? "cy" : "cn"}">${r[4]}</td></tr>`).join("")}</tbody><tfoot><tr><td></td><td colspan="4" class="note">← independent attributes (features)</td><td class="note">class (label)</td></tr></tfoot>`;
+const cnt = ids => { const y = ids.filter(i => D[i][4] === "Yes").length; return [y, ids.length-y]; };
+function mk(ids, attrs, plab){
+  const [y, n] = cnt(ids), nd = {ids, attrs, y, n, lab: y > n ? "yes" : n > y ? "no" : plab};
+  if (!ids.length){ nd.leaf = nd.empty = true; nd.lab = plab; }
+  else if (!y || !n) nd.leaf = true;
+  else if (!attrs.length || ids.every(i => attrs.every(a => D[i][a] === D[ids[0]][a]))) nd.leaf = true;
+  return nd;
+}
+const expH = (ids, a) => sum(VALS[a].map(v => { const s = ids.filter(i => D[i][a] === v); return s.length/ids.length * Hn(cnt(s)); }));
+function split(nd, a){ nd.attr = a; nd.kids = VALS[a].map(v => mk(nd.ids.filter(i => D[i][a] === v), nd.attrs.filter(x => x !== a), nd.lab)); }
+const bestA = nd => nd.attrs.reduce((b,a) => expH(nd.ids, a) < expH(nd.ids, b) - 1e-12 ? a : b);
+function id3(nd){ if (nd.leaf) return; if (!nd.kids) split(nd, bestA(nd)); nd.kids.forEach(id3); }
+const ALL = D.map((_,i) => i), root0 = () => mk(ALL, [0,1,2,3], "yes");
+const pending = nd => nd.leaf ? [] : nd.kids ? nd.kids.flatMap(pending) : [nd];
+const ID3 = root0(); id3(ID3);
+
+function drawTree(cv, ctx, fit, root, o={}){
+  let leaves = 0, maxd = 0;
+  (function lay(n, d){ n._d = d; maxd = Math.max(maxd, d); if (n.kids){ n.kids.forEach(k => lay(k, d+1)); n._x = (n.kids[0]._x + n.kids[n.kids.length-1]._x)/2; } else n._x = leaves++ + .5; })(root, 0);
+  const wrap = cv.parentElement;
+  cv.style.width = Math.max(wrap.clientWidth - 4, leaves*112) + "px"; cv.style.height = ((maxd+1)*78 + 4) + "px";
+  const r = fit(), W = r.width, ux = W/leaves, hits = [];
+  ctx.clearRect(0, 0, W, r.height); ctx.font = `13px ${tok("--mono")}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  const XY = n => [n._x*ux, 28 + n._d*78];
+  (function ed(n){ if (!n.kids) return; const [x,y] = XY(n);
+    n.kids.forEach((k,i) => { const [x2,y2] = XY(k), on = o.path && o.path.has(k);
+      ctx.strokeStyle = tok(on ? "--accent" : "--line"); ctx.lineWidth = on ? 3.5 : 1.8; ctx.beginPath(); ctx.moveTo(x, y+14); ctx.lineTo(x2, y2-14); ctx.stroke();
+      const t = BR[n.attr][i], w = ctx.measureText(t).width + 8, lx = (x+x2)/2, ly = (y+y2)/2;
+      ctx.fillStyle = tok("--surface"); ctx.fillRect(lx-w/2, ly-9, w, 18); ctx.fillStyle = tok(on ? "--accent" : "--muted"); ctx.fillText(t, lx, ly); ed(k); });
+  })(root);
+  (function nd(n){ const [x,y] = XY(n); let t;
+    if (n.kids) t = SHORT[n.attr] + " = ?"; else if (n.leaf) t = (n.empty ? "∅ → " : "") + "O.C. = " + n.lab; else t = `${n.y} yes · ${n.n} no`;
+    const w = ctx.measureText(t).width + 18; rr(ctx, x-w/2, y-14, w, 28, 7);
+    if (n.leaf){ ctx.fillStyle = tok(n.lab === "yes" ? "--k1" : "--k2"); ctx.fill(); ctx.fillStyle = "#fff"; }
+    else { ctx.fillStyle = tok(n.kids ? "--marker" : "--surface"); ctx.fill(); const sel = n === o.sel || (o.path && o.path.has(n));
+      ctx.strokeStyle = tok(sel ? "--accent" : n.kids ? "--edge" : "--muted"); ctx.lineWidth = sel ? 3 : 1.8; if (!n.kids) ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle = tok(n.kids ? "--sticker-ink" : "--ink"); }
+    ctx.fillText(t, x, y+.5); hits.push({n, x0:x-w/2, x1:x+w/2, y0:y-14, y1:y+14});
+    if (n.kids) n.kids.forEach(nd);
+  })(root);
+  const f = o.focus || root; wrap.scrollLeft = f._x*ux - wrap.clientWidth/2;
+  return hits;
+}
+
+/* ---------------- static example tree (slide 10) ---------------- */
+(function dt(){
+  const cv = $("#cvDt"), {ctx, fit} = setupCanvas(cv);
+  const draw = () => drawTree(cv, ctx, fit, ID3);
+  redraws.dt = draw; new ResizeObserver(draw).observe(cv.parentElement);
+})();
+
+/* ---------------- entropy explorer (slides 11-15) ---------------- */
+(function ent(){
+  const PRE = [["'a' (0.5), 'b' (0.5)",[50,50,0]],["'a' (1.0), 'b' (0.0)",[100,0,0]],["'a' (0.9), 'b' (0.1)",[90,10,0]],["'a' (0.3), 'b' (0.6), 'c' (0.1)",[30,60,10]]];
+  const host = $("#entPre"), sl = ["#wA","#wB","#wC"].map(s => $(s));
+  PRE.forEach(([t,w]) => { const b = document.createElement("button"); b.className = "chip"; b.textContent = t; b.onclick = () => { w.forEach((v,i) => sl[i].value = v); upd(); }; host.appendChild(b); });
+  function upd(){
+    let w = sl.map(s => +s.value); if (!sum(w)) w = [1,0,0];
+    const p = w.map(v => v/sum(w)), h = Hn(p);
+    $$(".chip", host).forEach((b,i) => b.setAttribute("aria-selected", String(PRE[i][1].every((v,k) => v === +sl[k].value))));
+    $("#entV").textContent = f3(h);
+    $("#entW").textContent = h < 1e-9 ? "Very certain" : h < .75 ? "A bit uncertain" : h <= 1.0001 ? "Very uncertain" : "Very very uncertain";
+    const terms = p.map((q,i) => q > 0 ? `${+q.toFixed(2)} * log<sub>2</sub> (1/${+q.toFixed(2)})` : null).filter(Boolean);
+    $("#entCalc").innerHTML = `entropy = ${terms.join(" + ")} = <b>${f3(h)}</b>`;
+    const R = rng(5); let s = "";
+    for (let i = 0; i < 40; i++){ const u = R(), k = u < p[0] ? 0 : u < p[0]+p[1] ? 1 : 2; s += ["<b>a</b>","<i>b</i>","<u>c</u>"][k]; }
+    $("#entStream").innerHTML = s;
+  }
+  sl.forEach(s => s.oninput = upd); [90,10,0].forEach((v,i) => sl[i].value = v); upd();
+})();
+
+/* ---------------- four tests (slides 18-25) ---------------- */
+(function tests(){
+  const T = [[[50000,0],[0,50000]], [[30000,0],[20000,50000]], [[19000,40000],[31000,10000]], [[10000,0],[25000,47000],[15000,3000]]];
+  const r3 = v => Math.round(v*1000)/1000, eh = t => sum(t.map(g => sum(g)/100000 * r3(Hn(g))));
+  const NOTE = ["How good is Test-1? It is perfect! Test-1 successfully classified all 100,000 records. Note that the entropy of either group is 0.",
+    "Test-2 is a good test in the sense that it reduces the entropy from 1.0 to 0.604. 1 − 0.604 = 0.396 is called the information gain of the test.",
+    "Test-1 is the best (highest information gain), Test-2 is the second best, Test-3 is the worst.",
+    "What about this test? Three outcomes: one pure group, and two mixed ones."];
+  const host = $("#testTabs");
+  T.forEach((_,i) => { const b = document.createElement("button"); b.className = "chip"; b.setAttribute("role","tab"); b.textContent = `Test-${i+1}`; host.appendChild(b); });
+  const fmt = v => v.toLocaleString("en-US");
+  function show(k){
+    $$(".chip", host).forEach((b,i) => b.setAttribute("aria-selected", String(i===k)));
+    const t = T[k], bar = (g, share) => `<div class="gbar" style="width:${share}%"><i style="flex:${g[0]};background:var(--k1)"></i><i style="flex:${g[1]};background:var(--k2)"></i></div>`;
+    let h = `<span class="mono">before</span><div>${bar([50000,50000],100)}<span class="mono">50,000 'a'; 50,000 'b' · Entropy = 1</span></div>`;
+    t.forEach((g,i) => { const n = sum(g); h += `<span class="mono">outcome ${i+1}</span><div>${bar(g, n/1000)}<span class="mono">${[g[0] ? fmt(g[0]) + " 'a'" : "", g[1] ? fmt(g[1]) + " 'b'" : ""].filter(Boolean).join("; ")} · Entropy = ${+r3(Hn(g)).toFixed(3)}${Hn(g) === 0 ? " · pure" : ""}</span></div>`; });
+    $("#testGroups").innerHTML = h;
+    const e = eh(t);
+    $("#testCalc").innerHTML = `expected entropy = ${t.map(g => `${+(sum(g)/100000).toFixed(2)} * ${+r3(Hn(g)).toFixed(3)}`).join(" + ")} = <b>${f3(e)}</b><br>information gain = 1 − ${f3(e)} = <b>${f3(1-e)}</b>`;
+    const rank = T.map((t,i) => [i, eh(t)]).sort((a,b) => a[1]-b[1]);
+    $("#testRank").innerHTML = rank.map(([i,e],r) => `<tr class="${i===k ? "on" : ""}"><td>${r+1}</td><td>Test-${i+1}</td><td>${f3(e)}</td><td>${f3(1-e)}</td></tr>`).join("");
+    $("#testNote").textContent = NOTE[k];
+  }
+  $$(".chip", host).forEach((b,i) => b.onclick = () => show(i)); show(1);
+})();
+
+/* ---------------- tree builder (slides 30-39) ---------------- */
+(function builder(){
+  const cv = $("#cvBuild"), {ctx, fit} = setupCanvas(cv);
+  let root, sel, hits = [];
+  function reset(){ root = root0(); sel = root; upd(); }
+  function pathTo(n){ const out = []; (function f(x, p){ if (x === n){ out.push(...p); return true; } return x.kids && x.kids.some((k,i) => f(k, [...p, `${ATTR[x.attr]} ${BR[x.attr][i]}`])); })(root, []); return out; }
+  function upd(){
+    hits = drawTree(cv, ctx, fit, root, {sel, focus: sel});
+    const ids = new Set(sel ? sel.ids : []);
+    $("#bData").innerHTML = D.map((r,i) => `<tr class="${ids.has(i) ? "on" : ""}"><td>${i+1}</td>${r.slice(0,4).map(v => `<td>${v}</td>`).join("")}<td class="${r[4]==="Yes" ? "cy" : "cn"}">${r[4]}</td></tr>`).join("");
+    if (!sel){
+      const acc = D.filter(r => { let n = root; while (n.kids) n = n.kids[VALS[n.attr].indexOf(r[n.attr])]; return n.lab === r[4].toLowerCase(); }).length;
+      $("#bHead").innerHTML = `<b>Tree complete.</b> ${(function c(n){ return n.kids ? sum(n.kids.map(c)) : 1; })(root)} leaves; ${acc} of 14 training records classified correctly.`;
+      $("#bCand").innerHTML = ""; $("#bGroups").textContent = "Press Reset to try a different first test.";
+    } else {
+      const p = pathTo(sel), h = Hn([sel.y, sel.n]);
+      $("#bHead").innerHTML = `<b>Selected node</b> ${p.length ? "(" + p.join(", ") + ")" : "(all of D)"}: ${sel.ids.length} records, <span class="cy">${sel.y} yes</span>, <span class="cn">${sel.n} no</span>. Entropy = ${f3(h)}.`;
+      const best = bestA(sel);
+      $("#bCand").innerHTML = sel.attrs.map(a => { const e = expH(sel.ids, a); return `<tr class="${a===best ? "best" : ""}"><td>${ATTR[a]}</td><td>${+e.toFixed(3)}</td><td>${f3(h-e)}</td><td><button class="btn" data-a="${a}">Split</button></td></tr>`; }).join("");
+      $("#bGroups").innerHTML = `Groups for ${ATTR[best]} (smallest expected entropy): ` + VALS[best].map(v => { const s = sel.ids.filter(i => D[i][best] === v); const c = cnt(s); return `${v}: {${s.map(i => i+1).join(", ")}} ${c[0]} yes / ${c[1]} no`; }).join(" · ");
+      $$("#bCand button").forEach(b => b.onclick = () => { split(sel, +b.dataset.a); sel = pending(root)[0] || null; upd(); });
+    }
+    $("#bLeaf").disabled = !sel; $("#bLeaf").textContent = sel ? `Make leaf (most common: ${sel.lab})` : "Make leaf";
+  }
+  cv.addEventListener("click", e => { const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top; const h = hits.find(h => x >= h.x0 && x <= h.x1 && y >= h.y0 && y <= h.y1 && !h.n.leaf && !h.n.kids); if (h){ sel = h.n; upd(); } });
+  $("#bLeaf").onclick = () => { if (!sel) return; sel.leaf = true; sel = pending(root)[0] || null; upd(); };
+  $("#bAuto").onclick = () => { id3(root); sel = null; upd(); };
+  $("#bReset").onclick = reset;
+  redraws.build = upd; new ResizeObserver(() => upd()).observe($("#bWrap"));
+  reset();
+})();
+
+/* ---------------- rules and record X (slides 40-42) ---------------- */
+(function rules(){
+  const cv = $("#cvRules"), {ctx, fit} = setupCanvas(cv);
+  const R = [["If age < 30 and is not a student ⇒ not a computer owner",[0,0]],["If age < 30 and is a student ⇒ a computer owner",[0,1]],["If age is between 30 to 40 ⇒ a computer owner",[1]],["If age > 40 with a good credit rating ⇒ not a computer owner",[2,0]],["If age > 40 with a bad credit rating ⇒ a computer owner",[2,1]]];
+  let walked = false;
+  function draw(){
+    const path = new Set();
+    if (walked){ let n = ID3; path.add(n); n = n.kids[0]; path.add(n); n = n.kids[1]; path.add(n); }
+    drawTree(cv, ctx, fit, ID3, {path});
+    $("#rList").innerHTML = R.map(([t],i) => `<li class="${walked && i===1 ? "hit" : ""}">${t}</li>`).join("");
+  }
+  $("#rWalk").onclick = () => { walked = !walked; $("#rWalk").textContent = walked ? "Hide the walk" : "Walk the tree";
+    const o = $("#rOut"); o.hidden = !walked; o.innerHTML = "Age &lt; 30 → Student = yes → <b>O.C. = yes</b>. X is a computer owner. The path never tests the credit rating."; draw(); };
+  redraws.rules = draw; new ResizeObserver(draw).observe($("#rWrap"));
+})();
+
+/* ---------------- fanout (slide 46) ---------------- */
+(function fan(){
+  const F = [2,3,5,10,100];
+  const upd = () => { const f = F[+$("#fanF").value], d = +$("#fanD").value, L = f**d; $("#fanFv").textContent = f; $("#fanDv").textContent = d;
+    $("#fanOut").innerHTML = `Up to <b>${L.toLocaleString("en-US")}</b> leaves, so up to ${L.toLocaleString("en-US")} rules.${f === 100 && d === 2 ? " Fanout = 100: 10,000 rules." : f === 2 && d === 2 ? " Fanout = 2: 4 rules." : ""}`; };
+  $("#fanF").oninput = $("#fanD").oninput = upd; upd();
+})();
+
+/* ---------------- numerical attribute: sorted scan (slides 74-75) ---------------- */
+(function scan(){
+  const V = [60,70,75,85,90,95,100,120,125,220], C = [0,0,0,1,1,1,0,0,0,0];
+  const cuts = [65,72,80,87,92,97,110,122,172];
+  const cv = $("#cvScan"), {ctx, fit} = setupCanvas(cv);
+  const gi = k => { const L = C.slice(0,k+1), R = C.slice(k+1), l = [sum(L), L.length-sum(L)], r = [sum(R), R.length-sum(R)]; return {l, r, g: L.length/10*Gn(l) + R.length/10*Gn(r)}; };
+  const G = cuts.map((_,k) => gi(k).g), best = G.indexOf(Math.min(...G));
+  let k = 0, W = 0, H = 0;
+  const X = i => 30 + i*(W-60)/9;
+  function draw(){
+    const r = fit(); W = r.width; H = r.height; ctx.clearRect(0,0,W,H);
+    ctx.font = `12px ${tok("--mono")}`; ctx.textAlign = "center";
+    const y0 = 34, base = H-26, top = 80, sc = (base-top)/.5;
+    ctx.fillStyle = tok("--muted"); ctx.fillText("Sorted values: Taxable Income (K) · Cheat", W/2, 14);
+    V.forEach((v,i) => { ctx.beginPath(); ctx.arc(X(i), y0+12, 8, 0, 7); if (C[i]){ ctx.fillStyle = tok("--k1"); ctx.fill(); } else { ctx.strokeStyle = tok("--k2"); ctx.lineWidth = 2; ctx.stroke(); } ctx.fillStyle = tok("--ink"); ctx.fillText(v, X(i), y0+38); });
+    cuts.forEach((c,i) => { const x = (X(i)+X(i+1))/2, h = G[i]*sc;
+      ctx.fillStyle = tok(i === best ? "--good" : i === k ? "--accent" : "--line"); ctx.fillRect(x-10, base-h, 20, h);
+      ctx.fillStyle = tok(i === k || i === best ? "--ink" : "--muted"); ctx.font = `${W < 520 ? 10 : 12}px ${tok("--mono")}`; ctx.fillText(G[i].toFixed(3), x, base-h-6); ctx.fillText(c, x, base+16); });
+    ctx.strokeStyle = tok("--line"); ctx.beginPath(); ctx.moveTo(10, base); ctx.lineTo(W-10, base); ctx.stroke();
+    const xc = (X(k)+X(k+1))/2; ctx.setLineDash([5,4]); ctx.strokeStyle = tok("--ink"); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(xc, 22); ctx.lineTo(xc, base - G[k]*sc - 20); ctx.stroke(); ctx.setLineDash([]);
+    const s = gi(k);
+    $("#scanMtx").innerHTML = `<div class="h"></div><div class="h">&lt;= ${cuts[k]}</div><div class="h">&gt; ${cuts[k]}</div><div class="h">Yes</div><div>${s.l[0]}</div><div>${s.r[0]}</div><div class="h">No</div><div>${s.l[1]}</div><div>${s.r[1]}</div>`;
+    const nl = k+1, nr = 9-k;
+    $("#scanCalc").innerHTML = `Gini(&lt;=) = ${f3(Gn(s.l))}, Gini(&gt;) = ${f3(Gn(s.r))}<br>Gini = ${nl}/10 × ${f3(Gn(s.l))} + ${nr}/10 × ${f3(Gn(s.r))} = <b>${f3(s.g)}</b>${k === best ? ' <span class="pill">best</span>' : ""}`;
+  }
+  cv.addEventListener("click", e => { const r = cv.getBoundingClientRect(), x = e.clientX - r.left; let bi = 0, bd = 1e9; cuts.forEach((_,i) => { const d = Math.abs((X(i)+X(i+1))/2 - x); if (d < bd){ bd = d; bi = i; } }); k = bi; draw(); });
+  $("#scanStep").onclick = () => { k = (k+1) % cuts.length; draw(); };
+  $("#scanBest").onclick = () => { k = best; draw(); };
+  redraws.scan = draw; new ResizeObserver(draw).observe(cv);
+})();
+
+/* ---------------- impurity measures for one node (slides 52-53, 55-56, 59) ---------------- */
+(function imp(){
+  const cv = $("#cvImp"), {ctx, fit} = setupCanvas(cv);
+  let k = 1;
+  function calc(){
+    const n = 6, d = n - k, p = k/n, q = d/n, cs = [k, d];
+    $("#impKv").textContent = k; $("#impDv").textContent = d;
+    $("#impDots").innerHTML = Array.from({length:n}, (_,i) => `<span class="${i < k ? "ok" : "no"}">${i < k ? "repaid" : "defaulted"}</span>`).join("");
+    const t = x => x === 0 ? "0" : x === 1 ? "1" : `${Math.round(x*6)}/6`;
+    const lg = x => x === 0 ? "0" : `${t(x)}·log₂(6/${Math.round(x*6)})`;
+    $("#impTab").innerHTML =
+      `<tr><td>Gini</td><td>1 − (${t(p)})² − (${t(q)})²</td><td><b>${f3(Gn(cs))}</b></td></tr>` +
+      `<tr><td>Entropy</td><td>${lg(p)} + ${lg(q)}</td><td><b>${f3(Hn(cs))}</b></td></tr>` +
+      `<tr><td>Error</td><td>1 − max(${t(p)}, ${t(q)})</td><td><b>${f3(En(cs))}</b></td></tr>`;
+    draw();
+  }
+  function draw(){
+    const r = fit(), W = r.width, H = r.height, pad = {l:44,r:12,t:12,b:38}; ctx.clearRect(0,0,W,H);
+    const X = v => pad.l + v*(W-pad.l-pad.r), Y = v => H-pad.b - v*(H-pad.t-pad.b);
+    axes(ctx, W, H, pad, "share who repaid", "impurity", [0,.5,1].map(v => [v, X(v)]), [0,.5,1].map(v => [v, Y(v)]));
+    const p = k/6;
+    [[x => Hn([x,1-x]), "--c1", "entropy"], [x => Gn([x,1-x]), "--c2", "Gini"], [x => En([x,1-x]), "--c3", "error"]].forEach(([f, c, nm], j) => {
+      const pts = []; for (let i = 0; i <= 100; i++) pts.push([i/100, f(i/100)]); line(ctx, pts, X, Y, tok(c), 2.2);
+      const lx = [.5,.85,.25][j]; ctx.fillStyle = tok(c); ctx.font = `12px ${tok("--mono")}`; ctx.textAlign = j ? "left" : "center"; ctx.fillText(nm, X(lx) + (j ? 6 : 0), Y(f(lx)) + (j === 1 ? -8 : 20));
+      ctx.beginPath(); ctx.arc(X(p), Y(f(p)), 5, 0, 7); ctx.fill();
+    });
+  }
+  $("#impK").oninput = e => { k = +e.target.value; calc(); };
+  redraws.imp = draw; new ResizeObserver(draw).observe(cv); calc();
+})();
+
+/* ---------------- Gini of a split (slide 54's counts) ---------------- */
+(function gs(){
+  const S = [[5,2],[1,4]]; let K = S.map(r => r.slice());
+  const nm = ["Yes", "No"];
+  function tree(){
+    const par = [K[0][0]+K[1][0], K[0][1]+K[1][1]];
+    const box = (x, y, w, title, c, g) => `<rect x="${x-w/2}" y="${y}" width="${w}" height="46" rx="8" style="fill:var(--surface);stroke:var(--ink)" stroke-width="1.8"/><text x="${x}" y="${y+18}" text-anchor="middle" font-size="13" font-weight="700" style="fill:var(--ink)">${title}</text><text x="${x}" y="${y+36}" text-anchor="middle" font-size="12" style="fill:var(--muted)">${c[0]} repaid · ${c[1]} defaulted</text>` + (g === undefined ? "" : `<text x="${x}" y="${y+64}" text-anchor="middle" font-size="12" font-family="monospace" style="fill:var(--c2)">Gini ${f3(g)}</text>`);
+    let h = box(220, 4, 200, `All ${sum(par)} applicants`, par, Gn(par));
+    h += `<line x1="220" y1="76" x2="220" y2="92" style="stroke:var(--ink)" stroke-width="1.8"/><rect x="160" y="92" width="120" height="24" rx="12" style="fill:var(--marker);stroke:var(--ink)" stroke-width="1.5"/><text x="220" y="108" text-anchor="middle" font-size="12" font-weight="700" style="fill:var(--sticker-ink)">Owns a home?</text>`;
+    [[105,0],[335,1]].forEach(([x,i]) => { h += `<line x1="${i ? 250 : 190}" y1="116" x2="${x}" y2="150" style="stroke:var(--ink)" stroke-width="1.8"/><text x="${i ? 314 : 126}" y="131" text-anchor="middle" font-size="12" font-weight="600" style="fill:var(--ink)">${nm[i]}</text>`; });
+    $("#gsTree").setAttribute("viewBox", "0 0 440 222");
+    h += box(105, 150, 190, `N1 · Yes (${sum(K[0])})`, K[0], Gn(K[0])) + box(335, 150, 190, `N2 · No (${sum(K[1])})`, K[1], Gn(K[1]));
+    $("#gsTree").innerHTML = h;
+  }
+  function calc(){
+    const par = [K[0][0]+K[1][0], K[0][1]+K[1][1]], n = sum(par);
+    const inp = (i,j) => `<input type="number" min="0" max="50" value="${K[i][j]}" data-i="${i}" data-j="${j}" aria-label="${nm[i]} ${j ? "defaulted" : "repaid"}" style="width:4.5em">`;
+    $("#gsTab").innerHTML = `<tr><td>parent</td><td>${par[0]}</td><td>${par[1]}</td><td>${f3(Gn(par))}</td></tr>` + K.map((r,i) => `<tr><td>N${i+1} · ${nm[i]}</td><td>${inp(i,0)}</td><td>${inp(i,1)}</td><td>${f3(Gn(r))}</td></tr>`).join("");
+    $$("#gsTab input").forEach(e => e.oninput = () => { K[+e.dataset.i][+e.dataset.j] = Math.max(0, Math.floor(+e.value || 0)); upd(); });
+    upd();
+  }
+  function upd(){
+    const par = [K[0][0]+K[1][0], K[0][1]+K[1][1]], n = sum(par) || 1, n1 = sum(K[0]), n2 = sum(K[1]);
+    const g = K.map(Gn), gc = n1/n*g[0] + n2/n*g[1];
+    $$("#gsTab tr").forEach((tr,i) => { const c = tr.lastElementChild; if (i === 0) c.textContent = f3(Gn(par)); else c.textContent = f3(g[i-1]); });
+    $$("#gsTab tr")[0].children[1].textContent = par[0]; $$("#gsTab tr")[0].children[2].textContent = par[1];
+    const fr = (a, b) => `(${a}/${b})²`;
+    $("#gsWork").innerHTML = `Gini(N1) = 1 − ${fr(K[0][0], n1)} − ${fr(K[0][1], n1)} = ${f3(g[0])}<br>Gini(N2) = 1 − ${fr(K[1][0], n2)} − ${fr(K[1][1], n2)} = ${f3(g[1])}<br>Gini(Children) = ${n1}/${n} × ${f3(g[0])} + ${n2}/${n} × ${f3(g[1])} = <b>${f3(gc)}</b>, down from ${f3(Gn(par))} before partitioning.`;
+    tree();
+  }
+  $("#gsReset").onclick = () => { K = S.map(r => r.slice()); calc(); };
+  calc();
+})();
+
+/* ---------------- gain ratio on the 14 records (slides 57-58) ---------------- */
+(function gr(){
+  const HD = Hn(cnt(ALL));
+  const rows = ATTR.map((a,k) => { const parts = VALS[k].map(v => ALL.filter(i => D[i][k] === v).length).filter(Boolean); const gain = HD - expH(ALL, k), si = Hn(parts); return [a, parts, gain, si, gain/si]; });
+  const bg = rows.reduce((b,r) => r[2] > b[2] ? r : b), br = rows.reduce((b,r) => r[4] > b[4] ? r : b);
+  $("#grT").innerHTML = `<thead><tr><th>Test</th><th>Partition sizes</th><th>GAIN</th><th>SplitINFO</th><th>GainRATIO</th></tr></thead><tbody>${rows.map(([a,p,g,s,r]) => `<tr><td>${a} = ?</td><td>${p.join(", ")}</td><td class="${g===bg[2] ? "hi" : ""}">${f3(g)}</td><td>${f3(s)}</td><td class="${r===br[4] ? "hi" : ""}">${f3(r)}</td></tr>`).join("")}</tbody>`;
+  $("#grNote").innerHTML = `GAIN = 0.940 − expected entropy. Age has 3 partitions, so its SplitINFO (${f3(rows[0][3])}) is larger than Student's (${f3(rows[2][3])}, 2 equal partitions): Age's lead over Student shrinks from ${f3(rows[0][2])} vs ${f3(rows[2][2])} to ${f3(rows[0][4])} vs ${f3(rows[2][4])}.`;
+})();
+
+/* ---------------- confusion matrix (slides 62-63) ---------------- */
+(function metrics(){
+  const ins = ["#mA","#mB","#mC","#mD"].map(s => $(s));
+  function upd(){
+    const [a,b,c,d] = ins.map(i => Math.max(0, +i.value || 0)), n = a+b+c+d;
+    $("#mStats").innerHTML = stat("Accuracy", n ? f3((a+d)/n) : "–") + stat("Error rate", n ? f3(1-(a+d)/n) : "–");
+  }
+  ins.forEach(i => i.oninput = upd); [40,10,5,45].forEach((x,i) => ins[i].value = x); upd();
+})();
+
+/* ---------------- imbalanced classes and ZeroR (slide 64) ---------------- */
+(function zeror(){
+  function upd(){
+    const pc = +$("#zrS").value, N = 1000, pos = N*pc/100, neg = N-pos, acc = neg/N;
+    const cell = (cls, v, l) => `<div class="${cls}"><span style="font-size:1.1rem">${v}</span><small>${l}</small></div>`;
+    $("#zrM").innerHTML = `<div class="h"></div><div class="h">Predicted cancer (Y)</div><div class="h">Predicted no cancer (N)</div><div class="h">Actual cancer (Y)</div>` + cell("ok",0,"a · TP") + cell("bd",pos,"b · FN") + `<div class="h">Actual no cancer (N)</div>` + cell("bd",0,"c · FP") + cell("ok",neg,"d · TN");
+    $("#zrP").textContent = $("#zrPv").textContent = pc + "%"; $("#zrAcc").textContent = Math.round(acc*1000)/10 + "%";
+    $("#zrNote").innerHTML = `Accuracy = (0 + ${neg}) / ${N} = <b>${f3(acc)}</b>, yet ZeroR finds <b>none</b> of the ${pos} cancer patients. The rarer the target class, the better ZeroR looks.`;
+  }
+  $("#zrS").oninput = upd; upd();
+})();
+
+/* ---------------- other metrics (slide 65) ---------------- */
+(function others(){
+  const PRE = [["ZeroR: just say \"no cancer\" (1% with cancer)", [0,10,0,990]]];
+  const ins = ["#oA","#oB","#oC","#oD"].map(s => $(s)), host = $("#oPre");
+  PRE.forEach(([t,v]) => { const b = document.createElement("button"); b.className = "chip"; b.textContent = t; b.onclick = () => { v.forEach((x,i) => ins[i].value = x); upd(); }; host.appendChild(b); });
+  function upd(){
+    const [a,b,c,d] = ins.map(i => Math.max(0, +i.value || 0)), n = a+b+c+d;
+    $$(".chip", host).forEach((x,i) => x.setAttribute("aria-selected", String(PRE[i][1].every((v,k) => v === [a,b,c,d][k]))));
+    const q = (x, y) => y ? f3(x/y) : "–", pr = a+c ? a/(a+c) : 0, re = a+b ? a/(a+b) : 0;
+    $("#oStats").innerHTML = stat("Accuracy", q(a+d, n)) + stat("Precision", q(a, a+c)) + stat("Recall", q(a, a+b)) + stat("F measure", pr+re ? f3(2*pr*re/(pr+re)) : "–") + stat("Sensitivity", q(a, a+b)) + stat("Specificity", q(d, d+c));
+    $("#oNote").innerHTML = !n ? "Enter counts." : a+c === 0 ? `No positive predictions, so precision is 0/0 (undefined) and recall is ${q(a, a+b)}: the metrics expose what accuracy (${q(a+d, n)}) hides.` : `Of ${a+c} positive predictions, ${a} are truly positive (precision); of ${a+b} actual positives, ${a} are found (recall).`;
+  }
+  ins.forEach(i => i.oninput = upd); PRE[0][1].forEach((x,i) => ins[i].value = x); upd();
+})();
+
+/* ---------------- ROC (slides 66-68) ---------------- */
+(function roc(){
+  const R = rng(23), NP = 50, NN = 150, S = [];
+  for (let i = 0; i < NP; i++) S.push({y:1, a:1.3 + gauss(R), b:1.2 + gauss(R)*.45});
+  for (let i = 0; i < NN; i++) S.push({y:0, a:gauss(R), b:gauss(R)});
+  const C = {a:rocPts(S,"a",NP,NN), b:rocPts(S,"b",NP,NN)}, MC = {a:"--c2", b:"--c3"}, NM = {a:"M1", b:"M2"};
+  const auc = pts => { let s = 0; for (let i = 1; i < pts.length; i++) s += (pts[i][0]-pts[i-1][0])*(pts[i][1]+pts[i-1][1])/2; return s; };
+  let m = "a", W = 0;
+  const cv = $("#cvStrip"), s1 = setupCanvas(cv), cr = $("#cvRoc"), s2 = setupCanvas(cr), sl = $("#rocT");
+  const thr = () => +sl.value/100, lo = -3.5, hi = 4.5, SX = v => 16 + (v-lo)/(hi-lo)*(W-32);
+  function cm(t){ let tp=0, fn=0, fp=0, tn=0; S.forEach(r => { const p = r[m] >= t; if (r.y) p ? tp++ : fn++; else p ? fp++ : tn++; }); return {tp, fn, fp, tn}; }
+  function draw(){
+    const t = thr(); $("#rocTv").textContent = t.toFixed(2);
+    let r = s1.fit(), ctx = s1.ctx; W = r.width; const H = r.height; ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = tok("--ink"); ctx.globalAlpha = .05; ctx.fillRect(SX(t), 0, W-SX(t), H); ctx.globalAlpha = 1;
+    ctx.font = `12px ${tok("--mono")}`; ctx.textAlign = "left"; ctx.fillStyle = tok("--muted");
+    ctx.fillText(`● actual positives · score of ${NM[m]}`, 16, 16); ctx.fillText("○ actual negatives", 16, H/2+14);
+    const J = rng(3);
+    S.forEach(q => { const x = SX(q[m]), yb = q.y ? 24 + J()*(H/2-34) : H/2+22 + J()*(H/2-30); ctx.beginPath(); ctx.arc(x, yb, 3.6, 0, 7); if (q.y){ ctx.fillStyle = tok("--k1"); ctx.fill(); } else { ctx.strokeStyle = tok("--k2"); ctx.lineWidth = 1.5; ctx.stroke(); } });
+    ctx.strokeStyle = tok("--ink"); ctx.lineWidth = 2; ctx.setLineDash([6,4]); ctx.beginPath(); ctx.moveTo(SX(t), 0); ctx.lineTo(SX(t), H); ctx.stroke(); ctx.setLineDash([]);
+    const lt = SX(t) > W-140 ? "← predict negative" : "predict positive →", lw = ctx.measureText(lt).width, lx = SX(t) > W-140 ? SX(t)-8-lw : SX(t)+8;
+    ctx.fillStyle = tok("--surface"); ctx.fillRect(lx-3, H-22, lw+6, 18); ctx.fillStyle = tok("--ink"); ctx.textAlign = "left"; ctx.fillText(lt, lx, H-8);
+    r = s2.fit(); ctx = s2.ctx; const w = r.width, h = r.height, pad = {l:48,r:14,t:14,b:42}; ctx.clearRect(0,0,w,h);
+    const [X, Y] = rocAxes(ctx, w, h, pad);
+    ["b","a"].forEach(k => line(ctx, C[k], X, Y, tok(MC[k]), k === m ? 3 : 1.8));
+    const c = cm(t), fpr = c.fp/NN, tpr = c.tp/NP;
+    ctx.beginPath(); ctx.arc(X(fpr), Y(tpr), 7, 0, 7); ctx.fillStyle = tok("--ink"); ctx.fill();
+    ctx.font = `11px ${tok("--mono")}`; ctx.fillStyle = tok("--muted"); ctx.textAlign = "left"; ctx.fillText("ideal", X(0)+6, Y(1)+12); ctx.textAlign = "right"; ctx.fillText("random", X(.75)-4, Y(.75)+16);
+    ["a","b"].forEach((k,i) => { ctx.fillStyle = tok(MC[k]); ctx.fillText(`${NM[k]} · AUC ${auc(C[k]).toFixed(3)}`, X(1)-4, Y(.12) + i*16 - 8); });
+    mtx($("#rocMtx"), c.tp, c.fn, c.fp, c.tn);
+    $("#rocStats").innerHTML = stat("TPR · recall", f3(tpr)) + stat("FPR", f3(fpr));
+  }
+  tabs($("#rocTabs"), i => { m = i ? "b" : "a"; draw(); });
+  sl.oninput = draw;
+  let drag = false; const set = e => { const r = cv.getBoundingClientRect(); sl.value = Math.round(((e.clientX - r.left - 16)/(W-32)*(hi-lo) + lo)*100); draw(); };
+  cv.addEventListener("pointerdown", e => { drag = true; cv.setPointerCapture(e.pointerId); set(e); });
+  cv.addEventListener("pointermove", e => { if (drag) set(e); }); cv.addEventListener("pointerup", () => drag = false);
+  redraws.roc = draw; new ResizeObserver(draw).observe(cv); new ResizeObserver(draw).observe(cr);
+})();
+
+/* ---------------- train/test pairs (slides 69-73) ---------------- */
+(function pairs(){
+  const N = 20, S = wave(rng(31), N), ids = [...Array(N).keys()];
+  const SCH = [
+    ["Holdout", "Given a set of N labeled records, reserve a fraction (e.g., 80%) for training and use the rest for testing. Limitations: fewer labeled examples available for training; not all data is involved in model training, and not all data is involved in model testing; larger training set ⇒ more accurate model built, but fewer test examples to give a good accuracy evaluation (and vice versa)."],
+    ["Random subsampling", "Repeated holdout: repeat the experiment k times (here 5), each with a different sample of the data as holdout. Classifier's accuracy = average accuracy of classifier on samples. Limitation: some records may be used more often than others in training/testing."],
+    ["Cross-validation", "k-fold cross-validation (here k = 5): divide the examples into k partitions; run the classifier using k − 1 partitions as training data and one partition as test data; repeat for all combinations of k − 1 partitions and measure average accuracy."],
+    ["Leave-one-out", "Special case of cross-validation for k = N. Can be more accurate but computationally expensive."],
+    ["Bootstrap", "Given N examples, draw N times with replacement. An N-sized sample contains (on average) 63.2% of the data: 1 − (1 − 1/N)<sup>N</sup> ≈ 1 − 1/e = 0.632. Records not included in the bootstrap become the test set. Repeat b times (here 5) and compute average accuracy."],
+    ["Re-substitution", "Re-substitution (training set = test set) is wrong: training set and test set should be disjoint."]];
+  function make(k){
+    const R = rng(77 + k), out = [];
+    if (k === 0 || k === 1) for (let r = 0; r < (k ? 5 : 1); r++){ const s = shuffle(ids.slice(), R); out.push({tr:s.slice(0,16), te:s.slice(16)}); }
+    if (k === 2 || k === 3){ const f = k === 2 ? 5 : N, s = shuffle(ids.slice(), R); for (let r = 0; r < f; r++) out.push({tr:s.filter((_,i) => i % f !== r), te:s.filter((_,i) => i % f === r)}); }
+    if (k === 4) for (let r = 0; r < 5; r++){ const tr = ids.map(() => Math.floor(R()*N)); out.push({tr, te:ids.filter(i => !tr.includes(i))}); }
+    if (k === 5) out.push({tr:ids, te:ids, both:true});
+    out.forEach(o => { const T = cart(S.P, S.y, o.tr, {maxD:30, minLeaf:1}); o.ok = o.te.filter(i => predict(T, S.P[i]) === S.y[i]).length; });
+    return out;
+  }
+  let k = 2, rounds = make(2), shown = 0, timer = null;
+  const host = $("#pTabs");
+  SCH.forEach((s,i) => { const b = document.createElement("button"); b.className = "chip"; b.setAttribute("role","tab"); b.textContent = s[0]; b.onclick = () => { k = i; rounds = make(i); shown = 0; clearTimeout(timer); render(); }; host.appendChild(b); });
+  function render(){
+    $$(".chip", host).forEach((b,i) => b.setAttribute("aria-selected", String(i===k)));
+    $("#pText").innerHTML = SCH[k][1];
+    $("#pStrip").innerHTML = rounds.slice(0, shown).map(o => { const m = new Array(N).fill(0); o.tr.forEach(i => m[i]++); const te = new Set(o.te);
+      return `<div class="srow">${ids.map(i => `<span class="cell ${o.both ? "bt" : te.has(i) ? "te" : m[i] ? "tr" : ""}">${!o.both && m[i] > 1 ? m[i] : ""}</span>`).join("")}</div>`; }).join("") || `<p class="note">Press Next round to draw the first round.</p>`;
+    const sh = rounds.slice(0, shown), times = new Array(N).fill(0); sh.forEach(o => o.te.forEach(i => times[i]++));
+    $("#pR").textContent = `${shown}/${rounds.length}`;
+    $("#pAcc").textContent = shown ? pct(sum(sh.map(o => o.te.length ? o.ok/o.te.length : 0))/shown) : "–";
+    $("#pNever").textContent = shown ? `${times.filter(t => !t).length} of ${N}` : "–"; $("#pMost").textContent = shown ? `${Math.max(...times)}×` : "–";
+    $("#pStep").disabled = shown >= rounds.length;
+  }
+  $("#pStep").onclick = () => { if (shown < rounds.length){ shown++; render(); } };
+  $("#pRun").onclick = () => { clearTimeout(timer); const tick = () => { if (shown < rounds.length){ shown++; render(); timer = setTimeout(tick, reduce ? 0 : 160); } }; tick(); };
+  $("#pReset").onclick = () => { clearTimeout(timer); shown = 0; render(); };
+  shown = rounds.length; render();
+})();
+
+/* ---------------- overfitting and pruning (slides 80-83) ---------------- */
+(function overfit(){
+  const R = rng(19), tr = wave(R, 120), va = wave(R, 80), te = wave(R, 600), MAXD = 14;
+  const cv = $("#cvOf"), {ctx, fit} = setupCanvas(cv), cv2 = $("#cvOfC"), c2 = setupCanvas(cv2);
+  let T, PT = null, showP = false, curve = [];
+  function grow(){ T = cart(tr.P, tr.y, tr.P.map((_,i) => i), {maxD:30, minLeaf:+$("#ofM").value}); PT = prune(T, va, va.P.map((_,i) => i)).node;
+    curve = []; for (let d = 1; d <= MAXD; d++) curve.push([d, errOf(T, tr, d), errOf(T, te, d)]); }
+  function draw(){
+    const md = showP ? 1e9 : +$("#ofD").value, M = showP ? PT : T;
+    $("#ofDv").textContent = md > 99 ? "pruned" : md; $("#ofMv").textContent = $("#ofM").value;
+    $("#ofPrune").textContent = showP ? "Back to depth-limited tree" : "Post-prune with validation set";
+    let r = fit(), W = r.width, H = r.height, p = 10; ctx.clearRect(0,0,W,H);
+    drawCart(ctx, W, H, M, md);
+    $("#ofL").textContent = leafCount(M, md);
+    $("#ofTr").textContent = pct(errOf(M, tr, md)); $("#ofTe").textContent = pct(errOf(M, te, md));
+    r = c2.fit(); W = r.width; H = r.height; const ctx2 = c2.ctx, pad = {l:48,r:12,t:12,b:40}; ctx2.clearRect(0,0,W,H);
+    const top = Math.max(.5, ...curve.map(c => c[2])), CX = d => pad.l + (d-1)/(MAXD-1)*(W-pad.l-pad.r), CY = v => H-pad.b - v/top*(H-pad.t-pad.b);
+    axes(ctx2, W, H, pad, "max depth (number of nodes grows →)", "error", [1,4,7,10,14].map(d => [d, CX(d)]), [0,.1,.2,.3,.4,.5].filter(v => v <= top).map(v => [v, CY(v)]));
+    if (!showP){ ctx2.strokeStyle = tok("--line"); ctx2.lineWidth = 8; ctx2.beginPath(); ctx2.moveTo(CX(md), pad.t); ctx2.lineTo(CX(md), H-pad.b); ctx2.stroke(); }
+    else { const e = errOf(PT, te); line(ctx2, [[1,e],[MAXD,e]], CX, CY, tok("--c3"), 1.5, [6,4]); ctx2.fillStyle = tok("--c3"); ctx2.font = `11px ${tok("--mono")}`; ctx2.textAlign = "right"; ctx2.fillText("post-pruned, test", W-pad.r, CY(e)-6); }
+    line(ctx2, curve.map(c => [c[0], c[1]]), CX, CY, tok("--c1"));
+    line(ctx2, curve.map(c => [c[0], c[2]]), CX, CY, tok("--c4"));
+    ctx2.font = `11px ${tok("--mono")}`; ctx2.textAlign = "left";
+    [["training set e_X", "--c1"], ["test set e_Y", "--c4"]].forEach(([t,c],i) => { ctx2.fillStyle = tok(c); ctx2.fillText("— " + t, pad.l + 8 + i*130, pad.t + 10); });
+  }
+  $("#ofD").oninput = () => { showP = false; $("#ofPrune").setAttribute("aria-pressed","false"); draw(); };
+  $("#ofM").oninput = () => { grow(); draw(); };
+  $("#ofPrune").onclick = () => { showP = !showP; $("#ofPrune").setAttribute("aria-pressed", String(showP)); draw(); };
+  grow(); redraws.of = draw; new ResizeObserver(draw).observe(cv); new ResizeObserver(draw).observe(cv2);
+})();
+
+/* ---------------- decision boundary (slides 84-85) ---------------- */
+(function boundary(){
+  const R = rng(29), S = {P:[], y:[]};
+  for (let i = 0; i < 160; i++){ const a = R(), b = R(); S.P.push([a,b]); S.y.push(a + b < 1 ? 1 : 0); }
+  const T = cart(S.P, S.y, S.P.map((_,i) => i), {maxD:12, minLeaf:1});
+  const cv = $("#cvBd"), {ctx, fit} = setupCanvas(cv); let ob = false;
+  function draw(){
+    const md = +$("#bdD").value; $("#bdDv").textContent = md; $("#bdCtl").hidden = ob;
+    const r = fit(), W = r.width, H = r.height, p = 10; ctx.clearRect(0,0,W,H);
+    const X = v => p + v*(W-2*p), Y = v => H-p - v*(H-2*p);
+    if (ob){
+      [[1, [[0,0],[1,0],[0,1]]], [0, [[1,0],[1,1],[0,1]]]].forEach(([c, pts]) => { ctx.fillStyle = tok(c ? "--k1" : "--k2"); ctx.globalAlpha = .13; ctx.beginPath(); pts.forEach(([a,b],i) => i ? ctx.lineTo(X(a), Y(b)) : ctx.moveTo(X(a), Y(b))); ctx.fill(); ctx.globalAlpha = 1; });
+      line(ctx, [[0,1],[1,0]], X, Y, tok("--ink"), 2);
+      $("#bdT").textContent = 1; $("#bdA").textContent = pct(S.P.filter((q,i) => (q[0]+q[1] < 1 ? 1 : 0) === S.y[i]).length/S.P.length);
+    } else {
+      regions(ctx, T, md, [0,1,0,1], X, Y); line(ctx, [[0,1],[1,0]], X, Y, tok("--muted"), 1, [4,4]);
+      $("#bdT").textContent = leafCount(T, md) - 1; $("#bdA").textContent = pct(1 - errOf(T, S, md));
+    }
+    dots(ctx, S, X, Y, 4);
+  }
+  tabs($("#bdTabs"), i => { ob = i === 1; draw(); });
+  $("#bdD").oninput = draw; redraws.bd = draw; new ResizeObserver(draw).observe(cv);
+})();
+
+/* ================= AI LAYER ================= */
+/* ---------------- feature selection before CV on noise ---------------- */
+(function noise(){
+  const n = 60, K = 10, FOLDS = 5;
+  let where = "before", p = 1000, seed = 1, res = [];
+  function dataset(R){
+    const X = Array.from({length:n}, () => { const r = new Float64Array(p); for (let j = 0; j < p; j++) r[j] = gauss(R); return r; });
+    const y = shuffle(Array.from({length:n}, (_,i) => i % 2), R), fold = shuffle(Array.from({length:n}, (_,i) => i % FOLDS), R);
+    return {X, y, fold};
+  }
+  function top(X, y, ids){
+    const m = ids.length, my = ids.reduce((s,i) => s + y[i], 0)/m, sc = new Float64Array(p);
+    for (let j = 0; j < p; j++){ let mx = 0; for (const i of ids) mx += X[i][j]; mx /= m; let sxy = 0, sxx = 0; for (const i of ids){ const dx = X[i][j]-mx; sxy += dx*(y[i]-my); sxx += dx*dx; } sc[j] = Math.abs(sxy)/Math.sqrt(sxx || 1); }
+    return Array.from(sc.keys()).sort((a,b) => sc[b]-sc[a]).slice(0, K);
+  }
+  function cvAcc(d){
+    const all = d.X.map((_,i) => i), Fall = where === "before" ? top(d.X, d.y, all) : null; let ok = 0;
+    for (let f = 0; f < FOLDS; f++){
+      const tr = all.filter(i => d.fold[i] !== f), te = all.filter(i => d.fold[i] === f), F = Fall || top(d.X, d.y, tr);
+      const cen = [0,1].map(c => { const s = tr.filter(i => d.y[i] === c); return F.map(j => s.reduce((a,i) => a + d.X[i][j], 0)/s.length); });
+      te.forEach(i => { const dist = cen.map(cc => F.reduce((a,j,k) => a + (d.X[i][j]-cc[k])**2, 0)); if ((dist[1] < dist[0] ? 1 : 0) === d.y[i]) ok++; });
+    }
+    return ok/n;
+  }
+  function run(){ const R = rng(1000 + seed*7 + p); res = []; for (let t = 0; t < 20; t++) res.push(cvAcc(dataset(R))); draw(); }
+  const draw = live($("#cvNz"), "nz", (ctx, w, h) => {
+    const pad = {l:44, r:12, t:16, b:34}, bw = (w-pad.l-pad.r)/20, Y = v => h-pad.b - v*(h-pad.t-pad.b);
+    axes(ctx, w, h, pad, "dataset", "CV accuracy", [], [0,.25,.5,.75,1].map(v => [v.toFixed(2), Y(v)]));
+    ctx.setLineDash([5,4]); ctx.strokeStyle = tok("--muted"); ctx.beginPath(); ctx.moveTo(pad.l, Y(.5)); ctx.lineTo(w-pad.r, Y(.5)); ctx.stroke(); ctx.setLineDash([]);
+    res.forEach((a,i) => { ctx.fillStyle = tok(where === "before" ? "--c4" : "--c3"); ctx.fillRect(pad.l + i*bw + bw*.15, Y(a), bw*.7, Y(0)-Y(a)); });
+    if (res.length){ const m = sum(res)/res.length; ctx.strokeStyle = tok("--ink"); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(pad.l, Y(m)); ctx.lineTo(w-pad.r, Y(m)); ctx.stroke(); ctx.fillStyle = tok("--ink"); ctx.font = `12px ${tok("--mono")}`; ctx.textAlign = "right"; ctx.fillText(`mean ${pct(m)}`, w-pad.r-4, Y(m)-6); ctx.fillStyle = tok("--muted"); ctx.fillText("chance 50%", w-pad.r-4, Y(.5)+14); }
+    $("#nzAcc").textContent = res.length ? pct(sum(res)/res.length) : "–";
+    $("#nzNote").textContent = where === "before" ? "The 10 features were chosen using the test folds' labels too, so they look predictive in every fold." : "Each fold chooses its features from its own training records only. The accuracy falls back to chance.";
+  });
+  chipGroup($$("#noise [data-w]"), "aria-pressed", b => { where = b.dataset.w; run(); });
+  chipGroup($$("#noise [data-p]"), "aria-pressed", b => { p = +b.dataset.p; run(); });
+  $("#nzRun").onclick = () => { seed++; run(); };
+  run();
+})();
+
+/* ---------------- duplicates across splits ---------------- */
+(function dups(){
+  const n = 100, d = 20, STEPS = [0,10,20,30,40,50,60,70,80,90,100];
+  function once(R, m){
+    const X = Array.from({length:n}, () => Array.from({length:d}, () => gauss(R))), y = Array.from({length:n}, () => R() < .5 ? 1 : 0), id = X.map((_,i) => i);
+    const pick = shuffle(id.slice(), R).slice(0, m); pick.forEach(i => { X.push(X[i]); y.push(y[i]); id.push(i); });
+    const all = shuffle(X.map((_,i) => i), R), cut = Math.round(.7*all.length), tr = all.slice(0, cut), te = all.slice(cut);
+    const trIds = new Set(tr.map(i => id[i])); let ok = 0, cp = 0;
+    te.forEach(i => { let b = -1, bd = 1e18; tr.forEach(j => { let s = 0; for (let k = 0; k < d; k++) s += (X[i][k]-X[j][k])**2; if (s < bd){ bd = s; b = j; } }); if (y[b] === y[i]) ok++; if (trIds.has(id[i])) cp++; });
+    return [ok/te.length, cp/te.length];
+  }
+  let seed = 1, curve = [];
+  function run(){ const R = rng(500 + seed); curve = STEPS.map(m => { let a = 0, c = 0; for (let t = 0; t < 20; t++){ const [x, y] = once(R, m); a += x; c += y; } return [m, a/20, c/20]; }); draw(); }
+  const draw = live($("#cvDp"), "dp", (ctx, w, h) => {
+    const pad = {l:48, r:14, t:16, b:40}, X = m => pad.l + m/100*(w-pad.l-pad.r), Y = v => h-pad.b - v*(h-pad.t-pad.b);
+    axes(ctx, w, h, pad, "records copied (out of 100)", "test accuracy", [0,20,40,60,80,100].map(m => [m, X(m)]), [0,.25,.5,.75,1].map(v => [v.toFixed(2), Y(v)]));
+    ctx.setLineDash([5,4]); ctx.strokeStyle = tok("--muted"); ctx.beginPath(); ctx.moveTo(pad.l, Y(.5)); ctx.lineTo(w-pad.r, Y(.5)); ctx.stroke(); ctx.setLineDash([]);
+    if (!curve.length) return;
+    line(ctx, curve.map(c => [c[0], c[1]]), X, Y, tok("--c4"));
+    const m = +$("#dpF").value, c = curve.find(c => c[0] === m);
+    ctx.beginPath(); ctx.arc(X(m), Y(c[1]), 7, 0, 7); ctx.fillStyle = tok("--ink"); ctx.fill();
+    $("#dpFv").textContent = m; $("#dpAcc").textContent = pct(c[1]); $("#dpShare").textContent = pct(c[2]);
+  });
+  $("#dpF").oninput = draw;
+  $("#dpRun").onclick = () => { seed++; run(); };
+  run();
+})();
+
+/* ---------------- LLM labels as predictions ---------------- */
+(function llm(){
+  const TRAIN = [["My parcel arrived broken and nobody answers my emails",1],["Thanks, the delivery was quick",0],["I was charged twice for the same order",1],["Can I change the delivery address?",0],["The item is not what was shown in the photos",1],["Great service, will order again",0],["Still waiting for my refund after three weeks",1],["Do you ship to Macau?",0],["The charger stopped working after two days",1],["How do I track my order?",0],["Your app keeps crashing when I pay",1],["I love the new colours",0],["Wrong size sent, I want a refund",1],["Is this jacket waterproof?",0],["The courier was rude and left the box outside in the rain",1],["Please add my discount code to the order",0],["Broken screen on arrival",1],["What time does the shop open on Sunday?",0],["I never received my order",1],["The gift box was beautiful, thank you",0],["Refund still not processed",1],["Can I pay by Octopus card?",0],["Package damaged and items missing",1],["Order arrived early, very happy",0]];
+  // [message, human label, illustrative LLM run 1, illustrative LLM run 2]
+  const TEST = [["My order arrived broken",1,1,1],["Where is my refund?",1,1,1],["Thanks for the quick refund",0,0,1],["Can I order two more?",0,0,0],["Oh great, another late delivery",1,1,0],["The app crashed but support fixed it fast, thanks",0,1,1],["Item missing from my package",1,1,1],["Do you sell gift cards?",0,0,0],["I was charged for an order I cancelled",1,1,1],["Lovely quality, fits well",0,0,0],["Nobody replied to my three emails",1,1,1],["Is delivery free over $500?",0,0,0],["The strap broke on day one",1,1,1],["Happy with the order overall",0,0,0],["Received the wrong colour",1,1,1],["Can you send the invoice again?",0,0,0]];
+  const STOPW = new Set("a an the on in of and or is are was were be to it this that with for but my at by as i its do you can your me we our".split(" "));
+  const words = s => new Set((s.toLowerCase().match(/[a-z0-9]+/g) || []).filter(w => !STOPW.has(w)));
+  const df = {}; TRAIN.forEach(([s]) => words(s).forEach(w => df[w] = (df[w]||0) + 1));
+  const F = Object.keys(df).filter(w => df[w] >= 2).sort();
+  const Xtr = TRAIN.map(([s]) => words(s)), ytr = TRAIN.map(r => r[1]);
+  const H2 = ys => { const n = ys.length; if (!n) return 0; const p = sum(ys)/n; return p === 0 || p === 1 ? 0 : -(p*Math.log2(p) + (1-p)*Math.log2(1-p)); };
+  function build(ids, feats, dep){
+    const ys = ids.map(i => ytr[i]), s1 = sum(ys), maj = 2*s1 === ys.length ? 1 : +(2*s1 > ys.length);
+    if (H2(ys) === 0 || dep === 3 || !feats.length) return {leaf:maj};
+    let best = null;
+    feats.forEach(f => { const a = ids.filter(i => Xtr[i].has(f)), b = ids.filter(i => !Xtr[i].has(f)); if (!a.length || !b.length) return;
+      const e = a.length/ids.length*H2(a.map(i => ytr[i])) + b.length/ids.length*H2(b.map(i => ytr[i])); if (!best || e < best.e - 1e-12) best = {e, f, a, b}; });
+    if (!best) return {leaf:maj};
+    const rest = feats.filter(g => g !== best.f);
+    return {f:best.f, yes:build(best.a, rest, dep+1), no:build(best.b, rest, dep+1)};
+  }
+  const T = build(TRAIN.map((_,i) => i), F, 0);
+  const tpred = s => { const w = words(s); let n = T; while (n.f) n = w.has(n.f) ? n.yes : n.no; return n.leaf; };
+  const desc = n => n.f ? `"${n.f}" present? yes → ${desc(n.yes)}; no → ${desc(n.no)}` : (n.leaf ? "complaint" : "not a complaint");
+  const cols = [TEST.map(r => r[2]), TEST.map(r => r[3]), TEST.map(r => tpred(r[0]))];
+  let k = 0;
+  const yn = v => v ? "yes" : "no";
+  function render(){
+    const P = cols[k];
+    $("#llT").innerHTML = `<thead><tr><th>#</th><th>Message</th><th>Human</th><th>Run 1</th><th>Run 2</th><th>Tree</th></tr></thead><tbody>${TEST.map((r,i) => `<tr class="${P[i] !== r[1] ? "miss" : ""}"><td>${i+1}</td><td class="msg">${esc(r[0])}</td><td class="${r[1] ? "cy" : "cn"}">${yn(r[1])}</td>${cols.map((c,j) => `<td class="${c[i] !== r[1] ? "wrong" : ""}${j === k ? " sel" : ""}">${yn(c[i])}</td>`).join("")}</tr>`).join("")}</tbody>`;
+    let tp = 0, fn = 0, fp = 0, tn = 0; TEST.forEach((r,i) => { if (r[1]) P[i] ? tp++ : fn++; else P[i] ? fp++ : tn++; });
+    mtx($("#llMtx"), tp, fn, fp, tn, ["Pred. complaint","Pred. not","Human: complaint","Human: not"]);
+    const pr = tp+fp ? tp/(tp+fp) : 0, re = tp+fn ? tp/(tp+fn) : 0;
+    $("#llStats").innerHTML = stat("Agreement with human", pct((tp+tn)/TEST.length)) + stat("Precision", tp+fp ? f3(pr) : "–") + stat("Recall", f3(re));
+    const same = cols[0].filter((v,i) => v === cols[1][i]).length, diff = cols[0].map((v,i) => v !== cols[1][i] ? "#" + (i+1) : null).filter(Boolean);
+    $("#llRun").innerHTML = `<b>Run-to-run consistency:</b> LLM runs 1 and 2 give the same label on ${same} of ${TEST.length} messages (${pct(same/TEST.length)}). They disagree on ${diff.join(", ")}.`;
+    $("#llTree").innerHTML = `Decision tree learned from the 24 training messages: ${desc(T)}.`;
+  }
+  tabs($("#llTabs"), i => { k = i; render(); });
+  render();
+})();
+
+/* ================= LAB ================= */
+segBar("#labBar", "#labDetail", [
+  "<h3>Brief · 5 minutes</h3><p style='margin-top:6px'>Open the prepared notebook in Google Colab (see the next page). It holds a churn-style dataset and a decision-tree pipeline written by an AI assistant, with its reported test accuracy.</p>",
+  "<h3>Guided work · 30 minutes</h3><ol class='clean' style='margin-top:6px'><li>Read the pipeline. For each of the three leakage forms, decide whether it is there, and point to the line.</li><li>Fix every leak you find.</li><li>Re-run the pipeline and record the test accuracy before and after the fix.</li></ol>",
+  "<h3>Share-out · 10 minutes</h3><p style='margin-top:6px'>We vote on each leakage form, then compare the test accuracy before and after the fix.</p>"
+]);
+
+(function lk(){
+  const F = ["Target leakage: a feature known only after the outcome","Train/test contamination: selection or scaling before the split","Duplicates across splits"];
+  const V = [["yes","Found"],["no","Not found"]];
+  const tb = $("#lkT tbody");
+  F.forEach((f,i) => { const tr = document.createElement("tr"); tr.dataset.v = ""; tr.innerHTML = `<td>${i+1}</td><td class="claim">${f}</td><td><div class="vchips" role="group" aria-label="Verdict for form ${i+1}">${V.map(([v,t]) => `<button class="chip" data-v="${v}" aria-pressed="false">${t}</button>`).join("")}</div></td>`; tb.appendChild(tr); });
+  const rows = $$("tr", tb);
+  const setV = (tr, v) => { tr.dataset.v = v === "yes" ? "wrong" : v === "no" ? "ok" : ""; tr.dataset.k = v; $$("button", tr).forEach(x => x.setAttribute("aria-pressed", String(v !== "" && x.dataset.v === v))); };
+  rows.forEach(tr => $$("button", tr).forEach(b => b.onclick = () => { setV(tr, tr.dataset.k === b.dataset.v ? "" : b.dataset.v); upd(); }));
+  function upd(){
+    const f = rows.filter(r => r.dataset.k === "yes").length, a = $("#lkBefore").value, b = $("#lkAfter").value;
+    $("#lkSum").textContent = `${f} of 3 leakage forms found` + (a !== "" && b !== "" ? ` · test accuracy ${a}% before the fix, ${b}% after (${(b - a >= 0 ? "+" : "") + (b - a).toFixed(1)} points)` : "");
+  }
+  $("#lkBefore").oninput = $("#lkAfter").oninput = upd;
+  $("#lkClear").onclick = () => { rows.forEach(r => setV(r, "")); $("#lkBefore").value = $("#lkAfter").value = ""; upd(); };
+  upd();
+})();
+
+/* ---------------- presentation mode: one board per screen ---------------- */
+(function present(){
+  const root = document.documentElement, mainEl = $("main");
+  const slides = $$("main > section.board, main > .part-break");
+  if (!slides.length) return;
+  const ico = {
+    play:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>',
+    prev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+    next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>',
+    fs:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+    fsx:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>',
+    close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+  };
+  const mk = (tag, cls, html, label) => { const e = document.createElement(tag); e.className = cls; if (html) e.innerHTML = html; if (label){ e.setAttribute("aria-label", label); e.title = label; } return e; };
+  const startBtn = mk("button", "present-btn", ico.play + "<span>Present</span>", "Present: one board at a time, full screen (P)");
+  const prog = mk("div", "deck-ui deck-progress");
+  const sidePrev = mk("button", "deck-ui deck-side prev", ico.prev, "Previous board (←)");
+  const sideNext = mk("button", "deck-ui deck-side next", ico.next, "Next board (→)");
+  const bar = mk("div", "deck-ui deck-bar"); bar.setAttribute("role", "toolbar"); bar.setAttribute("aria-label", "Presentation controls");
+  const bPrev = mk("button", "", ico.prev, "Previous board (←)"), bNext = mk("button", "", ico.next, "Next board (→)");
+  const count = mk("span", "deck-count"); count.setAttribute("aria-live", "polite");
+  const bFs = mk("button", "", ico.fs, "Full screen (F)"), bExit = mk("button", "", ico.close, "End presentation (Esc)");
+  bar.append(bPrev, count, bNext, bFs, bExit);
+  document.body.append(startBtn, prog, sidePrev, sideNext, bar);
+  const spacer = mk("div", "deck-ui deck-spacer"); mainEl.appendChild(spacer);
+  const keysHint = $(".rail .keys");
+  if (keysHint) keysHint.innerHTML = 'Press <kbd>P</kbd> to present one board at a time, then <kbd>←</kbd> <kbd>→</kbd>. <kbd>F</kbd> toggles full screen.';
+
+  let idx = 0, on = false, fsByUs = false;
+  const label = el => el.dataset.nav || (el.querySelector("h2") ? el.querySelector("h2").textContent : "");
+  const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+  function enterFs(){ const f = root.requestFullscreen || root.webkitRequestFullscreen; if (!f || fsEl()) return; try { const p = f.call(root); fsByUs = true; if (p && p.catch) p.catch(() => { fsByUs = false; }); } catch(e){ fsByUs = false; } }
+  function exitFs(){ const f = document.exitFullscreen || document.webkitExitFullscreen; if (f && fsEl()){ try { const p = f.call(document); if (p && p.catch) p.catch(() => {}); } catch(e){} } }
+  function fsIcon(){ const isFs = !!fsEl(); bFs.innerHTML = isFs ? ico.fsx : ico.fs; bFs.title = isFs ? "Exit full screen (F)" : "Full screen (F)"; bFs.setAttribute("aria-label", bFs.title); }
+
+  function fit(){
+    if (!on) return;
+    const el = slides[idx], vw = innerWidth, vh = innerHeight;
+    const narrow = vw < 700, pad = narrow ? 18 : 84, barH = 70, topPad = 22;
+    const W = Math.min(1180, vw - 2*pad);
+    root.style.setProperty("--deck-w", W + "px");
+    root.style.setProperty("--deck-s", 1);
+    const h = el.offsetHeight;
+    // phones: keep full size and scroll; larger screens: scale the board to fit the screen
+    let s = narrow ? 1 : Math.max(0.6, Math.min(1.6, (vw - 2*pad) / W, (vh - barH - topPad) / h));
+    const top = Math.max(topPad, (vh - barH - h*s) / 2 + 6);
+    root.style.setProperty("--deck-s", s.toFixed(4));
+    root.style.setProperty("--deck-top", top + "px");
+    spacer.style.top = (top + h*s + barH + 10) + "px";
+    // canvases size themselves from their on-screen box, so nudge them to redraw at the new scale
+    $$("canvas.cv, .cv", el).forEach(c => { c.style.width = "calc(100% - 1px)"; requestAnimationFrame(() => { c.style.width = ""; }); });
+  }
+  function show(i){
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((el, k) => el.classList.toggle("is-current", k === idx));
+    mainEl.scrollTop = 0;
+    count.textContent = `${idx + 1} / ${slides.length} · ${label(slides[idx])}`;
+    prog.style.width = ((idx + 1) / slides.length * 100) + "%";
+    bPrev.disabled = sidePrev.disabled = idx === 0;
+    bNext.disabled = sideNext.disabled = idx === slides.length - 1;
+    const b = boards.indexOf(slides[idx]); if (b >= 0) current = b;
+    requestAnimationFrame(fit);
+  }
+  function start(){
+    if (on) return;
+    on = true; root.classList.add("presenting");
+    let i = slides.indexOf(boards[current]); if (i < 0) i = 0;
+    enterFs(); show(i);
+  }
+  function stop(){
+    if (!on) return;
+    on = false; root.classList.remove("presenting");
+    slides.forEach(el => el.classList.remove("is-current"));
+    if (fsByUs) exitFs(); fsByUs = false;
+    const el = slides[idx];
+    requestAnimationFrame(() => el.scrollIntoView({block: "start"}));
+  }
+  startBtn.onclick = start;
+  bPrev.onclick = sidePrev.onclick = () => show(idx - 1);
+  bNext.onclick = sideNext.onclick = () => show(idx + 1);
+  bExit.onclick = stop;
+  bFs.onclick = () => { if (fsEl()) { fsByUs = false; exitFs(); } else enterFs(); };
+  const onFs = () => { fsIcon(); if (on && !fsEl() && fsByUs){ fsByUs = false; stop(); } else requestAnimationFrame(fit); };
+  document.addEventListener("fullscreenchange", onFs); document.addEventListener("webkitfullscreenchange", onFs);
+  addEventListener("resize", () => requestAnimationFrame(fit));
+  new ResizeObserver(() => { if (on) requestAnimationFrame(fit); }).observe(mainEl);
+  slides.forEach(el => new ResizeObserver(() => { if (on && el.classList.contains("is-current")) fit(); }).observe(el));
+
+  // keys: capture phase so the scrolling navigation never sees them while presenting
+  addEventListener("keydown", e => {
+    const t = e.target, typing = t.closest && t.closest("input,textarea,select,[contenteditable]");
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!on){
+      if (!typing && (e.key === "p" || e.key === "P")){ e.preventDefault(); start(); }
+      return;
+    }
+    if (typing) return;
+    const onBtn = t.closest && t.closest("button,a,summary");
+    let handled = true;
+    if (e.key === "ArrowRight" || e.key === "PageDown" || (e.key === " " && !onBtn) || (e.key === "Enter" && !onBtn)) show(idx + 1);
+    else if (e.key === "ArrowLeft" || e.key === "PageUp" || e.key === "Backspace") show(idx - 1);
+    else if (e.key === "Home") show(0);
+    else if (e.key === "End") show(slides.length - 1);
+    else if (e.key === "Escape") stop();
+    else if (e.key === "f" || e.key === "F") bFs.onclick();
+    else if (e.key === "p" || e.key === "P") stop();
+    else handled = false;
+    if (handled){ e.preventDefault(); e.stopImmediatePropagation(); e.stopPropagation(); }
+  }, true);
+
+  // swipe on touch screens, but not on demos that use dragging
+  let sx = 0, sy = 0, swipe = false;
+  mainEl.addEventListener("touchstart", e => { if (!on || e.touches.length !== 1) return; swipe = !e.target.closest("canvas,.scene,input,select,button,svg,.tbl-wrap"); sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, {passive: true});
+  mainEl.addEventListener("touchend", e => { if (!on || !swipe) return; const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy; if (Math.abs(dx) > 60 && Math.abs(dy) < 50) show(idx + (dx < 0 ? 1 : -1)); }, {passive: true});
+})();
+})();
+</script>
+
+</body>
+</html>
