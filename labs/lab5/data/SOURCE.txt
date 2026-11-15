@@ -1,0 +1,10 @@
+German Credit data (Statlog), 1,000 loan applicants, 20 attributes.
+Source: Hofmann, H. (1994). Statlog (German Credit Data). UCI Machine Learning Repository.
+https://doi.org/10.24432/C5NC77 · Licence: CC BY 4.0. Downloaded via OpenML, dataset 'credit-g' (id 31).
+Changes: the class column is recoded as bad_credit (1 = bad, 0 = good).
+credit_300.csv is a stratified random sample of 300 rows (seed 7103), 30% bad.
+llm_prompt.txt: the message students paste into a chat LLM, written for this lab (no personal data).
+llm_fallback.txt: the ready-made answer for students without a chat LLM, made by make_llm_fallback.py:
+Qwen/Qwen2.5-1.5B-Instruct (Apache 2.0), CPU, bf16, greedy decoding, at most 400 new tokens, given exactly llm_prompt.txt.
+The answer ran into an unfinished Python code example; that part was cut and replaced by a note in square brackets.
+Nothing else was edited.

@@ -1,0 +1,9 @@
+I have a table of 300 past loan applications from a bank. Each row is one applicant, with 20 columns:
+checking account status, loan duration (months), credit history, purpose of the loan, credit amount, savings,
+years of employment, instalment rate, personal status, other debtors, years at current residence, property,
+age, other instalment plans, housing, number of existing credits, job, number of dependants, telephone, foreign worker.
+7 columns are numbers and 13 are categories. The target column says whether the applicant turned out to be
+a bad credit risk; 30% of the 300 are bad.
+
+I want to predict, for a new applicant, whether they will be a bad credit risk.
+Which model should I use, and why? Please name one specific model and its main settings.
