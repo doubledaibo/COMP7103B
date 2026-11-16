@@ -1,0 +1,301 @@
+id,source,text,complaint,split
+1,amazon,Poorly contstruct hinge.,1,train
+2,yelp,How awesome is that.,0,test
+3,yelp,We will not be coming back.,1,train
+4,amazon,Plantronics Bluetooth Excelent Buy.,0,train
+5,yelp,"At first glance it is a lovely bakery cafe - nice ambiance, clean, friendly staff.",0,test
+6,yelp,The menu had so much good stuff on it i could not decide!,0,test
+7,yelp,My girlfriend's veal was very bad.,1,train
+8,amazon,clipping this to your belt will deffinitely make you feel like 50 cent's up-and-coming.,0,train
+9,yelp,It is PERFECT for a sit-down family meal or get together with a few friends.,0,test
+10,yelp,-Drinks took close to 30 minutes to come out at one point.,1,test
+11,yelp,If you stay in Vegas you must get breakfast here at least once.,0,test
+12,amazon,Jawbone Era is awesome too!,0,train
+13,yelp,Good Service-check!,0,train
+14,yelp,We recently witnessed her poor quality of management towards other guests as well.,1,train
+15,amazon,1. long lasting battery (you don't have to recharge it as frequentyly as some of the flip phones)2.,1,train
+16,amazon,Were JERKS on the phone.,1,test
+17,yelp,"This place is not worth your time, let alone Vegas.",1,train
+18,yelp,An extensive menu provides lots of options for breakfast.,0,train
+19,amazon,"Also, the phone doesn't seem to accept anything except CBR mp3s, preferably ripped by Windows Media Player.",1,train
+20,yelp,"I don't know what the big deal is about this place, but I won't be back ""ya'all"".",1,train
+21,yelp,The nachos are a MUST HAVE!,0,test
+22,amazon,Don't trust their website and don't expect any helpful support.,1,train
+23,yelp,"No, I'm going to eat the potato that I found some strangers hair in it.",1,train
+24,yelp,"One nice thing was that they added gratuity on the bill since our party was larger than 6 or 8, and they didn't expect more tip than that.",0,test
+25,yelp,This is a great restaurant at the Mandalay Bay.,0,test
+26,amazon,doesn't last long.,1,train
+27,amazon,Also its slim enough to fit into my alarm clock docking station without removing the case.,0,train
+28,amazon,I wouldn't recommend buying this product.,1,train
+29,yelp,Not my thing.,1,test
+30,amazon,"I put the latest OS on it (v1.15g), and it now likes to slow to a crawl and lock up every once in a while.",1,test
+31,amazon,"When I placed my treo into the case, not only was it NOT snug, but there was A LOT of extra room on the sides.",1,train
+32,amazon,It definitely was not as good as my S11.,0,train
+33,yelp,Stopped by during the late May bank holiday off Rick Steve recommendation and loved it.,0,train
+34,amazon,I'm using it with an iriver SPINN (with case) and it fits fine.,0,train
+35,yelp,Horrible - don't waste your time and money.,1,train
+36,yelp,"I have been to very few places to eat that under no circumstances would I ever return to, and this tops the list.",1,train
+37,yelp,There was a warm feeling with the service and I felt like their guest for a special treat.,0,train
+38,amazon,Works for me.,0,train
+39,yelp,Awesome service and food.,0,train
+40,yelp,Food was so gooodd.,0,test
+41,yelp,"Anyway, I do not think i will go back there.",1,train
+42,yelp,"The burger had absolutely no flavor - the meat itself was totally bland, the burger was overcooked and there was no charcoal flavor.",1,test
+43,amazon,"This was utterly confusing at first, which caused me to lose a couple of very, very important contacts.",1,train
+44,amazon,Kind of flops around.,1,train
+45,amazon,"I posted more detailed comments under the grey or black phone, but i have the Fire Red and it's a great color!",0,test
+46,amazon,Utter crap.. Sound quality is TERRIBLE.,1,train
+47,yelp,"Went in for happy hour, great list of wines.",0,train
+48,yelp,I wouldn't return.,1,train
+49,amazon,I would recommend it.,0,train
+50,yelp,Crust is not good.,1,train
+51,yelp,"When I opened the sandwich, I was impressed, but not in a good way.",1,train
+52,amazon,Buttons are too small.,1,test
+53,amazon,Echo Problem....Very unsatisfactory,1,train
+54,yelp,Not tasty and the texture was just nasty.,1,train
+55,yelp,"The meat was pretty dry, I had the sliced brisket and pulled pork.",1,train
+56,yelp,say bye bye to your tip lady!,1,test
+57,amazon,Linked to my phone without effort.,0,train
+58,yelp,We ordered some old classics and some new dishes after going there a few times and were sorely disappointed with everything.,1,test
+59,amazon,The case is a flimsy piece of plastic and has no front or side protection whatsoever.,1,train
+60,yelp,Service was exceptional and food was a good as all the reviews.,0,train
+61,amazon,"Nice quality build, unlike some cheap s*** out there.",0,train
+62,yelp,Those burgers were amazing.,0,train
+63,yelp,Their frozen margaritas are WAY too sugary for my taste.,1,test
+64,amazon,"First of all, it doesn't wear well.",1,train
+65,amazon,Very satisifed with that.,0,train
+66,yelp,"Unfortunately, it only set us up for disapppointment with our entrees.",1,train
+67,yelp,The food was excellent and service was very good.,0,train
+68,amazon,It is simple to use and I like it.,0,train
+69,amazon,"horrible, had to switch 3 times.",1,train
+70,amazon,Worst customer service.,1,test
+71,amazon,"I have had TMobile service for 2 or 3 years now, and I am pretty happy with it.",0,test
+72,amazon,I am also very happy with the price.,0,train
+73,yelp,If you are reading this please don't go there.,1,test
+74,amazon,"Best of all is the rotating feature, very helpful.",0,train
+75,yelp,"They have a plethora of salads and sandwiches, and everything I've tried gets my seal of approval.",0,train
+76,amazon,"It is well made, easy to access the phone and has a handy, detachable belt clip.",0,train
+77,amazon,These products cover up the important light sensor above the ear outlet.,1,train
+78,yelp,I ordered the Voodoo pasta and it was the first time I'd had really excellent pasta since going gluten free several years ago.,0,train
+79,amazon,I ordered this for sony Ericsson W810i but I think it only worked once (thats when I first used it).,1,train
+80,amazon,The phone gets EXTREMELY HOT!,1,train
+81,yelp,"I had a salad with the wings, and some ice cream for dessert and left feeling quite satisfied.",0,train
+82,amazon,Very good quality though,0,train
+83,amazon,"Buyer Beware, you could flush money right down the toilet.",1,train
+84,amazon,"I have used several phone in two years, but this one is the best.",0,test
+85,amazon,Worst ever.,1,train
+86,amazon,"Plus, I seriously do not believe it is worth its steep price point.",1,train
+87,yelp,Service was fantastic.,0,test
+88,amazon,Good audio quality.,0,test
+89,amazon,So there is no way for me to plug it in here in the US unless I go by a converter.,1,test
+90,yelp,It was equally awful.,1,train
+91,amazon,Phone now holds charge like it did when it was new.,0,train
+92,amazon,"All in all, I'd expected a better consumer experience from Motorola.",1,train
+93,amazon,Great price also!,0,train
+94,yelp,I could care less... The interior is just beautiful.,0,train
+95,yelp,"like the other reviewer said ""you couldn't pay me to eat at this place again.""",1,train
+96,yelp,We literally sat there for 20 minutes with no one asking to take our order.,1,train
+97,yelp,"Classy/warm atmosphere, fun and fresh appetizers, succulent steaks (Baseball steak!!!!!",0,train
+98,yelp,What a mistake that was!,1,train
+99,amazon,"I have had this phone for over a year now, and I will tell you, its not that great.",1,test
+100,yelp,Good beer & drink selection and good food selection.,0,train
+101,amazon,Too bad you have to pay up to $$$ a month for the service!,1,train
+102,amazon,It was a great phone.,0,test
+103,amazon,I had absolutely no problem with this headset linking to my 8530 Blackberry Curve!,0,train
+104,amazon,It's been my choice headset for years.Great sound; good volume; good noise cancellation.,0,test
+105,yelp,The crêpe was delicate and thin and moist.,0,train
+106,yelp,I've had better atmosphere.,1,train
+107,amazon,It is easy to turn on and off when you are in the car and the volume controls are quite accessable.,0,train
+108,amazon,"great headset, very impressed - H500.",0,train
+109,amazon,Painful on the ear.,1,train
+110,yelp,"It was extremely ""crumby"" and pretty tasteless.",1,train
+111,yelp,Reasonably priced also!,0,train
+112,yelp,I had about two bites and refused to eat anymore.,1,train
+113,yelp,Never again will I be dining at this place!,1,test
+114,amazon,much better than the hard plastic cases.,0,test
+115,amazon,Doesn't Work.,1,train
+116,amazon,"If there is a wind, it is completely useless.",1,train
+117,yelp,"Worse of all, he humiliated his worker right in front of me..Bunch of horrible name callings.",1,train
+118,amazon,THAT one didn't work either.,1,test
+119,amazon,Bad Reception.,1,train
+120,amazon,Phone is sturdy as all nokia bar phones are.,0,test
+121,yelp,My drink was never empty and he made some really great menu suggestions.,0,train
+122,amazon,Great product.,0,train
+123,amazon,Very pleased with this headset.,0,test
+124,amazon,Defective crap.,1,train
+125,amazon,Everything about it is fine and reasonable for the price i.e.,0,test
+126,yelp,"The staff are now not as friendly, the wait times for being served are horrible, no one even says hi for the first 10 minutes.",1,train
+127,amazon,I've had this bluetoooth headset for some time now and still not comfortable with the way it fits on the ear.,1,train
+128,amazon,Excellent starter wireless headset.,1,test
+129,amazon,I recommend iGo to anyone with different brand cell phones/mp3 players in the family.,0,train
+130,yelp,"On the good side, the staff was genuinely pleasant and enthusiastic - a real treat.",0,train
+131,amazon,"It didn't work, people can not hear me when I talk.",1,test
+132,yelp,These are the nicest restaurant owners I've ever come across.,0,train
+133,amazon,The battery life is highly unacceptable.,1,test
+134,yelp,So don't go there if you are looking for good food...,1,train
+135,amazon,I was looking for this headset for a long time and now that I've got it I couldn't be happier.,0,test
+136,amazon,It also had a new problem.,1,train
+137,yelp,Food was really good and I got full petty fast.,0,test
+138,yelp,Service is quick and friendly.,0,train
+139,yelp,"He also came back to check on us regularly, excellent service.",0,train
+140,yelp,Just as good as when I had it more than a year ago!,0,train
+141,amazon,"Also, if your phone is dropped, this case is not going to save it, specially when dropped face down.",1,train
+142,amazon,"Provides good protection and looks classy, too.",0,test
+143,amazon,!I definitly recommend!!,0,train
+144,amazon,Its a total package.,0,test
+145,yelp,Weird vibe from owners.,1,test
+146,yelp,But I definitely would not eat here again.,1,test
+147,yelp,Penne vodka excellent!,0,train
+148,amazon,This is definitely a must have if your state does not allow cell phone usage while driving.,0,train
+149,yelp,The food was outstanding and the prices were very reasonable.,0,test
+150,yelp,Great food and awesome service!,0,test
+151,amazon,Poor quality.,1,test
+152,amazon,"Bluetooth range is good - a few days ago I left my phone in the trunk, got a call, and carried the conversation without a hitch.",0,train
+153,yelp,"No allergy warnings on the menu, and the waitress had absolutely no clue as to which meals did or did not contain peanuts.",1,train
+154,amazon,$50 Down the drain.,1,train
+155,yelp,I guess maybe we went on an off night but it was disgraceful.,1,train
+156,yelp,very slow at seating even with reservation.,1,test
+157,yelp,I liked the patio and the service was outstanding.,0,test
+158,yelp,Seriously killer hot chai latte.,0,test
+159,amazon,"For a product that costs as much as this one does, I expect it to work far better and with greater ease than this thing does.",1,test
+160,amazon,"It works fine on my Motorola 325 cellphone, and a lot better than the worn-out battery did.",0,test
+161,amazon,They have been around for years and carries the highest quality of anti-glare screen protector that I have found to date.,0,train
+162,yelp,It is worth the drive.,0,train
+163,yelp,"Best Buffet in town, for the price you cannot beat it.",0,train
+164,amazon,The instruction manual is lacking.,1,train
+165,amazon,"Couldn't use the unit with sunglasses, not good in Texas!",1,train
+166,amazon,I ended up sliding it on the edge of my pants or back pockets instead.,0,train
+167,amazon,Mobile Phone Tools are a must have.,0,train
+168,yelp,Never had anything to complain about here.,0,test
+169,yelp,He was terrible!,1,train
+170,amazon,Not good enough for the price.,1,test
+171,amazon,"But now that it is ""out of warranty"" the same problems reoccure.Bottom line... put your money somewhere else... Cingular will not support it.",1,train
+172,yelp,I can't tell you how disappointed I was.,1,test
+173,yelp,I will continue to come here on ladies night andddd date night ... highly recommend this place to anyone who is in the area (;,0,train
+174,yelp,They brought a fresh batch of fries and I was thinking yay something warm but no!,1,test
+175,amazon,Doesn't work at all.. I bougth it for my L7c and its not working.,1,train
+176,yelp,It really is impressive that the place hasn't closed down.,1,train
+177,yelp,I don't recommend unless your car breaks down in front of it and you are starving.,1,train
+178,yelp,By far the BEST cheesecurds we have ever had!,0,test
+179,yelp,I consider this theft.,1,train
+180,amazon,"Uncomfortable In the Ear, Don't use with LG VX9900 (EnV).",1,train
+181,amazon,I have had mine for about a year and this Christmas I bought some for the rest of the family.,0,train
+182,yelp,Food was really boring.,1,train
+183,amazon,"Sound quality on both end is excellent, I use headset to call my wife and ask my wife to use headset to call me !2.",0,train
+184,yelp,Spend your money and time some place else.,1,train
+185,yelp,These were so good we ordered them twice.,0,train
+186,amazon,Very wind-resistant.,0,train
+187,amazon,Gets a signal when other Verizon phones won't.,0,test
+188,yelp,This place has a lot of promise but fails to deliver.,1,train
+189,yelp,"A couple of months later, I returned and had an amazing meal.",0,train
+190,amazon,)Setup couldn't have been simpler.,0,train
+191,amazon,Excellent!.,0,train
+192,amazon,BT50 battery junk!.,1,train
+193,yelp,"Perfect for someone (me) who only likes beer ice cold, or in this case, even colder.",0,train
+194,amazon,what a disappointment,1,test
+195,yelp,"I tried the Cape Cod ravoli, chicken,with cranberry...mmmm!",0,test
+196,yelp,Con: spotty service.,1,train
+197,yelp,When my mom and I got home she immediately got sick and she only had a few bites of salad.,1,test
+198,yelp,Best tater tots in the southwest.,0,test
+199,yelp,"Needless to say, I won't be going back anytime soon.",1,test
+200,yelp,Why are these sad little vegetables so overcooked?,1,test
+201,yelp,All of the tapas dishes were delicious!,0,train
+202,amazon,The headsets are easy to use and everyone loves them.,0,test
+203,amazon,I highly recommend this device to everyone!,0,train
+204,amazon,My 5-year old Nokia 2160 from Tracfone holds the charge a lot better than this.,1,test
+205,yelp,This place is awesome if you want something light and healthy during the summer.,0,train
+206,yelp,"It's like a really sexy party in your mouth, where you're outrageously flirting with the hottest person at the party.",0,train
+207,amazon,It is a joy to use.,0,train
+208,yelp,"Love the margaritas, too!",0,train
+209,yelp,I dressed up to be treated so rudely!,1,train
+210,amazon,Don't buy this product - It fails!.,1,train
+211,amazon,Talk about USELESS customer service.,1,test
+212,yelp,"Very convenient, since we were staying at the MGM!",0,train
+213,amazon,Only had this a month but it's worked flawlessly so far.,0,test
+214,yelp,The lighting is just dark enough to set the mood.,0,train
+215,yelp,We walked away stuffed and happy about our first Vegas buffet experience.,0,test
+216,yelp,It wasn't busy at all and now we know why.,1,train
+217,yelp,"I kept looking at the time and it had soon become 35 minutes, yet still no food.",1,train
+218,amazon,im surprised this is a good quality car charger and there's not much reviews about it.,0,test
+219,yelp,The bathrooms are clean and the place itself is well decorated.,0,train
+220,yelp,"By this point, my friends and I had basically figured out this place was a joke and didn't mind making it publicly and loudly known.",1,test
+221,yelp,I've had better bagels from the grocery store.,1,test
+222,amazon,"You get extra minutes so that you can carry out the call and not get cut off.""",0,train
+223,amazon,Bad Quality.,1,train
+224,yelp,"Very good, though!",0,test
+225,amazon,I would highly recommend this.,0,train
+226,amazon,"Excellent sound, battery life and inconspicuous to boot!.",0,train
+227,amazon,"however, my girl was complain that some time the phone doesn't wake up like normal phone does.",1,train
+228,yelp,What I really like there is the crepe station.,0,test
+229,yelp,Things that went wrong: - They burned the saganaki.,1,train
+230,amazon,"* Comes with a strong light that you can use to light up your camera shots, and even flash SOS signals (seriously!",0,train
+231,yelp,Please stay away from the shrimp stir fried noodles.,1,train
+232,amazon,"I know that sounds funny, but to me it seemed like sketchy technology that wouldn't work well.Well, this one works great.",0,test
+233,yelp,Your staff spends more time talking to themselves than me.,1,train
+234,yelp,"Good food , good service .",0,test
+235,amazon,"Good product, good seller.",0,train
+236,amazon,"The real killer is the volume, and of course it breaking.",1,train
+237,yelp,"In fact I'm going to round up to 4 stars, just because she was so awesome.",0,train
+238,yelp,"The sangria was about half of a glass wine full and was $12, ridiculous.",1,train
+239,yelp,I had the chicken Pho and it tasted very bland.,1,train
+240,yelp,This is a really fantastic Thai restaurant which is definitely worth a visit.,0,train
+241,amazon,Tied to charger for conversations lasting more than 45 minutes.MAJOR PROBLEMS!!,1,train
+242,yelp,I took back my money and got outta there.,1,train
+243,amazon,If the two were seperated by a mere 5+ ft I started to notice excessive static and garbled sound from the headset.,1,test
+244,amazon,Battery is terrible.,1,test
+245,amazon,"But, in any case, the best part is, you can download these pictures to your laptop using IR, or even send pictures from your laptop to the phone.",0,test
+246,yelp,The cashier had no care what so ever on what I had to say it still ended up being wayyy overpriced.,1,test
+247,amazon,Not enough volume.,1,test
+248,yelp,This place deserves one star and 90% has to do with the food.,1,train
+249,yelp,"I have been here several times in the past, and the experience has always been great.",0,train
+250,amazon,nice leather.,0,test
+251,yelp,Fantastic food!,0,train
+252,amazon,Save your money.... I've had this item for 11 months now.,1,test
+253,amazon,Yet Plantronincs continues to use the same flawed charger design.,1,train
+254,amazon,The company shipped my product very promptly and it works well.,0,test
+255,amazon,So I had to take the battery out of the phone put it all back together and then restart it.,1,test
+256,yelp,Ryan's Bar is definitely one Edinburgh establishment I won't be revisiting.,1,test
+257,yelp,The Greek dressing was very creamy and flavorful.,0,train
+258,amazon,I really like this product over the Motorola because it is allot clearer on the ear piece and the mic.,0,train
+259,yelp,"Ordered a double cheeseburger & got a single patty that was falling apart (picture uploaded) Yeah, still sucks.",1,train
+260,amazon,"Audio Quality is poor, very poor.",1,train
+261,amazon,"I also didn't like the ""on"" button, it felt like it would crack with use.",1,train
+262,amazon,Great for the jawbone.,0,train
+263,yelp,"The food sucked, which we expected but it sucked more than we could have imagined.",1,test
+264,amazon,"During several different 2 minute calls, I experienced 5 drops and it was in an area that had 5 bars.",1,test
+265,yelp,"The menu is always changing, food quality is going down & service is extremely slow.",1,test
+266,yelp,"OMG, the food was delicioso!",0,train
+267,yelp,I left with a stomach ache and felt sick the rest of the day.,1,train
+268,amazon,Doesn't do the job.,1,test
+269,amazon,Better than expected.,0,train
+270,amazon,They refuse to refund or replace.,1,train
+271,amazon,And I just love the colors!,0,train
+272,amazon,Thank you for wasting my money.,1,train
+273,yelp,I have never had such bland food which surprised me considering the article we read focused so much on their spices and flavor.,1,test
+274,amazon,its extremely slow and takes forever to do anything with it.,1,train
+275,amazon,Great Value.,0,train
+276,amazon,cool phone.,0,test
+277,yelp,Today is the second time I've been to their lunch buffet and it was pretty good.,0,test
+278,amazon,"The biggest complaint I have is, the battery drains superfast.",1,test
+279,yelp,The chicken was deliciously seasoned and had the perfect fry on the outside and moist chicken on the inside.,0,train
+280,amazon,"I went on Motorola's website and followed all directions, but could not get it to pair again.",1,train
+281,yelp,We definately enjoyed ourselves.,0,train
+282,amazon,Plug was the wrong size.,1,train
+283,amazon,Thanks again to Amazon for having the things I need for a good price!,0,train
+284,yelp,"not even a ""hello, we will be right with you.""",1,test
+285,yelp,"All in all, I can assure you I'll be back.",0,train
+286,amazon,Very well made and fits my Surefire GX2 perfectly.,0,train
+287,yelp,The atmosphere here is fun.,0,train
+288,yelp,"Stopped by this place while in Madison for the Ironman, very friendly, kind staff.",0,train
+289,yelp,Wow... Loved this place.,0,train
+290,yelp,I've never been more insulted or felt disrespected.,1,train
+291,amazon,It's uncomfortable and the sound quality is quite poor compared with the phone (Razr) or with my previous wired headset (that plugged into an LG).,1,test
+292,amazon,"Small, sleek, impressive looking, practical setup with ample storage in place.",0,train
+293,yelp,This is one of the best bars with food in Vegas.,0,train
+294,yelp,"Despite how hard I rate businesses, its actually rare for me to give a 1 star.",1,train
+295,yelp,"Also, the fries are without a doubt the worst fries I've ever had.",1,test
+296,yelp,!....THE OWNERS REALLY REALLY need to quit being soooooo cheap let them wrap my freaking sandwich in two papers not one!,1,train
+297,amazon,Battery life is real good.,0,train
+298,yelp,I can't wait to go back.,0,test
+299,amazon,The reception is excellent!,0,test
+300,amazon,Will order from them again!,0,test

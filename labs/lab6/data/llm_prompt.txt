@@ -1,0 +1,110 @@
+Below are 100 short customer reviews of products and restaurants, numbered 1 to 100.
+For each review, decide whether it is a complaint.
+A complaint is a review in which the customer is unhappy with the product, the food or the service.
+
+Answer with exactly one line per review, in the same order, and nothing else.
+Each line is the review number, a colon, and the label: 1 for a complaint, 0 for not a complaint.
+For example, the line "7: 1" means that review 7 is a complaint.
+Do not explain your answers.
+
+Reviews:
+1. How awesome is that.
+2. At first glance it is a lovely bakery cafe - nice ambiance, clean, friendly staff.
+3. The menu had so much good stuff on it i could not decide!
+4. It is PERFECT for a sit-down family meal or get together with a few friends.
+5. -Drinks took close to 30 minutes to come out at one point.
+6. If you stay in Vegas you must get breakfast here at least once.
+7. Were JERKS on the phone.
+8. The nachos are a MUST HAVE!
+9. One nice thing was that they added gratuity on the bill since our party was larger than 6 or 8, and they didn't expect more tip than that.
+10. This is a great restaurant at the Mandalay Bay.
+11. Not my thing.
+12. I put the latest OS on it (v1.15g), and it now likes to slow to a crawl and lock up every once in a while.
+13. Food was so gooodd.
+14. The burger had absolutely no flavor - the meat itself was totally bland, the burger was overcooked and there was no charcoal flavor.
+15. I posted more detailed comments under the grey or black phone, but i have the Fire Red and it's a great color!
+16. Buttons are too small.
+17. say bye bye to your tip lady!
+18. We ordered some old classics and some new dishes after going there a few times and were sorely disappointed with everything.
+19. Their frozen margaritas are WAY too sugary for my taste.
+20. Worst customer service.
+21. I have had TMobile service for 2 or 3 years now, and I am pretty happy with it.
+22. If you are reading this please don't go there.
+23. I have used several phone in two years, but this one is the best.
+24. Service was fantastic.
+25. Good audio quality.
+26. So there is no way for me to plug it in here in the US unless I go by a converter.
+27. I have had this phone for over a year now, and I will tell you, its not that great.
+28. It was a great phone.
+29. It's been my choice headset for years.Great sound; good volume; good noise cancellation.
+30. Never again will I be dining at this place!
+31. much better than the hard plastic cases.
+32. THAT one didn't work either.
+33. Phone is sturdy as all nokia bar phones are.
+34. Very pleased with this headset.
+35. Everything about it is fine and reasonable for the price i.e.
+36. Excellent starter wireless headset.
+37. It didn't work, people can not hear me when I talk.
+38. The battery life is highly unacceptable.
+39. I was looking for this headset for a long time and now that I've got it I couldn't be happier.
+40. Food was really good and I got full petty fast.
+41. Provides good protection and looks classy, too.
+42. Its a total package.
+43. Weird vibe from owners.
+44. But I definitely would not eat here again.
+45. The food was outstanding and the prices were very reasonable.
+46. Great food and awesome service!
+47. Poor quality.
+48. very slow at seating even with reservation.
+49. I liked the patio and the service was outstanding.
+50. Seriously killer hot chai latte.
+51. For a product that costs as much as this one does, I expect it to work far better and with greater ease than this thing does.
+52. It works fine on my Motorola 325 cellphone, and a lot better than the worn-out battery did.
+53. Never had anything to complain about here.
+54. Not good enough for the price.
+55. I can't tell you how disappointed I was.
+56. They brought a fresh batch of fries and I was thinking yay something warm but no!
+57. By far the BEST cheesecurds we have ever had!
+58. Gets a signal when other Verizon phones won't.
+59. what a disappointment
+60. I tried the Cape Cod ravoli, chicken,with cranberry...mmmm!
+61. When my mom and I got home she immediately got sick and she only had a few bites of salad.
+62. Best tater tots in the southwest.
+63. Needless to say, I won't be going back anytime soon.
+64. Why are these sad little vegetables so overcooked?
+65. The headsets are easy to use and everyone loves them.
+66. My 5-year old Nokia 2160 from Tracfone holds the charge a lot better than this.
+67. Talk about USELESS customer service.
+68. Only had this a month but it's worked flawlessly so far.
+69. We walked away stuffed and happy about our first Vegas buffet experience.
+70. im surprised this is a good quality car charger and there's not much reviews about it.
+71. By this point, my friends and I had basically figured out this place was a joke and didn't mind making it publicly and loudly known.
+72. I've had better bagels from the grocery store.
+73. Very good, though!
+74. What I really like there is the crepe station.
+75. I know that sounds funny, but to me it seemed like sketchy technology that wouldn't work well.Well, this one works great.
+76. Good food , good service .
+77. If the two were seperated by a mere 5+ ft I started to notice excessive static and garbled sound from the headset.
+78. Battery is terrible.
+79. But, in any case, the best part is, you can download these pictures to your laptop using IR, or even send pictures from your laptop to the phone.
+80. The cashier had no care what so ever on what I had to say it still ended up being wayyy overpriced.
+81. Not enough volume.
+82. nice leather.
+83. Save your money.... I've had this item for 11 months now.
+84. The company shipped my product very promptly and it works well.
+85. So I had to take the battery out of the phone put it all back together and then restart it.
+86. Ryan's Bar is definitely one Edinburgh establishment I won't be revisiting.
+87. The food sucked, which we expected but it sucked more than we could have imagined.
+88. During several different 2 minute calls, I experienced 5 drops and it was in an area that had 5 bars.
+89. The menu is always changing, food quality is going down & service is extremely slow.
+90. Doesn't do the job.
+91. I have never had such bland food which surprised me considering the article we read focused so much on their spices and flavor.
+92. cool phone.
+93. Today is the second time I've been to their lunch buffet and it was pretty good.
+94. The biggest complaint I have is, the battery drains superfast.
+95. not even a "hello, we will be right with you."
+96. It's uncomfortable and the sound quality is quite poor compared with the phone (Razr) or with my previous wired headset (that plugged into an LG).
+97. Also, the fries are without a doubt the worst fries I've ever had.
+98. I can't wait to go back.
+99. The reception is excellent!
+100. Will order from them again!

@@ -1,0 +1,12 @@
+Sentiment Labelled Sentences: 1,000 Amazon (cell phones) and 1,000 Yelp (restaurants) review sentences, half negative.
+Source: Kotzias, D., Denil, M., de Freitas, N. & Smyth, P. (2015). From Group to Individual Labels using Deep Features. KDD.
+UCI Machine Learning Repository, https://doi.org/10.24432/C57604 · Licence: CC BY 4.0.
+Changes: the label is recoded as complaint (1 = negative review, 0 = positive review); duplicate sentences dropped;
+surrounding spaces stripped. reviews_300.csv: 150 Amazon + 150 Yelp sentences, 75 complaints and 75 others from each
+(random sample, seed 7103); split = a fixed train/test split of 200/100, stratified by source and label (seed 7103).
+review_emb.npy: 300 x 384 float32 sentence embeddings from sentence-transformers/all-MiniLM-L6-v2 (unit length), row i = CSV row i;
+computed on a CPU in 1.25 s for all 300 reviews.
+llm_prompt.txt: instructions + the 100 test reviews in CSV order, numbered 1 to 100.
+llm_fallback_run1.txt, llm_fallback_run2.txt: the unedited answers of Qwen/Qwen2.5-1.5B-Instruct (Apache 2.0) to exactly
+the message in llm_prompt.txt, on a CPU, with sampling (temperature 0.7; the model's defaults top_p 0.8, top_k 20) and two
+fixed seeds (7103, 7104), so the two runs can differ. Made by make_llm_fallback.py; no edits.
