@@ -1,0 +1,1946 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Neural and Foundation Models for Mining</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&family=Unbounded:wght@600;700;800&display=swap">
+<style>
+/* Layout: a lecture rail on the left, one long column of numbered "boards" on the right; each board is one slide's idea, made interactive. */
+:root{
+  --bg:#F3F8F9; --surface:#FFFFFF; --surface-2:#E3F0F3; --ink:#0E2228; --muted:#4D666E; --line:#CBDDE2;
+  --accent:#04617B; --accent-2:#1489B0; --good:#0B8466; --signal:#BF2A2F; --warn:#B26A00;
+  --c1:#04617B; --c2:#1489B0; --c3:#0B8466; --c4:#BF2A2F; --c5:#7A5BB5;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#09161B; --surface:#0F2129; --surface-2:#153039; --ink:#E2F0F3; --muted:#92ADB5; --line:#244049;
+  --accent:#43C3DB; --accent-2:#8AD9EA; --good:#3FD69B; --signal:#FF6F6A; --warn:#F2B04A;
+  --c1:#43C3DB; --c2:#8AD9EA; --c3:#3FD69B; --c4:#FF6F6A; --c5:#B79BFF; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#09161B; --surface:#0F2129; --surface-2:#153039; --ink:#E2F0F3; --muted:#92ADB5; --line:#244049;
+  --accent:#43C3DB; --accent-2:#8AD9EA; --good:#3FD69B; --signal:#FF6F6A; --warn:#F2B04A;
+  --c1:#43C3DB; --c2:#8AD9EA; --c3:#3FD69B; --c4:#FF6F6A; --c5:#B79BFF; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;margin:0}
+.page{display:grid;grid-template-columns:210px minmax(0,1fr);gap:48px;max-width:1260px;margin:0 auto;padding-inline:24px;padding-block:28px 80px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.02;font-weight:700}
+h2{font-size:clamp(1.6rem,3vw,2.15rem);line-height:1.1;font-weight:700}
+h3{font-size:1.15rem;font-weight:600;line-height:1.25}
+p{margin:0}
+.lead{font-size:1.12rem;color:var(--muted);max-width:62ch}
+.mono{font-family:var(--mono)}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+
+/* rail */
+.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;max-height:calc(100vh - 48px);overflow:auto;font-size:.88rem}
+.rail .course{font-family:var(--mono);font-size:.75rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.rail .ltitle{font-family:var(--display);font-weight:700;font-size:1.05rem;line-height:1.2;margin:4px 0 18px}
+.rail ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.rail .part{font-family:var(--mono);font-size:.7rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin:14px 0 4px}
+.rail a{display:block;color:var(--muted);text-decoration:none;padding:4px 10px;border-radius:6px;border-left:2px solid transparent}
+.rail a:hover{color:var(--ink);background:var(--surface-2)}
+.rail a.on{color:var(--ink);background:var(--surface-2);font-weight:600}
+.rail .keys{margin-top:18px;color:var(--muted);font-size:.78rem}
+kbd{font-family:var(--mono);font-size:.75rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--surface)}
+
+main{min-width:0;display:grid;gap:88px}
+section.board{scroll-margin-top:24px;display:grid;gap:22px}
+.part-break{padding:26px 0 0;border-top:1px solid var(--line);display:grid;gap:6px}
+.part-break .n{font-family:var(--display);font-size:clamp(3rem,7vw,5rem);line-height:.9;color:var(--accent);font-weight:700}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:28px;align-items:center}
+.hero .meta{display:grid;gap:16px}
+.stage-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;cursor:pointer;font-size:.92rem}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"],.chip[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.scene{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:var(--r);background:radial-gradient(120% 90% at 30% 20%,var(--surface) 0%,var(--surface-2) 100%);overflow:hidden;touch-action:none}
+.scene canvas{display:block;width:100%!important;height:100%!important}
+.scene .hint{position:absolute;right:12px;bottom:10px;font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.scene .legend{position:absolute;left:12px;top:10px;font-family:var(--mono);font-size:.72rem;color:var(--muted);display:grid;gap:2px}
+.caption{min-height:4.8em;border-left:3px solid var(--accent);padding-left:14px}
+.caption b{font-weight:600}
+
+/* generic */
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:grid;gap:8px;align-content:start;min-width:0}
+.card .tag{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase}
+.card p{color:var(--muted)}
+.card.bad{background:color-mix(in srgb,var(--signal) 7%,var(--surface));border-color:color-mix(in srgb,var(--signal) 30%,var(--line))}
+.card.good{background:color-mix(in srgb,var(--good) 8%,var(--surface));border-color:color-mix(in srgb,var(--good) 30%,var(--line))}
+ul.clean{margin:0;padding-left:1.1em;display:grid;gap:6px}
+.note{font-size:.85rem;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;min-width:0}
+
+/* roadmap */
+.phases{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.phase{display:grid;gap:6px;align-content:start}
+.phase .pn{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-bottom:4px;border-bottom:2px solid var(--pc)}
+.wk{display:flex;gap:10px;align-items:baseline;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:.88rem;line-height:1.3}
+.wk .num{font-family:var(--mono);font-size:.8rem;color:var(--pc);font-weight:500;min-width:1.4em}
+.wk:hover{border-color:var(--pc)}
+.wk[aria-pressed="true"]{background:var(--surface-2);border-color:var(--pc);font-weight:600}
+.wkdetail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.wkdetail h4{margin:0 0 4px;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+/* assessment */
+.bars{display:grid;gap:14px}
+.barrow{display:grid;grid-template-columns:5.5em minmax(0,1fr);gap:12px;align-items:center}
+.barrow .lbl{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.bar{display:flex;height:54px;border-radius:8px;overflow:hidden;background:var(--surface-2)}
+.seg{display:flex;flex-direction:column;justify-content:center;padding:0 10px;color:#fff;font-size:.82rem;line-height:1.15;white-space:nowrap;overflow:hidden;transition:flex-basis .6s ease}
+.seg b{font-family:var(--mono);font-size:.95rem}
+.seg.ai{background:var(--c1)} .seg.ai2{background:var(--c3)} .seg.ex{background:#5B6F76}
+.legend-row{display:flex;gap:18px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* quiz */
+.quiz{display:grid;gap:12px}
+.q{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.q .opts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.q .opts button{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:6px 10px;font-size:.82rem;cursor:pointer}
+.q .opts button:hover{border-color:var(--accent)}
+.q .fb{grid-column:1/-1;font-size:.88rem;display:none}
+.q.done .fb{display:block}
+.q.right{border-color:var(--good)} .q.wrong{border-color:var(--signal)}
+.q.right .fb b{color:var(--good)} .q.wrong .fb b{color:var(--signal)}
+.q button.picked{background:var(--surface-2);font-weight:600}
+.score{font-family:var(--mono);font-size:.9rem;color:var(--muted)}
+
+/* playground */
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.play{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;align-items:start}
+.cv{width:100%;aspect-ratio:3/2;max-width:100%;display:block;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);touch-action:none;cursor:crosshair}
+.side{display:grid;gap:14px;min-width:0}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.stat .k{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stat .v{font-family:var(--mono);font-size:1.35rem;font-variant-numeric:tabular-nums}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--bg);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:.9rem;font-weight:500}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:hover{filter:brightness(1.08)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.items{display:flex;gap:6px;flex-wrap:wrap}
+.items button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:.85rem;cursor:pointer}
+.items button.a{background:var(--c1);border-color:var(--c1);color:var(--bg)}
+.items button.c{background:var(--c4);border-color:var(--c4);color:var(--bg)}
+.tx{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;font-family:var(--mono);font-size:.8rem}
+.tx div{border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--surface);color:var(--muted)}
+.tx div.hitA{border-color:var(--c1);color:var(--ink)}
+.tx div.hit{border-color:var(--c4);background:color-mix(in srgb,var(--c4) 10%,var(--surface));color:var(--ink)}
+.tx-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+
+/* kdd */
+.stage-panel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.stage-panel h4{margin:0 0 6px;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stage-panel .fail{color:var(--signal)}
+.scene.wide{aspect-ratio:16/7}
+
+/* stepper */
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.steps button{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 12px;cursor:pointer;display:grid;gap:2px}
+.steps button .s{font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.steps button[aria-selected="true"]{border-color:var(--accent);background:var(--surface-2)}
+.exflow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+
+/* case */
+.case{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.agent{font-family:var(--mono);font-size:.92rem;background:var(--surface-2);border-radius:8px;padding:14px 16px;line-height:1.5}
+.feat{display:grid;gap:8px}
+.feat label{display:flex;gap:10px;align-items:center;cursor:pointer;font-family:var(--mono);font-size:.88rem}
+.feat input{accent-color:var(--accent);width:18px;height:18px}
+.meter{height:12px;border-radius:6px;background:var(--surface-2);position:relative;overflow:hidden}
+.meter i{position:absolute;inset:0 auto 0 0;background:var(--accent);transition:width .5s ease}
+.meter .base{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.verdict{border-radius:8px;padding:12px 14px;font-size:.92rem}
+.verdict.leak{background:color-mix(in srgb,var(--signal) 12%,var(--surface));color:var(--ink);border:1px solid var(--signal)}
+.verdict.meh{background:color-mix(in srgb,var(--warn) 12%,var(--surface));border:1px solid var(--warn)}
+.verdict.ok{background:color-mix(in srgb,var(--good) 10%,var(--surface));border:1px solid var(--good)}
+
+/* table */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:.92rem;background:var(--surface)}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface-2)}
+td:first-child{font-weight:600}
+tr:last-child td{border-bottom:none}
+
+/* checklist */
+.checks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.check{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--good);margin-top:3px}
+.check:has(input:checked){border-color:var(--good);background:color-mix(in srgb,var(--good) 7%,var(--surface))}
+.check b{display:block;margin-bottom:2px}
+.check span{color:var(--muted);font-size:.92rem}
+.progress{font-family:var(--mono);font-size:.9rem;color:var(--muted)}
+
+.lab{counter-reset:s;display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.lab li{display:grid;grid-template-columns:2.4em minmax(0,1fr);gap:12px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.lab li::before{counter-increment:s;content:counter(s);font-family:var(--display);font-weight:700;font-size:1.5rem;color:var(--accent)}
+.lab li.key::before{color:var(--signal)}
+.next{background:var(--accent);color:var(--bg);border-radius:var(--r);padding:20px 22px;display:grid;gap:4px}
+.next .eyebrow{color:var(--bg);opacity:.8}
+
+@media (max-width:980px){
+  .page{grid-template-columns:minmax(0,1fr);gap:24px;padding-inline:16px}
+  .rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);max-height:none;padding-block:8px;border-bottom:1px solid var(--line);margin-inline:-16px;padding-inline:16px}
+  .rail .course,.rail .ltitle,.rail .part,.rail .keys{display:none}
+  .rail ol{display:flex;overflow-x:auto;gap:4px;scrollbar-width:none}
+  .rail a{white-space:nowrap}
+  .hero,.play,.case,.tx-wrap{grid-template-columns:minmax(0,1fr)}
+  .phases{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid4,.checks{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stage-panel,.wkdetail,.exflow{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:620px){
+  .grid3,.grid2,.grid4,.checks,.phases,.steps{grid-template-columns:minmax(0,1fr)}
+  .q{grid-template-columns:minmax(0,1fr)} .q .opts{justify-content:flex-start}
+  .scene.wide{aspect-ratio:4/3}
+  main{gap:64px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---- chapter 1 ---- */
+main a{color:var(--accent)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.lab-s{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);min-width:4.6em}
+.chip.sm{padding:4px 11px;font-size:.84rem}
+table.sm{min-width:0;font-size:.86rem}
+table.sm th,table.sm td{padding:7px 10px}
+table.sm td:first-child{font-weight:400}
+table.num td{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+table.num th{text-align:right}
+table.num td:first-child,table.num th:first-child{text-align:left}
+table .hl{background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
+table tr.tot td{font-weight:600;background:var(--surface-2)}
+.formula{background:var(--surface-2);border-radius:8px;padding:12px 16px;overflow-x:auto;font-size:1.05rem}
+.formula math{font-size:1.1em}
+.quote{border-left:3px solid var(--accent);padding-left:14px;font-size:1.05rem}
+.ill{width:100%;height:100%;display:block}
+.ill text{font-family:var(--mono);font-size:11px;fill:var(--muted);text-anchor:middle}
+.ill .ln{stroke:var(--muted);stroke-width:1.6;fill:none}
+.ill .ink{stroke:var(--ink);stroke-width:1.4;fill:var(--surface)}
+.ill .f1{fill:var(--c1)} .ill .f2{fill:var(--c2)} .ill .f3{fill:var(--c3)} .ill .f4{fill:var(--c4)} .ill .fw{fill:var(--warn)} .ill .fs{fill:var(--surface-2)}
+.ill .k{transition:opacity .4s}
+.ill .k.dim{opacity:.28}
+.ill .k.cur .ln{stroke:var(--accent);stroke-width:2.6}
+.ill .k.cur text{fill:var(--ink);font-weight:600}
+.ill .lane{font-size:10px;letter-spacing:.08em;text-anchor:start;fill:var(--accent)}
+.ill .mk{fill:var(--muted)}
+.ladder{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;align-items:end}
+.ladder div{border-radius:8px;padding:8px 10px;color:var(--bg);font-size:.86rem;line-height:1.25;font-weight:500}
+.axisrow{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.74rem;color:var(--muted);border-top:2px solid var(--line);padding-top:4px;margin-top:6px}
+.bar button.seg{border:0;cursor:pointer;text-align:left;font:inherit;color:var(--bg)}
+.mob{display:none}
+.bar button.seg[aria-pressed="true"]{box-shadow:inset 0 -5px 0 rgba(0,0,0,.35)}
+.tl{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:6px}
+.tl button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:0 0 8px;cursor:pointer;display:grid;gap:4px;overflow:hidden;font-size:.82rem}
+.tl button i{display:block;height:6px;background:var(--pc)}
+.tl button b{font-family:var(--mono);font-size:.95rem;color:var(--pc)}
+.tl button[aria-pressed="true"]{border-color:var(--pc);background:var(--surface-2)}
+.tl button .t{color:var(--muted);font-size:.72rem;line-height:1.2;padding:0 4px}
+.wkdetail h4,.flowtxt h4{margin:0 0 4px;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.steps.s5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.steps.s7{grid-template-columns:repeat(7,minmax(0,1fr))}
+.pane{display:grid;gap:14px}
+.strike{text-decoration:line-through;opacity:.5}
+.tok{display:inline-block;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 11px;font-family:var(--mono);font-size:.82rem;margin:2px}
+.tok.on{border-color:var(--accent);background:var(--accent);color:var(--bg)}
+.arrow{font-family:var(--mono);color:var(--accent);padding:0 6px}
+#clsBoard[data-show="ind"] .ci,#clsBoard[data-show="cls"] .cc{background:color-mix(in srgb,var(--accent) 16%,var(--surface))}
+#clsBoard[data-show="train"] #tTrain,#clsBoard[data-show="test"] #tTest{outline:3px solid var(--accent);outline-offset:-1px}
+.cc{color:var(--signal);font-weight:600}
+.lbl3{position:absolute;left:0;top:0;font-family:var(--mono);font-size:.72rem;color:var(--muted);pointer-events:none;white-space:nowrap;transform:translate(-50%,-50%)}
+.lbl3.t{color:var(--accent);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase}
+.flowwrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.flow{width:100%;min-width:560px;height:auto;display:block}
+.flow text{font-family:var(--mono);font-size:12px;fill:var(--muted);text-anchor:middle}
+.flow .nd rect,.flow .nd circle,.flow .nd path{fill:var(--surface);stroke:var(--accent-2);stroke-width:1.5;transition:fill .3s}
+.flow .nd text{fill:var(--ink)}
+.flow .nd.hi rect,.flow .nd.hi circle,.flow .nd.hi path{fill:color-mix(in srgb,var(--warn) 35%,var(--surface));stroke:var(--warn)}
+.flow .ed path{fill:none;stroke:var(--muted);stroke-width:1.6}
+.flow .ed.hi path{stroke:var(--warn);stroke-width:3.2}
+.flow .ed.hi text{fill:var(--signal);font-weight:600}
+.flow .rf path{stroke:var(--accent-2);stroke-width:1;opacity:.45;fill:none}
+.flow .rf.hi path{opacity:1;stroke-width:2;stroke:var(--signal)}
+.flow .mk{fill:var(--muted)}
+.flowtxt{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:980px){.ladder{grid-template-columns:minmax(0,1fr)} .ladder div{margin:0!important} .axisrow{display:none} .mob{display:block} .tl{grid-template-columns:repeat(6,minmax(0,1fr))} .steps.s7{grid-template-columns:repeat(4,minmax(0,1fr))} .flowtxt{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){.steps.s5,.steps.s7{grid-template-columns:repeat(3,minmax(0,1fr))} .steps.s5 button,.steps.s7 button{padding:8px} .tl{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* ---------- presentation mode: one board per screen, like slides ---------- */
+.present-btn{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 14px);z-index:20;display:inline-flex;gap:8px;align-items:center;border:1px solid var(--accent);background:var(--accent);color:var(--bg);border-radius:999px;padding:8px 16px 8px 13px;font:500 .9rem var(--body);cursor:pointer;box-shadow:0 2px 12px color-mix(in srgb,var(--ink) 18%,transparent)}
+.present-btn:hover{filter:brightness(1.08)}
+.present-btn svg,.deck-bar svg{width:18px;height:18px;display:block}
+html:not(.presenting) .deck-ui{display:none!important}
+html.presenting .present-btn{display:none}
+html.presenting,html.presenting body{height:100%;overflow:hidden}
+html.presenting .rail{display:none}
+html.presenting .page{display:block;max-width:none;padding:0;margin:0}
+html.presenting main{position:fixed;inset:0;display:block;background:var(--bg);overflow-x:hidden;overflow-y:auto;z-index:10;padding:0}
+html.presenting main > section.board,html.presenting main > .part-break{display:none}
+html.presenting main > section.board.is-current,html.presenting main > .part-break.is-current{display:grid;position:absolute;left:50%;top:var(--deck-top,24px);width:var(--deck-w,1180px);margin:0;transform-origin:top center;transform:translateX(-50%) scale(var(--deck-s,1))}
+html.presenting main > .part-break.is-current{border-top:none;padding:0;gap:14px}
+html.presenting main > .part-break.is-current .n{font-size:8rem}
+html.presenting main > .part-break.is-current h2{font-size:3.4rem}
+.deck-bar{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);z-index:30;display:flex;gap:2px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;box-shadow:0 2px 14px color-mix(in srgb,var(--ink) 14%,transparent);opacity:.45;transition:opacity .2s}
+.deck-bar:hover,.deck-bar:focus-within{opacity:1}
+.deck-bar button{border:none;background:transparent;color:var(--ink);border-radius:999px;width:38px;height:38px;display:grid;place-items:center;cursor:pointer}
+.deck-bar button:hover{background:var(--surface-2)}
+.deck-bar button:disabled{opacity:.3;cursor:default;background:transparent}
+.deck-count{font-family:var(--mono);font-size:.8rem;color:var(--muted);padding:0 10px;white-space:nowrap;max-width:46vw;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.deck-side{position:fixed;top:0;bottom:0;width:64px;z-index:25;border:none;background:transparent;cursor:pointer;color:var(--muted);display:grid;place-items:center;opacity:0;transition:opacity .2s}
+.deck-side svg{width:34px;height:34px}
+.deck-side.prev{left:0}
+.deck-side.next{right:0}
+.deck-side:hover,.deck-side:focus-visible{opacity:1}
+.deck-side:disabled{display:none}
+.deck-spacer{position:absolute;left:0;width:1px;height:1px;pointer-events:none}
+.deck-progress{position:fixed;left:0;top:0;height:3px;background:var(--accent);z-index:30;transition:width .3s ease}
+@media (max-width:700px){.deck-side{display:none!important}.present-btn{padding:7px 12px}}
+@media (prefers-reduced-motion:reduce){.deck-progress,.deck-bar,.deck-side{transition:none}}
+
+/* ================= "sticker pop" theme layer (chapter 1) =================
+   Layout stays the same. Bold ink outlines, hard offset shadows, sticker labels,
+   marker-pen headings and a dotted notebook background. */
+:root{
+  --bg:#F3EFFF; --surface:#FFFFFF; --surface-2:#ECE5FF; --ink:#17132B; --muted:#585074; --line:#D6CCF5;
+  --accent:#6A35FF; --accent-2:#E8307F; --good:#0E9A6E; --signal:#E5372B; --warn:#FFB703;
+  --c1:#6A35FF; --c2:#E8307F; --c3:#0C946C; --c4:#E8590C; --c5:#1883CC;
+  --edge:#17132B; --shadow:#17132B; --dot:#CFC4F2; --marker:#FFD54A; --sticker:#FFD54A; --sticker-ink:#17132B;
+  --display:"Unbounded", "Arial Black", "Segoe UI", system-ui, sans-serif;
+  --body:"Rubik", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"Space Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:16px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#110D22; --surface:#1C1736; --surface-2:#28214D; --ink:#F4F0FF; --muted:#B3A8DB; --line:#3A3166;
+  --accent:#A68BFF; --accent-2:#FF6AAE; --good:#33E0A1; --signal:#FF6B63; --warn:#FFC93D;
+  --c1:#A68BFF; --c2:#FF6AAE; --c3:#33E0A1; --c4:#FF9F55; --c5:#55C8FF;
+  --edge:#7B67D6; --shadow:#05030C; --dot:#2A2350; --marker:#7A4FE0; --sticker:#FFC93D; --sticker-ink:#17132B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#110D22; --surface:#1C1736; --surface-2:#28214D; --ink:#F4F0FF; --muted:#B3A8DB; --line:#3A3166;
+  --accent:#A68BFF; --accent-2:#FF6AAE; --good:#33E0A1; --signal:#FF6B63; --warn:#FFC93D;
+  --c1:#A68BFF; --c2:#FF6AAE; --c3:#33E0A1; --c4:#FF9F55; --c5:#55C8FF;
+  --edge:#7B67D6; --shadow:#05030C; --dot:#2A2350; --marker:#7A4FE0; --sticker:#FFC93D; --sticker-ink:#17132B; color-scheme:dark}
+
+body{background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.3px,transparent 1.5px);background-size:22px 22px;font-size:17.5px}
+h1{font-size:clamp(2rem,4.4vw,3.1rem);font-weight:800;letter-spacing:-.02em;line-height:1.08}
+h2{font-size:clamp(1.35rem,2.6vw,1.85rem);font-weight:700;letter-spacing:-.015em;line-height:1.2;
+   text-decoration:underline;text-decoration-color:var(--marker);text-decoration-thickness:.32em;text-underline-offset:-.12em;text-decoration-skip-ink:none}
+h3{font-family:var(--body);font-weight:600;font-size:1.12rem}
+.lead{color:var(--muted)}
+
+/* sticker labels */
+.eyebrow{display:inline-block;justify-self:start;width:fit-content;background:var(--sticker);color:var(--sticker-ink);border:2px solid var(--edge);border-radius:8px;padding:3px 10px 2px;font-weight:700;font-size:.72rem;letter-spacing:.06em;transform:rotate(-1.5deg);box-shadow:2px 2px 0 var(--shadow)}
+section.board:nth-of-type(even) .eyebrow{transform:rotate(1.2deg)}
+.card .tag{font-weight:700}
+
+/* hero squiggle */
+.hero h1::after,.hero-title h1::after{content:"";display:block;width:150px;height:16px;margin-top:12px;background:var(--accent-2);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 16'%3E%3Cpath d='M3 10c12-10 22 8 34 0s22-10 34 0 22 8 34 0 22-10 34 0' fill='none' stroke='black' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 16'%3E%3Cpath d='M3 10c12-10 22 8 34 0s22-10 34 0 22 8 34 0 22-10 34 0' fill='none' stroke='black' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
+
+/* chunky outlined surfaces */
+.card,.panel,.stat,.q,.check,.lab li,.tbl-wrap,.flowwrap,.tl button,.wk,.steps button{border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow)}
+.card,.panel{border-radius:var(--r)}
+.card.bad{border-color:var(--signal);box-shadow:4px 4px 0 var(--signal)}
+.card.good{border-color:var(--good);box-shadow:4px 4px 0 var(--good)}
+.stat{border-radius:12px}
+.stat .v{font-weight:700}
+.scene,.cv{border:2px solid var(--edge);box-shadow:6px 6px 0 var(--accent-2);border-radius:var(--r)}
+.scene{background:radial-gradient(120% 90% at 30% 20%,var(--surface) 0%,var(--surface-2) 100%)}
+.formula{border:2px dashed var(--accent);background:var(--surface)}
+.quote{border-left:5px solid var(--accent-2)}
+.caption{border-left:5px solid var(--accent-2)}
+table{background:var(--surface)}
+th{background:var(--accent);color:#FFFFFF;font-weight:700}
+.tbl-wrap{border-radius:12px}
+.tok{border:2px solid var(--edge)}
+.tok.on{background:var(--accent-2);border-color:var(--edge);color:#FFFFFF}
+
+/* buttons that feel pressable */
+.chip,.btn,.items button,.q .opts button{border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);font-weight:500;transition:transform .12s ease,box-shadow .12s ease,background .15s}
+.chip:hover,.btn:hover,.items button:hover,.q .opts button:hover{transform:translate(-1px,-1px) rotate(-1deg);box-shadow:4px 4px 0 var(--shadow);filter:none}
+.chip:active,.btn:active,.items button:active,.q .opts button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--shadow)}
+.chip[aria-pressed="true"],.chip[aria-selected="true"]{background:var(--accent-2);border-color:var(--edge);color:#FFFFFF}
+.btn{background:var(--accent);color:#FFFFFF;border-color:var(--edge)}
+.btn.ghost{background:var(--surface);color:var(--ink)}
+.steps button[aria-selected="true"],.wk[aria-pressed="true"],.tl button[aria-pressed="true"]{background:var(--marker);border-color:var(--edge);color:var(--sticker-ink)}
+.steps button[aria-selected="true"] .s,.tl button[aria-pressed="true"] .t{color:var(--sticker-ink)}
+.q.right{border-color:var(--good);box-shadow:4px 4px 0 var(--good)}
+.q.wrong{border-color:var(--signal);box-shadow:4px 4px 0 var(--signal)}
+.check:has(input:checked){box-shadow:4px 4px 0 var(--good)}
+
+/* bars and ladder */
+.bar{border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow);border-radius:12px}
+.ladder div{border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);border-radius:10px;color:#FFFFFF;font-weight:600}
+
+/* part dividers: outlined giant numbers */
+.part-break{border-top:3px dashed var(--edge)}
+.part-break .n{color:var(--surface);-webkit-text-stroke:3px var(--edge);text-shadow:7px 7px 0 var(--accent-2);font-weight:800;font-size:clamp(3.4rem,8vw,6rem)}
+.part-break:nth-of-type(2n) .n{text-shadow:7px 7px 0 var(--c3)}
+
+/* rail */
+.rail .ltitle{font-weight:800;font-size:1rem}
+.rail a{border-radius:999px;border:2px solid transparent;padding:4px 12px}
+.rail a:hover{background:var(--surface);border-color:var(--edge)}
+.rail a.on{background:var(--accent);color:#FFFFFF;border-color:var(--edge);box-shadow:2px 2px 0 var(--shadow)}
+.rail .part{color:var(--accent-2);font-weight:700}
+
+/* next block */
+.next{border:2px solid var(--edge);box-shadow:6px 6px 0 var(--accent-2);background:var(--accent);color:#FFFFFF}
+.next .eyebrow{color:var(--sticker-ink)}
+
+/* presentation controls */
+.present-btn{background:var(--accent-2);color:#FFFFFF;border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);font-weight:600}
+.present-btn:hover{transform:translate(-1px,-1px) rotate(-2deg)}
+.deck-bar{border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);opacity:.6}
+.deck-progress{height:5px;background:var(--accent-2)}
+html.presenting main > .part-break.is-current .n{font-size:9rem;-webkit-text-stroke:4px var(--edge);text-shadow:10px 10px 0 var(--accent-2)}
+html.presenting main > .part-break.is-current h2{font-size:3rem}
+
+@media (prefers-reduced-motion:reduce){.chip:hover,.btn:hover,.items button:hover,.q .opts button:hover,.present-btn:hover{transform:none}}
+html.presenting main{background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.3px,transparent 1.5px);background-size:22px 22px}
+
+.steps button{min-width:0}
+.steps button b{overflow-wrap:anywhere;hyphens:auto}
+@media (max-width:620px){.steps button b{font-size:.8rem!important}}
+
+/* ===== green palette variant: overrides the sticker-pop colours only ===== */
+:root{--bg:#EDF8F0; --surface:#FFFFFF; --surface-2:#DFF2E5; --ink:#10241A; --muted:#4C6656; --line:#C6E6CF; --accent:#0B8A4F; --accent-2:#8BD100; --good:#0B8A4F; --signal:#E5372B; --warn:#FFB703; --c1:#0B8A4F; --c2:#5FA800; --c3:#0F8C8C; --c4:#E8590C; --c5:#6A35FF; --edge:#10241A; --shadow:#10241A; --dot:#BCE0C6; --marker:#FFD54A; --sticker:#FFD54A; --sticker-ink:#10241A; --on-accent:#FFFFFF; --on-accent-2:#10241A;}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0A1912; --surface:#12271C; --surface-2:#1A3727; --ink:#ECFBF1; --muted:#9DC4AB; --line:#2A4D38; --accent:#3EDB8A; --accent-2:#B6F23C; --good:#3EDB8A; --signal:#FF6B63; --warn:#FFC93D; --c1:#3EDB8A; --c2:#B6F23C; --c3:#3FD4D4; --c4:#FF9F55; --c5:#A68BFF; --edge:#3E9E6A; --shadow:#020805; --dot:#173323; --marker:#2E8F55; --sticker:#FFC93D; --sticker-ink:#10241A; --on-accent:#0A1912; --on-accent-2:#0A1912; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0A1912; --surface:#12271C; --surface-2:#1A3727; --ink:#ECFBF1; --muted:#9DC4AB; --line:#2A4D38; --accent:#3EDB8A; --accent-2:#B6F23C; --good:#3EDB8A; --signal:#FF6B63; --warn:#FFC93D; --c1:#3EDB8A; --c2:#B6F23C; --c3:#3FD4D4; --c4:#FF9F55; --c5:#A68BFF; --edge:#3E9E6A; --shadow:#020805; --dot:#173323; --marker:#2E8F55; --sticker:#FFC93D; --sticker-ink:#10241A; --on-accent:#0A1912; --on-accent-2:#0A1912; color-scheme:dark}
+.bpg{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:4px;align-items:stretch}
+.bpg .v{border:2px solid var(--edge);border-radius:10px;background:var(--surface);padding:8px;font-family:var(--mono);display:grid;gap:4px;align-content:start;text-align:center}
+.bpg .v .n{font-size:.8rem;color:var(--muted)}.bpg .v b{font-size:1rem}
+.bpg .v .g{font-size:.78rem;color:var(--c4);border-top:1px dashed var(--line);padding-top:4px;min-height:2.4em}
+.bpg .o{display:grid;align-content:center;justify-items:center;gap:2px;font-family:var(--mono);font-size:.74rem;color:var(--muted);text-align:center}
+.bpg .o .op{font-size:.85rem;color:var(--ink);font-weight:600}.bpg .o .ar{font-size:1.1rem;color:var(--ink)}.bpg .o .sl{color:var(--c4);min-height:2.4em;font-size:.76rem}.bpg .o .sl b{font-size:.9rem}
+.bpg .hot{outline:3px solid var(--c4);outline-offset:1px}
+.bpw{font-family:var(--mono);font-size:.84rem;min-height:3.2em}
+.bprow{display:grid;gap:8px}
+@media (max-width:980px){.bpg{grid-template-columns:repeat(3,minmax(0,1fr))}.bpg .o{border:1px dashed var(--line);border-radius:8px;padding:4px}}
+.fest{transition:opacity .2s}.fest.dim{opacity:.35}
+.trcards .trc{font:inherit;text-align:left;color:inherit;cursor:pointer}
+.trcards .trc[aria-pressed="true"]{outline:3px solid var(--accent);outline-offset:2px}
+.trcards .trc p{color:var(--muted);margin:0}
+.trstage{border:2px solid var(--edge);border-radius:var(--r);background:var(--surface);padding:14px 16px;display:grid;gap:10px;min-height:250px;align-content:start}
+.trhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.trrow{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end;min-height:1.6em}
+.trtok{font-family:var(--mono);font-size:.9rem;border:2px solid var(--edge);border-radius:8px;padding:3px 8px;background:var(--surface);display:grid;gap:4px;justify-items:center;opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s}
+.trtok.on{opacity:1;transform:none}
+.trvec{display:grid;grid-template-columns:repeat(6,8px);gap:1px;opacity:0;transition:opacity .3s}.trvec.on{opacity:1}.trvec i{height:14px;border-radius:2px;background:var(--accent)}
+.trsent{font-size:1.05rem;color:var(--ink);transition:opacity .3s}
+.trsvg{width:100%;height:auto;display:block}
+.trnext{font-family:var(--mono);font-size:1.05rem;color:var(--ink)}
+.trnext .new{background:var(--marker);color:var(--sticker-ink);border-radius:4px;padding:0 4px}
+.trnext .slot{display:inline-block;min-width:3.5em;border-bottom:3px solid var(--accent);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{border-color:transparent}}
+.trbars{display:grid;gap:4px;font-family:var(--mono);font-size:.85rem;max-width:560px}
+.trbars .row{display:grid;grid-template-columns:8em minmax(0,1fr) 3.4em;gap:8px;align-items:center}
+.trbars .trk{height:16px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+.trbars .trk i{display:block;height:100%;width:0;background:var(--c3);transition:width .5s}
+.trbars .row.top .trk i{background:var(--c4)}
+/* class colours (purple filled = class +1/positive, grey hollow = class -1/negative); green/red are kept for good/bad and correct/wrong only */
+:root{--k1:#6A35FF;--k2:#7A8A80}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--k1:#B79BFF;--k2:#8FA597}}
+:root[data-theme="dark"]{--k1:#B79BFF;--k2:#8FA597}
+.btn,.rail a.on,div.next,div.next h3,div.next p,th{color:var(--on-accent)}
+.chip[aria-pressed="true"],.chip[aria-selected="true"],.tok.on,.present-btn{color:var(--on-accent-2)}
+</style>
+<style>
+/* ===== Lecture 1 additions: block schedule, AI checks, lab audit form (green tokens only) ===== */
+.blk{display:grid;grid-template-columns:4.6em repeat(5,minmax(0,1fr));gap:8px;align-items:stretch}
+.blk .dh{font-family:var(--mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;font-weight:700}
+.blk .wl{font-family:var(--mono);font-size:.78rem;font-weight:700;color:var(--accent);display:grid;align-content:center}
+.blk .cell{min-width:0;display:grid}
+.blk .lec{display:grid;gap:3px;align-content:start;text-align:left;border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);background:var(--surface);border-radius:12px;padding:8px 10px;cursor:pointer;font-size:.8rem;line-height:1.25;min-height:92px;transition:transform .12s ease,box-shadow .12s ease}
+.blk .lec:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--shadow)}
+.blk .lec b{font-family:var(--mono);font-size:.95rem;color:var(--accent)}
+.blk .lec .t{color:var(--ink)}
+.blk .lec .d{display:none;font-family:var(--mono);font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.blk .lec[aria-pressed="true"]{background:var(--marker);color:var(--sticker-ink)}
+.blk .lec[aria-pressed="true"] b,.blk .lec[aria-pressed="true"] .t,.blk .lec[aria-pressed="true"] .d{color:var(--sticker-ink)}
+.blk .ev{justify-self:start;font-family:var(--mono);font-size:.64rem;font-weight:700;letter-spacing:.03em;background:var(--sticker);color:var(--sticker-ink);border:1.5px solid var(--edge);border-radius:6px;padding:1px 6px;margin-top:2px}
+.blk .free{display:grid;place-items:center;text-align:center;border:2px dashed var(--line);border-radius:12px;padding:8px;font-size:.78rem;color:var(--muted);min-height:92px;background:color-mix(in srgb,var(--surface) 55%,transparent)}
+.blk .free .d{display:none}
+.aichk{font-size:.92rem;color:var(--ink)!important;border-top:2px dashed var(--line);padding-top:8px;margin-top:2px}
+.aichk b{display:block;font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--c3)}
+.labgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+.labgrid .claims{grid-template-columns:repeat(2,minmax(0,1fr))}
+html.presenting .labgrid{grid-template-columns:minmax(0,.8fr) minmax(0,1.5fr)}
+html.presenting .labgrid .claims{grid-template-columns:minmax(0,1fr)}
+.claims{display:grid;gap:8px;margin-top:8px}
+.claims button{display:grid;gap:2px;text-align:left;font:inherit;font-family:var(--body);font-size:.86rem;line-height:1.35;color:var(--ink);background:var(--surface);border:2px solid var(--edge);border-radius:10px;padding:7px 10px;cursor:pointer;box-shadow:2px 2px 0 var(--shadow)}
+.claims button:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--shadow)}
+.claims button[disabled]{opacity:.45;cursor:default;transform:none;box-shadow:none}
+.claims .hint{display:none;font-size:.78rem;color:var(--c3);font-family:var(--mono)}
+.claims.showhints .hint{display:block}
+table.audit{min-width:620px;font-size:.88rem}
+table.audit td{padding:8px;vertical-align:top}
+table.audit td:first-child{font-family:var(--mono);color:var(--muted);width:2.2em;padding-top:14px}
+table.audit textarea,table.audit select{width:100%;font:inherit;font-size:.86rem;color:var(--ink);background:var(--bg);border:2px solid var(--edge);border-radius:8px;padding:6px 8px;resize:vertical}
+table.audit textarea{min-height:3.6em}
+table.audit select{cursor:pointer;min-width:8.5em}
+table.audit td.claim{font-size:.95rem;line-height:1.45;color:var(--ink);padding-top:12px}
+table.audit .step{font-family:var(--mono);font-size:.72rem;color:var(--muted);white-space:nowrap}
+table.audit .vchips{display:flex;flex-wrap:nowrap;gap:6px;width:max-content;padding-right:4px}
+table.audit .vchips .chip{white-space:nowrap}
+table.audit .vchips .chip{font-size:.8rem;padding:4px 10px}
+table.audit tr[data-v="unk"] td{background:color-mix(in srgb,var(--c5) 12%,var(--surface))}
+table.audit tr[data-v="ok"] td{background:color-mix(in srgb,var(--good) 12%,var(--surface))}
+table.audit tr[data-v="part"] td{background:color-mix(in srgb,var(--warn) 16%,var(--surface))}
+table.audit tr[data-v="wrong"] td{background:color-mix(in srgb,var(--signal) 12%,var(--surface))}
+.pf{display:inline-flex;gap:6px;align-items:center;font-size:.88rem;cursor:pointer}
+.pf input{width:18px;height:18px;accent-color:var(--accent)}
+@media (max-width:980px){html.presenting .labgrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){.labgrid .claims{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){
+  .blk{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .blk .dh,.blk .corner{display:none}
+  .blk .wl{grid-column:1/-1;margin-top:6px}
+  .blk .lec .d,.blk .free .d{display:block}
+  .blk .lec,.blk .free{min-height:0}
+}
+/* fix: classification table headers stay readable when a column is highlighted (inherited from Ch1) */
+#clsBoard th.ci,#clsBoard th.cc{color:var(--on-accent)}
+#clsBoard[data-show="ind"] th.ci,#clsBoard[data-show="cls"] th.cc{color:var(--ink)}
+/* segmented bars: truncate labels in narrow segments */
+.bar button.seg span{overflow:hidden;text-overflow:ellipsis}
+/* "new this year" additions and replaced lines */
+.add{border:2px dashed var(--c3);border-radius:var(--r);padding:14px 16px;display:grid;gap:10px;background:color-mix(in srgb,var(--c3) 5%,transparent)}
+.add .addt{font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--c3)}
+.panel .add{margin-top:14px}
+.was del{color:var(--muted);text-decoration-thickness:1.5px}
+.repl{display:inline-block;font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.03em;color:var(--sticker-ink);background:var(--sticker);border:1.5px solid var(--edge);border-radius:6px;padding:0 6px;margin-top:2px}
+
+/* hero: data -> pattern -> knowledge (2D) */
+#aiHeroScene canvas{cursor:crosshair}
+#aiHeroScene .hint{top:8px;bottom:auto}
+.hero-rule{position:absolute;display:grid;gap:3px;background:var(--surface);border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow);border-radius:12px;padding:10px 14px;font-size:.95rem;line-height:1.35}
+.hero-rule .k{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.hero-rule b{color:var(--accent)}
+.hero-rule .n{font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+.hero-tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-family:var(--mono);font-size:.74rem;padding:4px 8px;border-radius:6px;white-space:nowrap}
+
+.hero-title .instructor{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin:0}
+.hero-title .instructor .k{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.hero-title .instructor .name{font-weight:600;font-size:1.05rem;color:var(--ink);border:2px var(--muted);border-radius:8px;padding:2px 10px}
+
+.title-board{padding-block:10vh 8vh}
+.hero-title{display:grid;justify-items:center;text-align:center;gap:20px;max-width:920px;margin:0 auto}
+.hero-title .eyebrow{justify-self:center}
+.hero-title h1{font-size:clamp(2.4rem,6.2vw,4.6rem)}
+.hero-title h1::after{margin-left:auto;margin-right:auto}
+.hero-title .lead{max-width:52ch}
+.hero-title .instructor{justify-content:center;margin-top:6px}
+
+/* ================= Lecture 2 components ================= */
+.qlist{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.dq{display:grid;gap:6px;align-content:start;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:2px solid var(--edge);border-radius:12px;padding:12px;cursor:pointer;box-shadow:3px 3px 0 var(--shadow)}
+.dq .n{font-family:var(--display);font-weight:800;font-size:1.6rem;color:var(--accent)}
+.dq b{font-size:.98rem;line-height:1.3}
+.dq .when{font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;color:var(--good)}
+.dq.later{background:var(--surface-2)}
+.dq.later .when{color:var(--muted)}
+.dq[aria-pressed="true"]{background:var(--marker);color:var(--sticker-ink)}
+.dq[aria-pressed="true"] .n,.dq[aria-pressed="true"] .when{color:var(--sticker-ink)}
+.qgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.sel{font:inherit;font-size:.9rem;border:2px solid var(--edge);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 10px;max-width:100%}
+.txt{font:inherit;font-size:.95rem;width:100%;border:2px solid var(--edge);background:var(--surface);color:var(--ink);border-radius:8px;padding:8px 10px}
+.lbl3.lq{color:var(--c4);font-weight:700;font-size:.82rem;z-index:3}
+.lbl3.ln{color:var(--c1);font-weight:600;z-index:2}
+ol.nn{margin:6px 0;padding-left:1.4em;font-family:var(--mono);font-size:.85rem;display:grid;gap:1px}
+table.pick th,table.pick td,table.pick tr{cursor:pointer}
+table tr.sub td{color:var(--muted);font-size:.8rem}
+.vecrow{display:grid;grid-template-columns:5.6em repeat(var(--n,10),minmax(0,1fr));gap:4px;align-items:center}
+.vecrow .nm{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.vecrow .hd{font-family:var(--mono);font-size:.66rem;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bit,.vecrow input{min-width:0;width:100%;font-family:var(--mono);font-size:.95rem;text-align:center;border:2px solid var(--edge);background:var(--surface);color:var(--ink);border-radius:6px;padding:6px 0;cursor:pointer}
+.vecrow input{cursor:text;-moz-appearance:textfield;appearance:textfield}
+.vecrow input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.bit.on{background:var(--accent);color:#FFFFFF}
+.bit.zz{background:var(--surface-2);color:var(--muted)}
+.mcell{font-family:var(--mono);font-size:.66rem;text-align:center;border-radius:4px;padding:3px 0}
+.m11{background:color-mix(in srgb,var(--good) 28%,var(--surface))}
+.m00{background:var(--surface-2);color:var(--muted)}
+.m10,.m01{background:color-mix(in srgb,var(--signal) 20%,var(--surface))}
+.bag{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-family:var(--mono);font-size:.95rem}
+.bag span{border:2px solid var(--edge);background:var(--surface);border-radius:999px;padding:3px 10px}
+.bag span.br{border:none;background:none;padding:0;font-size:1.4rem;color:var(--muted)}
+.bag span b{color:var(--accent)}
+.words{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;min-height:4.6em}
+.wd{display:grid;gap:4px;justify-items:center}
+.wd b{font-size:1.5rem;font-weight:600;border-bottom:3px solid transparent;padding:0 2px}
+.wd.ch b{color:var(--c4);border-color:var(--c4)}
+.wd i{font-style:normal;font-family:var(--mono);font-size:.7rem;color:var(--muted);max-width:9em;text-align:center}
+.seq{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-family:var(--mono);font-size:.85rem;margin:6px 0}
+.seq span{border:2px solid var(--c1);border-radius:6px;padding:3px 8px}
+svg.traj{width:100%;height:auto;display:block}
+#tmSvg,#weSvg,#prMini{width:100%;height:auto;display:block;overflow:hidden}
+#coWork,#prWork,#euWork,#mWork{overflow-wrap:anywhere}
+#weSvg{max-width:360px;justify-self:center}
+.fig{margin:0;display:grid;gap:6px;justify-items:center}
+.fig img{width:100%;height:auto;max-height:52vh;object-fit:contain;background:#FFFFFF;border:2px solid var(--edge);border-radius:12px;box-shadow:4px 4px 0 var(--shadow)}
+.fig figcaption{font-weight:600;font-size:.95rem}
+.mats{display:grid;grid-template-columns:minmax(0,.7fr) repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+svg.venn{width:min(320px,100%);height:auto;justify-self:center;display:block}
+.pair{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:1rem}
+.pair .mono{background:var(--surface);border:2px solid var(--edge);border-radius:8px;padding:6px 10px}
+.pair .vs{font-family:var(--mono);color:var(--muted)}
+.ladder5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.ladder5 button{display:grid;gap:2px;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:2px solid var(--edge);border-radius:10px;padding:10px 12px;cursor:pointer;box-shadow:3px 3px 0 var(--shadow);min-width:0}
+.ladder5 button .s{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.ladder5 button b{overflow-wrap:anywhere}
+.ladder5 button[aria-selected="true"]{background:var(--marker);color:var(--sticker-ink)}
+.strip-row{display:grid;grid-template-columns:6.5em minmax(0,1fr);gap:4px 10px;align-items:center}
+.strip-row .note{grid-column:2}
+canvas.strip{width:100%;height:46px;display:block;border-radius:6px}
+.res{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.res li{display:grid;grid-template-columns:minmax(0,1fr) 3.4em;gap:8px;align-items:center;border:2px solid var(--edge);background:var(--surface);border-radius:8px;padding:7px 10px;font-size:.9rem;position:relative;overflow:hidden}
+.res li i{position:absolute;left:0;bottom:0;height:4px;background:var(--accent)}
+.res li .sc{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.res li.zero{color:var(--muted)}
+.hitrow{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:start;cursor:pointer}
+.hitrow input{width:17px;height:17px;margin-top:2px;accent-color:var(--good)}
+.stepper{display:inline-flex;align-items:center;gap:8px}
+.stepper button{width:28px;height:28px;border:2px solid var(--edge);border-radius:8px;background:var(--surface);color:var(--ink);font:600 1rem var(--body);cursor:pointer;box-shadow:2px 2px 0 var(--shadow)}
+.stepper b{min-width:1.2em;text-align:center}
+#cvBias{aspect-ratio:4/3}
+table th.hl{background:var(--marker);color:var(--sticker-ink)}
+#topSl input{width:100%}
+#topSl>div{min-width:0}
+#dense .side{min-width:0}
+#dense .sel{width:100%;min-width:0}
+.prmini{display:grid;gap:4px;justify-items:center;align-content:start}
+#prMini{max-width:320px}
+#spScene .lbl3{font-size:.64rem;opacity:.65}
+#spScene .lbl3.lq,#spScene .lbl3.ln{opacity:1}
+.tfgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px;align-items:start}
+#cvLr{aspect-ratio:3/2}
+.lab li .mono{font-family:var(--mono)}
+@media (max-width:900px){
+  .qlist{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ladder5{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:620px){
+  .qlist,.qgrid,.mats{grid-template-columns:minmax(0,1fr)}
+  .vecrow{grid-template-columns:3.6em repeat(var(--n,10),minmax(0,1fr));gap:2px}
+  .bit,.vecrow input{font-size:.78rem;padding:5px 0;border-width:1px}
+  .wd b{font-size:1.15rem}
+  .strip-row{grid-template-columns:minmax(0,1fr)}
+  .strip-row .note{grid-column:1}
+  .stats[style]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .tfgrid{grid-template-columns:minmax(0,1fr)}
+}
+
+/* ================= Lecture 6 components ================= */
+math{font-size:1.08em}
+.fx{font-family:var(--mono);font-size:.92rem;background:var(--surface-2);border-radius:8px;padding:12px 16px;overflow-x:auto;line-height:1.7}
+.fx math{font-size:1.12rem}
+.cv.wide{aspect-ratio:2/1}.cv.slim{aspect-ratio:3/1}.cv.tall{aspect-ratio:4/3}
+.ctrl{display:grid;gap:2px}
+table.compact{min-width:0;font-size:.84rem}
+table.compact th,table.compact td{padding:5px 8px;text-align:center}
+table.compact td:first-child{font-weight:400}
+table.compact td.on{background:color-mix(in srgb,var(--accent) 16%,var(--surface));font-weight:600}
+table.compact tr.sum td{background:var(--surface-2);font-weight:600}
+table.compact tr.win td{background:color-mix(in srgb,var(--good) 14%,var(--surface))}
+td.pos{color:var(--c4)} td.neg{color:var(--c1)}
+.selg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.selg.s3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.selg label{display:grid;gap:4px;font-family:var(--mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.selg select,.selg input{font:inherit;font-size:.9rem;letter-spacing:0;text-transform:none;color:var(--ink);background:var(--surface);border:2px solid var(--edge);border-radius:8px;padding:5px 8px;width:100%;min-width:0}
+.selg.kv label{text-transform:none;font-size:.85rem;letter-spacing:0}
+.calc{font-family:var(--mono);font-size:.84rem;display:grid;gap:4px;color:var(--muted)}
+.calc b{color:var(--ink);font-weight:500}
+.calc .tot{border-top:1px solid var(--line);padding-top:6px;margin-top:2px;color:var(--ink)}
+#nbOut .calc{font-size:.74rem}
+#nbOut .card{padding:12px}
+.card.win{border-color:var(--good);box-shadow:inset 0 0 0 1px var(--good),4px 4px 0 var(--shadow)}
+.bseq{display:flex;gap:4px;flex-wrap:wrap}
+.bseq span{font-family:var(--mono);font-size:.82rem;min-width:2.1em;text-align:center;border:1px solid var(--line);border-radius:5px;padding:3px 4px;background:var(--surface)}
+.bseq span.hl{background:var(--c4);border-color:var(--c4);color:#fff}
+.bseq span.cnt{border:none;background:none;color:var(--muted)}
+.seqrow{display:grid;grid-template-columns:7.5em minmax(0,1fr);gap:10px;align-items:center}
+.seqrow .k{font-family:var(--mono);font-size:.74rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.stat .k i{text-transform:none;font-style:normal}
+.key-sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:0}
+.scene .legend{position:absolute;left:12px;top:10px;font-family:var(--mono);font-size:.72rem;color:var(--muted);display:grid;gap:2px;pointer-events:none}
+.wf{display:grid;gap:6px;font-family:var(--mono);font-size:.82rem}
+.wf .row{display:grid;grid-template-columns:9.5em minmax(0,1fr) 4.6em;gap:8px;align-items:center}
+.wf .trk{position:relative;height:22px;background:var(--surface-2);border-radius:4px}
+.wf .trk i{position:absolute;top:2px;bottom:2px;border-radius:3px}
+.wf .trk b{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink)}
+.wf .v{text-align:right;font-variant-numeric:tabular-nums}
+.wf .row.tot .trk i{background:var(--ink)!important;opacity:.75}
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.prompt{font-family:var(--mono);font-size:.8rem;line-height:1.5;white-space:pre-wrap;background:var(--surface-2);border:2px dashed var(--line);border-radius:10px;padding:10px 14px;color:var(--ink)}
+.illus{display:inline-block;justify-self:start;align-self:start;font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--signal);border:1.5px solid var(--signal);border-radius:4px;padding:1px 6px;margin-bottom:6px}
+.bench td.best{font-weight:700;color:var(--good)}
+table.bench{min-width:560px;font-size:.86rem}
+table.bench td,table.bench th{padding:6px 9px;text-align:right}
+table.bench td:first-child,table.bench th:first-child{text-align:left}
+#check .q .opts{display:flex;flex-wrap:wrap;gap:6px}
+@media (max-width:620px){.selg,.selg.s3{grid-template-columns:repeat(2,minmax(0,1fr))}.pair{grid-template-columns:minmax(0,1fr)}.wf .row{grid-template-columns:7em minmax(0,1fr) 4em}}
+.netsvg{width:100%;height:auto;display:block}
+.netsvg text{font-family:var(--mono);font-size:13px;fill:var(--ink)}
+.netsvg .ln{stroke:var(--muted);stroke-width:1.5;fill:none}
+.netsvg .nd{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.netsvg .nd.in{fill:color-mix(in srgb,var(--c1) 22%,var(--surface))}
+.netsvg .nd.hid{fill:color-mix(in srgb,var(--c3) 22%,var(--surface))}
+.netsvg .nd.out{fill:color-mix(in srgb,var(--c4) 26%,var(--surface))}
+.netsvg .lbl{fill:var(--muted);font-size:12px}
+.chain{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;align-items:stretch}
+.chain>div{border:2px solid var(--edge);border-radius:10px;background:var(--surface);padding:8px 8px;font-family:var(--mono);font-size:.78rem;display:grid;gap:3px;align-content:start}
+.chain>div b{font-size:.95rem}
+.chain .k{color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em}
+.chain .g{color:var(--c4)}
+.toks{display:flex;flex-wrap:wrap;gap:6px}
+.toks button{font:inherit;font-family:var(--mono);font-size:.9rem;border:2px solid var(--edge);border-radius:8px;background:var(--surface);color:var(--ink);padding:5px 9px;cursor:pointer;position:relative}
+.toks button[aria-pressed="true"]{background:var(--c3);color:#fff}
+.toks .w{display:block;font-size:.68rem;color:var(--muted)}
+.attbars{display:grid;gap:4px;font-family:var(--mono);font-size:.8rem}
+.attbars .row{display:grid;grid-template-columns:7em minmax(0,1fr) 3.4em;gap:8px;align-items:center}
+.attbars .trk{height:16px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+.attbars .trk i{display:block;height:100%;background:var(--c3)}
+.costin{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px}
+.costin label{display:grid;gap:3px;font-size:.76rem;color:var(--muted);font-family:var(--mono)}
+.costin input{font:inherit;font-family:var(--mono);font-size:.88rem;color:var(--ink);background:var(--surface);border:2px solid var(--edge);border-radius:8px;padding:4px 8px;width:100%;min-width:0}
+table.rel{min-width:0;font-size:.76rem}
+#reliable .grid2{grid-template-columns:minmax(0,1.45fr) minmax(0,1fr)}
+@media (max-width:620px){#reliable .grid2{grid-template-columns:minmax(0,1fr)}}
+table.rel td,table.rel th{padding:4px 7px;text-align:center}
+table.rel td:nth-child(2){text-align:left}
+table.rel td.x{background:color-mix(in srgb,var(--signal) 18%,var(--surface));font-weight:700}
+table.rel td.d{outline:2px dashed var(--c3);outline-offset:-3px}
+.cv.half{aspect-ratio:4/3}
+.actv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.actv canvas{width:100%;aspect-ratio:3/2;display:block;border:2px solid var(--edge);border-radius:8px;background:var(--surface)}
+@media (max-width:620px){.chain{grid-template-columns:repeat(2,minmax(0,1fr))}.costin{grid-template-columns:repeat(2,minmax(0,1fr))}.actv{grid-template-columns:minmax(0,1fr)}}
+</style>
+
+<div class="page">
+<nav class="rail" aria-label="Lecture sections">
+  <div class="course">COMP7103 Data Mining</div>
+  <div class="ltitle">Lecture 6 · Neural and foundation models for mining</div>
+  <ol id="toc"></ol>
+  <p class="keys">Press <kbd>←</kbd> <kbd>→</kbd> to step through boards while lecturing.</p>
+</nav>
+
+<main>
+<!-- ============ OPENING ============ -->
+<!-- source: title board in the style of Lectures 1-5 -->
+<section class="board title-board" id="opening" data-part="Opening" data-nav="Title">
+  <div class="hero-title">
+    <span class="eyebrow">COMP7103B Data Mining · Lecture 6</span>
+    <h1>Neural and Foundation <br/> Models for Mining</h1>
+    <p class="lead">How a neural network learns, what a pretrained foundation model is, <br/> and how to choose between prompting, embeddings and fine-tuning.</p>
+    <p class="instructor"><span class="name">Prof. Bo Dai</span></p>
+    <p class="instructor"><span class="name">School of Computing and Data Science, The University of Hong Kong</span></p>
+  </div>
+</section>
+
+<!-- source: new (session format, same as Lectures 1-5) -->
+<section class="board" id="plan" data-part="Opening" data-nav="Today's plan">
+  <span class="eyebrow">One 2.5-hour session</span>
+  <h2>Today's Plan</h2>
+  <p class="lead">Every lecture in the block has the same shape. Click a part of the bar.</p>
+  <div class="bar" id="planBar">
+    <button class="seg" style="flex-basis:43.3%;background:var(--c1)" aria-pressed="true"><b>~65 min</b><span>Classical core</span></button>
+    <button class="seg" style="flex-basis:20%;background:var(--c3)" aria-pressed="false"><b>~30 min</b><span>AI layer</span></button>
+    <button class="seg" style="flex-basis:6.7%;background:var(--muted);padding:0 5px" aria-pressed="false"><b>10</b><span>Break</span></button>
+    <button class="seg" style="flex-basis:30%;background:var(--c4)" aria-pressed="false"><b>~45 min</b><span>Lab</span></button>
+  </div>
+  <div class="panel" id="planDetail"></div>
+  <div class="grid3">
+    <a class="card" href="#neuron" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c1)">Part 1</span><h3>From logistic regression to the MLP</h3><p>The perceptron, hidden layers, activations, the boundaries an MLP can draw.</p></a>
+    <a class="card" href="#gd" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c2)">Part 2</span><h3>Training</h3><p>Loss, gradient descent, backpropagation, and overfitting controls.</p></a>
+    <a class="card" href="#features" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c3)">Part 3</span><h3>Representations and foundation models</h3><p>Learned features, the embedding layer, pretraining, transformers.</p></a>
+    <a class="card" href="#routes" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c4)">Part 4</span><h3>Three ways to use a foundation model</h3><p>Prompting, embeddings plus a classifier, fine-tuning; TabPFN.</p></a>
+    <a class="card" href="#cost" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c5)">Part 5 · AI layer</span><h3>Choosing a method</h3><p>Cost, speed, privacy and reliability of LLM classifiers.</p></a>
+    <a class="card" href="#labbrief" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c4)">Part 6 · Lab</span><h3>Detect complaints three ways</h3><p>TF-IDF, embeddings and an LLM on 300 labelled reviews.</p></a>
+  </div>
+  <p class="note">Thursday: the midterm, in the first 60 minutes of Lecture 7. Closed-book, covering Lectures 1–6.</p>
+</section>
+
+<!-- ============ PART 1 ============ -->
+<div class="part-break"><span class="n">01</span><span class="eyebrow">Part 1</span><h2>From Logistic Regression to the Multilayer Perceptron</h2></div>
+
+<!-- source: new (spec: LR -> perceptron -> MLP); links to Lecture 5 logistic regression -->
+<section class="board" id="neuron" data-part="Part 1 · From LR to the MLP" data-nav="One neuron">
+  <span class="eyebrow">Recall Lecture 5</span>
+  <h2>Logistic Regression Is One Neuron</h2>
+  <p class="lead">A neuron takes a weighted sum of its inputs, adds a bias, and passes the result through an <b>activation function</b>. With the sigmoid as the activation, this is exactly the logistic regression of Lecture 5.</p>
+  <div class="grid2">
+    <div class="card">
+      <svg class="netsvg" viewBox="0 0 460 220" role="img" aria-label="One neuron: three inputs with weights, a sum with bias, a sigmoid, output p">
+        <g class="ln"><line x1="70" y1="40" x2="230" y2="110"/><line x1="70" y1="110" x2="230" y2="110"/><line x1="70" y1="180" x2="230" y2="110"/><line x1="270" y1="110" x2="330" y2="110"/><line x1="370" y1="110" x2="420" y2="110"/></g>
+        <circle class="nd in" cx="50" cy="40" r="20"/><circle class="nd in" cx="50" cy="110" r="20"/><circle class="nd in" cx="50" cy="180" r="20"/>
+        <text x="40" y="45">x₁</text><text x="40" y="115">x₂</text><text x="40" y="185">x₃</text>
+        <text class="lbl" x="130" y="62">w₁</text><text class="lbl" x="135" y="104">w₂</text><text class="lbl" x="130" y="160">w₃</text>
+        <circle class="nd hid" cx="250" cy="110" r="22"/><text x="243" y="116">Σ</text><text class="lbl" x="228" y="150">+ b</text>
+        <rect class="nd out" x="330" y="88" width="40" height="44" rx="8"/><text x="343" y="116">σ</text>
+        <text x="425" y="116">p</text>
+      </svg>
+    </div>
+    <div class="side">
+      <div class="fx"><math display="block"><mrow><mi>z</mi><mo>=</mo><msub><mi>w</mi><mn>1</mn></msub><msub><mi>x</mi><mn>1</mn></msub><mo>+</mo><msub><mi>w</mi><mn>2</mn></msub><msub><mi>x</mi><mn>2</mn></msub><mo>+</mo><msub><mi>w</mi><mn>3</mn></msub><msub><mi>x</mi><mn>3</mn></msub><mo>+</mo><mi>b</mi><mspace width="20px"/><mi>p</mi><mo>=</mo><mi>σ</mi><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>+</mo><msup><mi>e</mi><mrow><mo>−</mo><mi>z</mi></mrow></msup></mrow></mfrac></mrow></math></div>
+      <div class="card"><span class="tag" style="color:var(--c1)">Same as Lecture 5</span><p>z is the log-odds l = β<sub>0</sub> + β<sub>1</sub>x. The weights are the β's and the bias is β<sub>0</sub>. The boundary p = 0.5 is the straight line z = 0.</p></div>
+      <div class="card"><span class="tag" style="color:var(--c2)">What changes next</span><p>Swap the activation, connect many neurons in layers, and learn all the weights at once.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: new (spec: the perceptron; Tan ch. 4 ANN section) -->
+<section class="board" id="perceptron" data-part="Part 1 · From LR to the MLP" data-nav="The perceptron">
+  <span class="eyebrow">The perceptron · step through</span>
+  <h2>The Perceptron</h2>
+  <p class="lead">The perceptron is one neuron with a sign activation: ŷ = sign(w·x + b), with labels +1 (<b style="color:var(--k1)">●</b>) and −1 (<b style="color:var(--k2)">○</b>). It learns one record at a time: when it gets a record wrong, it moves the weights toward the right answer.</p>
+  <div class="play">
+    <canvas class="cv" id="cvPer" aria-label="Perceptron learning on two datasets"></canvas>
+    <div class="side">
+      <div class="tabs" id="perData"><button class="chip" data-d="sep" aria-pressed="true">Linearly separable</button><button class="chip" data-d="xor" aria-pressed="false">XOR</button></div>
+      <div class="fx"><math display="block"><mrow><mi>w</mi><mo>←</mo><mi>w</mi><mo>+</mo><mi>λ</mi><mo stretchy="false">(</mo><msub><mi>y</mi><mi>i</mi></msub><mo>−</mo><msub><mover><mi>y</mi><mo>^</mo></mover><mi>i</mi></msub><mo stretchy="false">)</mo><msub><mi>x</mi><mi>i</mi></msub></mrow></math></div>
+      <div class="stats"><div class="stat"><div class="k">Epochs</div><div class="v" id="perE">0</div></div><div class="stat"><div class="k">Misclassified</div><div class="v" id="perM">–</div></div></div>
+      <div class="btnrow"><button class="btn" id="perStep">One epoch</button><button class="btn" id="perRun">Run 20 epochs</button><button class="btn ghost" id="perReset">Reset</button></div>
+      <p class="note" id="perNote"></p>
+    </div>
+  </div>
+</section>
+
+<!-- source: new (spec: hidden layers, non-linear activations) -->
+<section class="board" id="mlp" data-part="Part 1 · From LR to the MLP" data-nav="Multilayer perceptron">
+  <span class="eyebrow">Multilayer perceptron (MLP)</span>
+  <h2>Hidden Layers and Activations</h2>
+  <div class="grid2">
+    <div class="card">
+      <svg class="netsvg" viewBox="0 0 460 230" role="img" aria-label="An MLP with 2 inputs, two hidden layers of 4 neurons, and 1 output">
+        <g class="ln" id="mlpLines"></g><g id="mlpNodes"></g>
+        <text class="lbl" x="22" y="224">input</text><text class="lbl" x="140" y="224">hidden 1</text><text class="lbl" x="268" y="224">hidden 2</text><text class="lbl" x="392" y="224">output</text>
+      </svg>
+      <p class="note">2 inputs → 4 → 4 → 1 output: (2×4 + 4) + (4×4 + 4) + (4×1 + 1) = 37 weights and biases to learn.</p>
+    </div>
+    <div class="side">
+      <ul class="clean lead"><li><b>Input layer</b>: one node per attribute.</li><li><b>Hidden layers</b>: each neuron takes all outputs of the layer before, weighs them, adds a bias, applies an activation.</li><li><b>Output layer</b>: a sigmoid neuron gives p for two classes.</li></ul>
+      <div class="panel"><h3>Why the activation must be non-linear</h3><p style="margin-top:6px">Without it, a stack of layers is a product of linear maps, which is again one linear map: the boundary stays a straight line. A non-linear activation lets each layer bend the space.</p></div>
+    </div>
+  </div>
+  <div class="actv"><div><canvas id="actSig" aria-label="Sigmoid"></canvas><p class="note"><b>Sigmoid</b> σ(z) = 1/(1 + e<sup>−z</sup>): output in (0, 1).</p></div><div><canvas id="actTanh" aria-label="Tanh"></canvas><p class="note"><b>tanh</b>(z): output in (−1, 1).</p></div><div><canvas id="actRelu" aria-label="ReLU"></canvas><p class="note"><b>ReLU</b>(z) = max(0, z): cheap, the usual default.</p></div></div>
+</section>
+
+<!-- source: new (spec demo: MLP playground) -->
+<section class="board" id="playground" data-part="Part 1 · From LR to the MLP" data-nav="MLP playground">
+  <span class="eyebrow">MLP playground · try it</span>
+  <h2>MLP Playground</h2>
+  <div class="play">
+    <canvas class="cv" id="cvPg" aria-label="MLP decision boundary on 2D data, trained live"></canvas>
+    <div class="side">
+      <div class="tabs" id="pgData"><button class="chip" data-d="circles" aria-pressed="true">Circles</button><button class="chip" data-d="xor" aria-pressed="false">XOR</button><button class="chip" data-d="moons" aria-pressed="false">Moons</button><button class="chip" data-d="spiral" aria-pressed="false">Spiral</button></div>
+      <div class="ctrl"><label for="pgL" class="note">Hidden layers = <b id="pgLv">1</b></label><input type="range" id="pgL" min="0" max="3" value="1"></div>
+      <div class="ctrl"><label for="pgN" class="note">Neurons per hidden layer = <b id="pgNv">4</b></label><input type="range" id="pgN" min="1" max="8" value="4"></div>
+      <div class="tabs" id="pgAct"><button class="chip" data-a="tanh" aria-pressed="true">tanh</button><button class="chip" data-a="relu" aria-pressed="false">ReLU</button></div>
+      <div class="stats"><div class="stat"><div class="k">Epoch</div><div class="v" id="pgE">0</div></div><div class="stat"><div class="k">Training loss</div><div class="v" id="pgLoss">–</div></div><div class="stat"><div class="k">Train acc.</div><div class="v" id="pgTr">–</div></div><div class="stat"><div class="k">Test acc.</div><div class="v" id="pgTe">–</div></div></div>
+      <div class="btnrow"><button class="btn" id="pgGo">Train</button><button class="btn ghost" id="pgReset">Reset</button></div>
+      <p class="note" id="pgArch"></p>
+    </div>
+  </div>
+  <p class="note"><b style="color:var(--k1)">●</b> / <b style="color:var(--k2)">○</b>: the two classes; the shading shows the class the network predicts at each point. 200 records per dataset: 150 for training (shown) and 50 for testing (hidden). Full-batch gradient descent with the Adam step rule, computed in your browser. With 0 hidden layers the network is logistic regression.</p>
+</section>
+
+<!-- ============ PART 2 ============ -->
+<div class="part-break"><span class="n">02</span><span class="eyebrow">Part 2</span><h2>Training</h2></div>
+
+<!-- source: new (spec: loss functions, gradient descent) -->
+<section class="board" id="gd" data-part="Part 2 · Training" data-nav="Loss and gradient descent">
+  <span class="eyebrow">Gradient descent · step through</span>
+  <h2>Loss and Gradient Descent</h2>
+  <p class="lead">Training means choosing the weights that make a <b>loss</b> small. For a probability output, the usual loss is the cross-entropy, the negative log-likelihood of Lecture 5. <b>Gradient descent</b> repeatedly takes a step downhill: w ← w − η · dL/dw.</p>
+  <div class="play">
+    <canvas class="cv" id="cvGd" aria-label="Loss curve of a one-weight model with gradient descent steps"></canvas>
+    <div class="side">
+      <div class="fx"><math display="block"><mrow><mi>L</mi><mo stretchy="false">(</mo><mi>w</mi><mo stretchy="false">)</mo><mo>=</mo><mo>−</mo><mfrac><mn>1</mn><mi>n</mi></mfrac><munder><mo>∑</mo><mi>i</mi></munder><mo stretchy="false">[</mo><msub><mi>y</mi><mi>i</mi></msub><mi>ln</mi><msub><mi>p</mi><mi>i</mi></msub><mo>+</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><msub><mi>y</mi><mi>i</mi></msub><mo stretchy="false">)</mo><mi>ln</mi><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><msub><mi>p</mi><mi>i</mi></msub><mo stretchy="false">)</mo><mo stretchy="false">]</mo></mrow></math></div>
+      <div class="ctrl"><label for="gdEta" class="note">Learning rate η = <b id="gdEtaV">2</b></label><input type="range" id="gdEta" min="0" max="5" step="1" value="2"></div>
+      <div class="stats"><div class="stat"><div class="k">Step</div><div class="v" id="gdS">0</div></div><div class="stat"><div class="k">w</div><div class="v" id="gdW">–</div></div><div class="stat"><div class="k">L(w)</div><div class="v" id="gdL">–</div></div><div class="stat"><div class="k">dL/dw</div><div class="v" id="gdG">–</div></div></div>
+      <div class="btnrow"><button class="btn" id="gdStep">One step</button><button class="btn" id="gdRun">Run 15 steps</button><button class="btn ghost" id="gdReset">Reset</button></div>
+      <p class="note" id="gdNote"></p>
+    </div>
+  </div>
+  <p class="note">The model has one weight: p = σ(w·x), on 30 simulated records. A network has thousands or billions of weights, but each training step is the same idea.</p>
+</section>
+
+<!-- source: new (spec: backpropagation as the chain rule, intuition only) -->
+<section class="board" id="backprop" data-part="Part 2 · Training" data-nav="Backpropagation">
+  <span class="eyebrow">Backpropagation · step through</span>
+  <h2>Backpropagation Is the Chain Rule</h2>
+  <p class="lead">Gradient descent needs, for every weight, how much the loss L changes when that weight changes a little: ∂L/∂w. The <b>chain rule</b>: multiply the slopes of the small steps between the weight and the loss. <b>Backpropagation</b> computes these products from the loss backwards, reusing each one.</p>
+  <div class="card bpidea"><span class="tag" style="color:var(--c3)">The chain rule in one line</span><p style="color:var(--ink)">If L changes 3 times as fast as ŷ, and ŷ changes 0.25 times as fast as z, then L changes 3 × 0.25 = 0.75 times as fast as z.</p></div>
+  <div class="selg">
+    <label>Input x<input type="number" id="bpX" value="1" step=".5"></label>
+    <label>Target y<input type="number" id="bpY" value="1" step="1" min="0" max="1"></label>
+    <label>Weight w₁<input type="number" id="bpW1" value="0.5" step=".1"></label>
+    <label>Weight w₂<input type="number" id="bpW2" value="-0.4" step=".1"></label>
+  </div>
+  <div class="bpg" id="bpG" aria-label="A two-weight network as a chain of small steps"></div>
+  <div class="grid2"><div class="card bpw" id="bpW2c"></div><div class="card bpw" id="bpW1c"></div></div>
+  <div class="bprow"><div class="btnrow"><button class="btn" id="bpF">1 · Forward pass</button><button class="btn" id="bpB">2 · Backward: next step</button><button class="btn" id="bpU">3 · Update the weights</button><button class="btn ghost" id="bpR">Reset</button></div><p class="note" id="bpNote" style="margin:0"></p></div>
+</section>
+
+<!-- source: new (spec: overfitting again: early stopping, dropout, validation sets) -->
+<section class="board" id="overfit" data-part="Part 2 · Training" data-nav="Overfitting controls">
+  <span class="eyebrow">Overfitting again · try it</span>
+  <h2>Early Stopping, Dropout and Validation Sets</h2>
+  <div class="play">
+    <canvas class="cv" id="cvOf" aria-label="Training and validation loss over epochs"></canvas>
+    <div class="side">
+      <p class="note">A large network (2 → 32 → 32 → 1, ReLU) on only 40 noisy training records. A separate <b>validation set</b> of 400 records shows when the network starts to memorise noise.</p>
+      <div class="tabs" id="ofDrop"><button class="chip" data-p="0" aria-pressed="true">No dropout</button><button class="chip" data-p="0.5" aria-pressed="false">Dropout 0.5</button></div>
+      <div class="stats"><div class="stat"><div class="k">Best epoch</div><div class="v" id="ofBest">–</div></div><div class="stat"><div class="k">Val. acc. at best</div><div class="v" id="ofA1">–</div></div><div class="stat"><div class="k">Val. loss: best · end</div><div class="v" id="ofL">–</div></div><div class="stat"><div class="k">Val. acc. at end</div><div class="v" id="ofA2">–</div></div></div>
+      <div class="btnrow"><button class="btn" id="ofGo">Train 1,500 epochs</button></div>
+      <p class="note" id="ofNote"></p>
+    </div>
+  </div>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">Validation set</span><p>Held out from training, used to choose when to stop and which settings to keep. The test set stays untouched until the end.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Early stopping</span><p>Keep the weights from the epoch with the lowest validation loss, as with pre-pruning a tree (Lecture 4).</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Dropout</span><p>During training, switch off each hidden neuron at random with probability p, so no neuron can rely on a few others. All neurons are used at prediction time.</p></div>
+  </div>
+</section>
+
+<!-- ============ PART 3 ============ -->
+<div class="part-break"><span class="n">03</span><span class="eyebrow">Part 3</span><h2>Representations and Foundation Models</h2></div>
+
+<!-- source: new (spec: representation learning, hidden layers as learned features); links to Lecture 5 kernel trick -->
+<section class="board" id="features" data-part="Part 3 · Representations and foundation models" data-nav="Hidden layers as features">
+  <span class="eyebrow">Representation learning · move the slider</span>
+  <h2>Hidden Layers Are Learned Features</h2>
+  <p class="lead">In Lecture 5 we lifted ring data with a mapping chosen by hand. A network learns its own mapping: each hidden neuron computes one new <b>feature</b> from the outputs of the layer below, so each hidden layer gives every record a new set of features. This network (2 inputs → 6 → 2 → output) ends with a hidden layer of two neurons; their outputs, h<sub>1</sub> and h<sub>2</sub>, are two learned features of every record, so we can plot each record again at (h<sub>1</sub>, h<sub>2</sub>).</p>
+  <div class="play">
+    <canvas class="cv half" id="cvFe" aria-label="Records moving from the input space to the hidden-layer space"></canvas>
+    <div class="side">
+      <div class="ctrl"><label for="feT" class="note">Input space ← <b id="feTv"></b> → hidden space</label><input type="range" id="feT" min="0" max="100" value="0"></div>
+      <div class="btnrow"><button class="btn" id="fePlay">Move the records</button><button class="btn ghost" id="feAgain">Train again</button></div>
+      <div class="card fest" id="feS0"><span class="tag" style="color:var(--c1)">Input space (x<sub>1</sub>, x<sub>2</sub>)</span><p style="color:var(--ink)">The <b style="color:var(--k1)">●</b> class is a disc inside a ring of <b style="color:var(--k2)">○</b>. No straight line separates them.</p></div>
+      <div class="card fest" id="feS1"><span class="tag" style="color:var(--c3)">Hidden space (h<sub>1</sub>, h<sub>2</sub>)</span><p style="color:var(--ink)">The same records at their two learned features. Now a straight line (dashed) separates the classes: that line is the output neuron, a logistic regression on h<sub>1</sub> and h<sub>2</sub>.</p></div>
+      <p class="note" id="feNote"></p>
+    </div>
+  </div>
+  <p class="note">Shading: the class the network predicts. The three ringed records A, B, C show where single records move. Training is done in your browser on 200 simulated records.</p>
+</section>
+
+<!-- source: new (spec: the embedding layer links back to Lecture 2) + GloVe 100-d vectors used in Lecture 2 -->
+<section class="board" id="embedlayer" data-part="Part 3 · Representations and foundation models" data-nav="The embedding layer">
+  <span class="eyebrow">Back to Lecture 2</span>
+  <h2>The Embedding Layer</h2>
+  <p class="lead">Words are not numbers. A network's first layer for text is an <b>embedding layer</b>: a lookup table with one learned vector per token. The word vectors of Lecture 2 are exactly such a table, learned from co-occurrence in a large corpus.</p>
+  <div class="grid2">
+    <div class="side">
+      <div class="tabs" id="emW"><button class="chip" data-w="late" aria-pressed="true">late</button><button class="chip" data-w="damaged" aria-pressed="false">damaged</button><button class="chip" data-w="refund" aria-pressed="false">refund</button><button class="chip" data-w="excellent" aria-pressed="false">excellent</button></div>
+      <div class="calc" id="emVec"></div>
+      <div class="tbl-wrap"><table class="compact" id="emNN"></table></div>
+    </div>
+    <div class="side">
+      <div class="card"><span class="tag" style="color:var(--c1)">A lookup, then learning</span><p id="emLook">A token id picks one row of a table with 400,000 rows and 100 columns. Training adjusts the rows like any other weights.</p></div>
+      <div class="card bad"><span class="tag" style="color:var(--signal)">Similar context, not similar meaning</span><p>The nearest neighbour of <i>late</i> is <i>early</i>: they appear in the same contexts. For a complaint detector that is a warning: the vector says "time word", not "bad".</p></div>
+      <p class="note">GloVe, 100 dimensions, trained on Wikipedia and Gigaword (the vectors used in Lecture 2). Neighbours by cosine similarity.</p>
+    </div>
+  </div>
+</section>
+
+<!-- source: new (spec: foundation models, pretraining then adaptation) -->
+<section class="board" id="foundation" data-part="Part 3 · Representations and foundation models" data-nav="Foundation models">
+  <span class="eyebrow">Foundation models</span>
+  <h2>Pretrain Once, Adapt to Many Tasks</h2>
+  <div class="grid4">
+    <div class="card"><span class="tag" style="color:var(--c1)">Step 1 · pretraining</span><h3>Large unlabelled data</h3><p>A very large network learns from raw text (or images, or tables) with a self-made task, such as predicting the next token. No human labels.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Result</span><h3>A foundation model</h3><p>General representations of language: its hidden layers carry useful features for many tasks.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Step 2 · adaptation</span><h3>Many tasks</h3><p>Classification, extraction, search, summarising: by prompting, by using its embeddings, or by fine-tuning.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c4)">For mining</span><h3>A new kind of baseline</h3><p>A strong start with few or no labels. Still measured against the classical baseline, on the same test set.</p></div>
+  </div>
+  <div class="panel"><h3>Same idea as the hidden layers, at scale</h3><p style="margin-top:6px">The circles network learned two features for one task. A foundation model learns thousands of features from billions of tokens, and many tasks reuse them.</p></div>
+</section>
+
+<!-- source: new (spec: transformers conceptually: tokens, attention, next-token prediction) + all-MiniLM-L6-v2 tokenizer -->
+<section class="board" id="transformer" data-part="Part 3 · Representations and foundation models" data-nav="Transformers in three ideas">
+  <span class="eyebrow">Transformers, conceptually · press play</span>
+  <h2>Transformers in Three Ideas</h2>
+  <div class="grid3 trcards">
+    <button class="card trc" data-i="0" aria-pressed="true"><span class="tag" style="color:var(--c1)">1 · Tokens</span><p>Text is cut into tokens from a fixed vocabulary; rare words split into pieces. Each token id goes through the embedding layer.</p></button>
+    <button class="card trc" data-i="1" aria-pressed="false"><span class="tag" style="color:var(--c2)">2 · Attention</span><p>Each token's vector is updated as a <b>weighted mix</b> of the vectors of the tokens around it, so "damaged" can draw on "box". Layers of attention build context into every vector.</p></button>
+    <button class="card trc" data-i="2" aria-pressed="false"><span class="tag" style="color:var(--c3)">3 · Next-token prediction</span><p>A generative model ends with a probability for every token in the vocabulary, and is pretrained to predict the next one. Text is generated one token at a time.</p></button>
+  </div>
+  <div class="trstage">
+    <div class="trhead"><span class="lab-s" id="trTitle"></span><button class="btn" id="trPlay">▶ Play</button></div>
+    <div id="trBox"></div>
+    <p class="note" id="trCap" style="margin:0"></p>
+  </div>
+  <p class="note">Tokens: the WordPiece tokenizer of all-MiniLM-L6-v2, the sentence-embedding model used later today. Vector colours, attention weights and next-token probabilities are made up for illustration.</p>
+</section>
+
+<!-- source: new (spec demo: small attention visualizer on one sentence, illustrative) -->
+<section class="board" id="attention" data-part="Part 3 · Representations and foundation models" data-nav="Attention visualizer">
+  <span class="eyebrow">Attention · try it</span>
+  <h2>Attention as Weighted Mixing</h2>
+  <p class="lead">Pick a token. The bars show how much of each other token's vector goes into its new vector. The weights are a softmax of match scores, so they are positive and sum to 1.</p>
+  <span class="illus">Illustrative weights for one head</span>
+  <div class="toks" id="attToks"></div>
+  <div class="grid2">
+    <div class="attbars" id="attBars"></div>
+    <div class="side">
+      <div class="calc" id="attCalc"></div>
+      <p class="note">A real transformer computes the scores from learned query and key vectors, in many heads and layers at once. These scores were written by hand to show the idea.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PART 4 ============ -->
+<div class="part-break"><span class="n">04</span><span class="eyebrow">Part 4</span><h2>Three Ways to Use a Foundation Model</h2></div>
+
+<!-- source: new (spec: the three adaptation routes) -->
+<section class="board" id="routes" data-part="Part 4 · Three routes" data-nav="Three routes">
+  <span class="eyebrow">Adapting a foundation model to a mining task</span>
+  <h2>Three Routes</h2>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">Route 1</span><h3>Zero- or few-shot prompting</h3><p>Write the task in a prompt (zero-shot), or add a few labelled examples (few-shot), and ask a large model for the label.</p><ul class="clean"><li>No training data</li><li>Highest cost per record: one model call each</li><li>Hard to inspect; output can vary</li></ul></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Route 2</span><h3>Embeddings + a simple classifier</h3><p>Turn each record into a vector with a pretrained model, then train logistic regression (Lecture 5) on your labels.</p><ul class="clean"><li>Needs some labels</li><li>Cheap and fast; runs locally</li><li>Inspectable, reproducible</li></ul></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Route 3</span><h3>Fine-tuning a small model</h3><p>Continue training a small pretrained model on your labelled records, so its weights adapt to the task.</p><ul class="clean"><li>Needs labels, and GPU time</li><li>Best control over behaviour</li><li>You own and version the model</li></ul></div>
+  </div>
+  <div class="panel"><h3>And always: the classical baseline</h3><p style="margin-top:6px">TF-IDF + logistic regression (Lecture 2 and Lecture 5) costs almost nothing. Every route has to beat it on the same test set to be worth its cost.</p></div>
+</section>
+
+<!-- source: new (spec: embeddings + simple classifier) + ai6.py on UCI Sentiment Labelled Sentences -->
+<section class="board" id="route2" data-part="Part 4 · Three routes" data-nav="Route 2: how many labels?">
+  <span class="eyebrow">Route 2 vs the baseline · measured</span>
+  <h2>How Many Labels Do You Need?</h2>
+  <p class="lead">Negative-review detection on 2,000 product and restaurant reviews. Train on n labelled reviews, test on the same 600 held-out reviews. Both methods use logistic regression; only the features differ.</p>
+  <div class="play">
+    <canvas class="cv" id="cvLc" aria-label="F1 against number of labelled training reviews, TF-IDF vs sentence embeddings"></canvas>
+    <div class="side">
+      <div class="ctrl"><label for="lcN" class="note">Labelled training reviews n = <b id="lcNv"></b></label><input type="range" id="lcN" min="0" max="6" value="4"></div>
+      <div class="stats"><div class="stat"><div class="k">TF-IDF + LR · F1</div><div class="v" id="lcT">–</div></div><div class="stat"><div class="k">Embeddings + LR · F1</div><div class="v" id="lcE">–</div></div></div>
+      <div class="card"><span class="tag" style="color:var(--c3)">Nearest reviews, by embedding</span><div class="calc" id="lcNN"></div></div>
+    </div>
+  </div>
+  <p class="note" id="lcFoot"></p>
+</section>
+
+
+<!-- ============ PART 5 · AI LAYER ============ -->
+<div class="part-break"><span class="n">05</span><span class="eyebrow">Part 5 · AI layer</span><h2>Choosing a Method</h2></div>
+
+<!-- source: new (spec demo: cost calculator for the three routes over N records) -->
+<section class="board" id="cost" data-part="Part 5 · Choosing a method" data-nav="Cost calculator">
+  <span class="eyebrow">Cost calculator · try it</span>
+  <h2>What Does Labelling N Records Cost?</h2>
+  <p class="lead">Every number below is an input. The defaults are example values: replace them with your provider's current prices and your own measurements.</p>
+  <div class="costin" id="costIn"></div>
+  <div class="tbl-wrap"><table class="bench" id="costT"></table></div>
+  <p class="note" id="costNote"></p>
+</section>
+
+<!-- source: new (spec: choosing a method by data size, label budget, cost, latency, privacy, interpretability) -->
+<section class="board" id="choose" data-part="Part 5 · Choosing a method" data-nav="Choosing a method">
+  <span class="eyebrow">Choosing a method</span>
+  <h2>Six Questions Before You Choose</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Question</th><th>TF-IDF + LR</th><th>Prompting</th><th>Embeddings + LR</th><th>Fine-tuning</th></tr></thead>
+    <tbody>
+      <tr><td>How much data?</td><td>Any amount</td><td>Small to medium: cost grows per record</td><td>Any amount</td><td>Any amount</td></tr>
+      <tr><td>Label budget?</td><td>Hundreds to thousands</td><td>None (zero-shot) or a few (few-shot)</td><td>Tens to hundreds</td><td>Hundreds or more</td></tr>
+      <tr><td>Cost per 1,000 records?</td><td>Near zero</td><td>Highest</td><td>Low</td><td>Low after training</td></tr>
+      <tr><td>Latency?</td><td>Milliseconds</td><td>About a second per call</td><td>Milliseconds per record</td><td>Milliseconds per record</td></tr>
+      <tr><td>Privacy?</td><td>Local</td><td>External API, unless a local model</td><td>Local possible</td><td>Local possible</td></tr>
+      <tr><td>Interpretability?</td><td>High: word weights</td><td>Low</td><td>Medium: nearest examples</td><td>Low to medium</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">A rule of thumb, not a law: measure accuracy, cost and time on your own data before you commit.</p>
+</section>
+
+<!-- source: new (spec: reliability issues with LLM classifiers); reviews from UCI Sentiment Labelled Sentences; LLM labels illustrative -->
+<section class="board" id="reliable" data-part="Part 5 · Choosing a method" data-nav="LLM classifier reliability">
+  <span class="eyebrow">Reliability · computed from the table</span>
+  <h2>An LLM Classifier Is Not a Fixed Function</h2>
+  <div class="grid2">
+    <div class="tbl-wrap"><table class="rel" id="relT"></table></div>
+    <div class="side">
+      <span class="illus">Illustrative LLM outputs</span>
+      <div class="stats" id="relS"></div>
+      <div class="card"><span class="tag" style="color:var(--c1)">Four issues</span><ul class="clean"><li><b>Prompt sensitivity</b>: rewording changes labels.</li><li><b>Run-to-run variation</b>: the same prompt twice can disagree.</li><li><b>Version changes</b>: the provider updates the model under the same name.</li><li><b>Calibration</b>: a stated "90% sure" is not a measured 90%.</li></ul></div>
+    </div>
+  </div>
+  <p class="note">Sixteen real reviews with their human labels (1 = negative). The three LLM columns and the stated confidence were written for the lecture. A1, A2: prompt A ("Is this review a complaint? Answer 1 or 0."), runs 1 and 2. B1: prompt B ("Is the sentiment of this review negative? Answer 1 or 0."), run 1. Conf.: the confidence the model stated in run A1. Every number on the right is computed from the table; dashed cells are where run 2 disagrees with run 1.</p>
+</section>
+
+<!-- source: new (spec: fix the model version and settings, log the prompts; privacy: external API vs local open model) -->
+<section class="board" id="privacy" data-part="Part 5 · Choosing a method" data-nav="Fix, log and keep data local">
+  <span class="eyebrow">Practice</span>
+  <h2>Fix, Log, and Decide Where the Data Goes</h2>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">Make LLM labels reproducible</span><ul class="clean"><li>Fix the model version (the dated name, not an alias) and the settings, such as temperature 0.</li><li>Log every prompt, response and timestamp.</li><li>Run the labelling twice and report the agreement.</li><li>Keep a small labelled check set, and re-run it whenever the model or prompt changes.</li></ul></div>
+    <div class="side">
+      <div class="card bad"><span class="tag" style="color:var(--signal)">External API</span><p>Every record leaves your machine. Check the provider's terms on storage and training, and whether you may send personal data at all.</p></div>
+      <div class="card good"><span class="tag" style="color:var(--good)">Local open model</span><p>Data stays on your hardware and the version never changes under you. You pay in hardware and set-up, and small local models are usually less accurate.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: new (check: reasoning questions, new examples) -->
+<section class="board" id="check" data-part="Part 5 · Choosing a method" data-nav="Check yourself">
+  <span class="eyebrow">Check yourself · reasoning</span>
+  <h2>Six Quick Questions</h2>
+  <div class="quiz" id="quiz"></div>
+  <p class="score" id="quizScore"></p>
+</section>
+
+<!-- ============ PART 6 · LAB ============ -->
+<div class="part-break"><span class="n">06</span><span class="eyebrow">Part 6 · Lab, 45 minutes</span><h2>Detect Complaints Three Ways</h2></div>
+
+<!-- source: new (spec: lab 6, fitted version: 3 methods on 300 labelled reviews; few-shot is an optional extension) -->
+<section class="board" id="labbrief" data-part="Part 6 · Lab" data-nav="Lab brief">
+  <span class="eyebrow">Lab 6 · ungraded practice for the exams</span>
+  <h2>Detect complaint reviews with three methods</h2>
+  <p class="lead">300 labelled reviews: complaint or not. Run three methods on the same test reviews, and compare F1, cost and run time. Run the LLM twice and measure how often the two runs agree.</p>
+  <div class="bar" id="labBar">
+    <button class="seg" style="flex-basis:11.1%;background:var(--c1)" aria-pressed="true"><b>5 min</b><span>Brief</span></button>
+    <button class="seg" style="flex-basis:66.7%;background:var(--c3)" aria-pressed="false"><b>30 min</b><span>Guided work: 3 methods, 1 table</span></button>
+    <button class="seg" style="flex-basis:22.2%;background:var(--c4)" aria-pressed="false"><b>10 min</b><span>Share-out</span></button>
+  </div>
+  <div class="panel" id="labDetail"></div>
+  <div class="grid4">
+    <div class="card"><span class="tag" style="color:var(--c1)">Method 1</span><h3>TF-IDF + LR</h3><p>The classical baseline.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Method 2</span><h3>Embeddings + LR</h3><p>Sentence embeddings, computed in advance, then logistic regression.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Method 3</span><h3>LLM zero-shot</h3><p>Paste the prepared message into your own chat LLM, twice. No LLM access? The notebook loads ready-made answers.</p></div>
+    <div class="card"><span class="tag" style="color:var(--muted)">Optional</span><h3>Few-shot</h3><p>If time allows, add 5 labelled examples to the message and see whether F1 and agreement improve.</p></div>
+  </div>
+</section>
+
+<!-- source: new (same steps as the Lecture 1-5 Colab boards) -->
+<section class="board" id="labsetup" data-part="Part 6 · Lab" data-nav="Open the notebook in Colab">
+  <span class="eyebrow">Lab 6 · getting started</span>
+  <h2>Open the notebook in Google Colab</h2>
+  <p class="lead">Same steps as before. There is nothing to install.</p>
+  <ol class="lab">
+    <li><div><b>Open the Lab 6 link on Github.</b> The notebook opens in Colab.</div></li>
+    <li><div><b>File → Save a copy in Drive.</b> Work in your copy. Changes to the shared notebook are not saved.</div></li>
+    <li><div><b>Run the cells from top to bottom</b> with <kbd>Shift</kbd> + <kbd>Enter</kbd>, and replace each <span class="mono">___</span> with your own code.</div></li>
+  </ol>
+  <p class="note">No Google account? Download the Lab 6 from Github and open the notebook in Jupyter or VS Code. For the LLM step, the notebook prints the message to paste and reads the answer back from a cell.</p>
+</section>
+
+<!-- source: new (share-out display for the lab: numbers only) -->
+<section class="board" id="labresults" data-part="Part 6 · Lab" data-nav="Class results">
+  <span class="eyebrow">Lab 6 · share-out</span>
+  <h2>Class Results: F1, Cost, Time and Agreement</h2>
+  <p class="lead">Enter the class's typical numbers. The board names the best method and its gain over the baseline.</p>
+  <div class="tbl-wrap"><table class="bench" id="l6T"></table></div>
+  <div class="grid2">
+    <div class="side"><span class="lab-s">LLM run 1 vs run 2: agreement (%)</span><input class="txt" type="number" min="0" max="100" step="0.1" id="l6Agree" aria-label="Agreement between two LLM runs, percent"></div>
+    <p class="progress" id="l6Sum"></p>
+  </div>
+  <div class="btnrow"><button class="btn ghost" id="l6Clear">Clear</button></div>
+</section>
+
+<!-- ============ SUMMARY ============ -->
+<!-- source: learning outcomes, readings and exam scope from the spec -->
+<section class="board" id="summary" data-part="Summary" data-nav="Summary">
+  <span class="eyebrow">Summary</span>
+  <h2>Summary</h2>
+  <div class="grid4">
+    <div class="card"><span class="tag" style="color:var(--c1)">Neurons to networks</span><p style="color:var(--ink)">Logistic regression is one neuron. Hidden layers with non-linear activations let an MLP draw curved boundaries.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Training</span><p style="color:var(--ink)">Gradient descent on a loss; backpropagation is the chain rule. Control overfitting with a validation set, early stopping and dropout.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Foundation models</span><p style="color:var(--ink)">Pretrained on large unlabelled data, then adapted: by prompting, by embeddings plus a simple classifier, or by fine-tuning.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c5)">Choosing</span><p style="color:var(--ink)">Compare against the classical baseline on accuracy, cost, speed, privacy and reproducibility. Fix versions; log prompts.</p></div>
+  </div>
+  <p class="lab-s" style="color:var(--c3);font-weight:700">What you can do after today</p>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">Explain</span><p style="color:var(--ink)">Explain how a multilayer perceptron learns, and what a pretrained foundation model is.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Choose</span><p style="color:var(--ink)">Choose between zero-shot prompting, embeddings plus a simple classifier, and fine-tuning for a mining task.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c5)">Compare</span><p style="color:var(--ink)">Compare them with a classical baseline on accuracy, cost, speed, privacy and reproducibility.</p></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">Key readings</span><p style="color:var(--ink)">Tan, chapter 4 (artificial neural networks section). Goodfellow, Bengio &amp; Courville, <i>Deep Learning</i>, chapter 6 (selected parts). Hollmann et al. (2023), "TabPFN", ICLR.</p></div>
+    <div class="card"><span class="tag" style="color:var(--signal)">Exam-relevant</span><p style="color:var(--ink)">The perceptron and MLP structure, the gradient descent idea, overfitting controls. The three adaptation routes and when to use each, as reasoning questions only.</p></div>
+  </div>
+  <div class="next"><span class="eyebrow">Next</span><h3>Lecture 7 · Association analysis I (Thursday)</h3><p>The midterm comes first: the first 60 minutes of Lecture 7, closed-book, covering Lectures 1–6. No notes or devices except a non-programmable calculator. Wednesday is for self-study and midterm revision.</p></div>
+</section>
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+"use strict";
+// ===== shared lecture kit: utilities, nav, theme hooks, three.js + canvas helpers =====
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const themeHooks = [];
+function onTheme(f){ themeHooks.push(f); }
+function fireTheme(){ themeHooks.forEach(f => { try { f(); } catch(e){} }); }
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", fireTheme);
+new MutationObserver(fireTheme).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
+
+// seeded RNG so every class sees the same data
+function rng(seed){ let s = seed >>> 0; return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function gauss(r){ let u = 0, v = 0; while(!u) u = r(); while(!v) v = r(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+
+/* ---------------- navigation ---------------- */
+const boards = $$("section.board");
+const toc = $("#toc");
+let lastPart = "";
+boards.forEach(b => {
+  if (b.dataset.part !== lastPart){ lastPart = b.dataset.part; const li = document.createElement("li"); li.className = "part"; li.textContent = lastPart; toc.appendChild(li); }
+  const li = document.createElement("li"); const a = document.createElement("a");
+  a.href = "#" + b.id; a.textContent = b.dataset.nav; a.dataset.id = b.id; li.appendChild(a); toc.appendChild(li);
+});
+const links = $$("#toc a");
+let current = 0;
+const io = new IntersectionObserver(es => {
+  es.forEach(e => { if (e.isIntersecting){ current = boards.indexOf(e.target); links.forEach(l => l.classList.toggle("on", l.dataset.id === e.target.id)); const on = links[current]; if (on && innerWidth < 980) on.scrollIntoView({block:"nearest", inline:"center"}); } });
+}, {rootMargin:"-40% 0px -55% 0px"});
+boards.forEach(b => io.observe(b));
+addEventListener("keydown", e => {
+  if (e.target.closest("input,textarea,select") || e.metaKey || e.ctrlKey || e.altKey) return;
+  let n = null;
+  if (e.key === "ArrowRight" || e.key === "PageDown") n = Math.min(boards.length-1, current+1);
+  if (e.key === "ArrowLeft" || e.key === "PageUp") n = Math.max(0, current-1);
+  if (n === null) return;
+  e.preventDefault(); current = n;
+  boards[n].scrollIntoView({behavior: reduce ? "auto" : "smooth", block:"start"});
+});
+
+/* ---------------- three.js helpers ---------------- */
+const hasGL = typeof THREE !== "undefined";
+function dotTexture(){
+  const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d");
+  const grd = g.createRadialGradient(32,32,0,32,32,30); grd.addColorStop(0,"rgba(255,255,255,1)"); grd.addColorStop(.7,"rgba(255,255,255,1)"); grd.addColorStop(1,"rgba(255,255,255,0)");
+  g.fillStyle = grd; g.beginPath(); g.arc(32,32,30,0,Math.PI*2); g.fill();
+  const t = new THREE.CanvasTexture(c); return t;
+}
+function makeRenderer(host){
+  const r = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  r.setPixelRatio(Math.min(devicePixelRatio, 2)); host.prepend(r.domElement);
+  return r;
+}
+function visible(el, cb){ const o = new IntersectionObserver(es => es.forEach(e => cb(e.isIntersecting))); o.observe(el); }
+function noGL(host){ const p = document.createElement("p"); p.className = "note"; p.style.padding = "24px"; p.textContent = "This 3D view needs WebGL, which this browser has turned off."; host.appendChild(p); }
+
+/* ---------------- canvas helpers ---------------- */
+function setupCanvas(cv){
+  const ctx = cv.getContext("2d");
+  const fit = () => { const r = cv.getBoundingClientRect(); const d = Math.min(devicePixelRatio,2); cv.width = Math.max(1, r.width*d); cv.height = Math.max(1, r.height*d); ctx.setTransform(d,0,0,d,0,0); return r; };
+  return {ctx, fit};
+}
+function axes(ctx, w, h, pad, xl, yl, xt, yt){
+  ctx.strokeStyle = tok("--line"); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, h-pad.b); ctx.lineTo(w-pad.r, h-pad.b); ctx.stroke();
+  ctx.fillStyle = tok("--muted"); ctx.font = `12px ${tok("--mono")}`;
+  ctx.textAlign = "center"; ctx.fillText(xl, (pad.l + w - pad.r)/2, h-8);
+  xt.forEach(([v,x]) => ctx.fillText(v, x, h-pad.b+16));
+  ctx.textAlign = "right"; yt.forEach(([v,y]) => ctx.fillText(v, pad.l-6, y+4));
+  ctx.save(); ctx.translate(14, (pad.t + h - pad.b)/2); ctx.rotate(-Math.PI/2); ctx.textAlign = "center"; ctx.fillText(yl, 0, 0); ctx.restore();
+}
+const redraws = {};
+onTheme(() => Object.values(redraws).forEach(f => f()));
+
+
+function live(cv, key, paint){
+  const {ctx, fit} = setupCanvas(cv);
+  const draw = () => { const r = fit(); if (!r.width) return; ctx.clearRect(0,0,r.width,r.height); paint(ctx, r.width, r.height); };
+  redraws[key] = draw; new ResizeObserver(draw).observe(cv); return draw;
+}
+const at = (cv, e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+
+/* ---------------- generic tabsets ---------------- */
+$$(".tabset").forEach(root => {
+  const bs = $$("[data-tab]", root), ps = $$("[data-pane]", root);
+  const go = id => { bs.forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === id))); ps.forEach(p => p.hidden = p.dataset.pane !== id); root.dataset.show = id; };
+  bs.forEach(b => b.onclick = () => go(b.dataset.tab)); go(bs[0].dataset.tab);
+});
+
+/* ---------------- quiz helper ---------------- */
+function quiz(host, O, Q, scoreEl){
+  let answered = 0, right = 0;
+  const upd = () => { if (scoreEl) scoreEl.textContent = answered < Q.length ? `${answered} of ${Q.length} answered · ${right} correct` : `Done: ${right} of ${Q.length} correct`; };
+  Q.forEach(([q, a, why]) => {
+    const d = document.createElement("div"); d.className = "q";
+    d.innerHTML = `<p>${q}</p><div class="opts">${O.map((o,i)=>`<button data-i="${i}">${o}</button>`).join("")}</div><p class="fb"></p>`;
+    $$("button", d).forEach(b => b.onclick = () => {
+      if (d.classList.contains("done")) return;
+      const i = +b.dataset.i; b.classList.add("picked"); d.classList.add("done", i===a ? "right" : "wrong");
+      answered++; if (i===a) right++;
+      $(".fb", d).innerHTML = `<b>${i===a ? "Correct." : "Not quite: " + O[a] + "."}</b> ${why}`; upd();
+    });
+    host.appendChild(d);
+  });
+  upd();
+}
+
+/* ---------------- segmented bars (plan, assessment, lab) ---------------- */
+function segBar(bar, detail, D){
+  const bs = $$(".seg", $(bar));
+  const go = i => { bs.forEach((b,k) => b.setAttribute("aria-pressed", String(k===i))); $(detail).innerHTML = D[i]; };
+  bs.forEach((b,i) => b.onclick = () => go(i)); go(0);
+}
+
+/* ================= LECTURE 6 MODULES ================= */
+const F12 = () => `12px ${tok("--mono")}`;
+function dot(ctx, x, y, r, pos){ ctx.beginPath(); ctx.arc(x, y, r, 0, 7); if (pos){ ctx.fillStyle = tok("--k1"); ctx.fill(); } else { ctx.strokeStyle = tok("--k2"); ctx.lineWidth = 2; ctx.stroke(); } }
+function pointer(cv, fn){
+  let on = false; const at = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  cv.addEventListener("pointerdown", e => { on = true; cv.setPointerCapture(e.pointerId); fn(...at(e), "down"); });
+  cv.addEventListener("pointermove", e => { if (on) fn(...at(e), "move"); });
+  cv.addEventListener("pointerup", () => { on = false; fn(0, 0, "up"); });
+}
+function liveR(cv, key, draw){ redraws[key] = draw; new ResizeObserver(() => draw()).observe(cv); }
+function press(btns, b){ btns.forEach(x => x.setAttribute("aria-pressed", String(x === b))); }
+// shade a grid of cells: fn returns a value in [-1,1]; positive = class + colour
+function shade(ctx, x0, y0, W, H, cell, fn, a = .2){
+  const cp = tok("--k1"), cn = tok("--k2");
+  for (let y = y0; y < y0 + H; y += cell) for (let x = x0; x < x0 + W; x += cell){
+    const v = fn(x + cell/2, y + cell/2); if (!v) continue;
+    ctx.fillStyle = v > 0 ? cp : cn; ctx.globalAlpha = Math.min(1, Math.abs(v)) * a; ctx.fillRect(x, y, cell, cell);
+  }
+  ctx.globalAlpha = 1;
+}
+const H2 = p => p <= 0 || p >= 1 ? 0 : -(p*Math.log2(p) + (1-p)*Math.log2(1-p));
+const f3 = v => (+v).toFixed(3), pct = v => (v*100).toFixed(1) + "%";
+
+/* ---------------- today's plan ---------------- */
+segBar("#planBar", "#planDetail", [
+  "<h3>Classical core · about 65 minutes</h3><p style='margin-top:6px'>Today: from logistic regression to the perceptron and the multilayer perceptron; training by gradient descent and backpropagation; overfitting controls; representation learning and the embedding layer; foundation models, transformers, and three ways to use them; TabPFN as a concept.</p>",
+  "<h3>AI layer · about 30 minutes</h3><p style='margin-top:6px'>Choosing a method by data size, label budget, cost per 1,000 records, latency, privacy and interpretability. Reliability of LLM classifiers. Sending records to an external API vs running an open model locally.</p>",
+  "<h3>Break · 10 minutes</h3><p style='margin-top:6px'>A 10-minute break mid-session, every session.</p>",
+  "<h3>Lab · about 45 minutes</h3><p style='margin-top:6px'>A guided notebook: a 5-minute brief, 30 minutes of guided work and a 10-minute share-out. Today: detect complaint reviews with TF-IDF, embeddings and an LLM, and compare F1, cost, time and run-to-run agreement. Labs are ungraded practice.</p>"
+]);
+
+/* ---------------- a small MLP: full batch, Adam, sigmoid output, cross-entropy ---------------- */
+const ACT = {tanh: {f: Math.tanh, d: a => 1 - a*a}, relu: {f: z => z > 0 ? z : 0, d: a => a > 0 ? 1 : 0}};
+function Net(sizes, act, seed){
+  const R = rng(seed), L = [];
+  for (let l = 0; l < sizes.length - 1; l++){
+    const n = sizes[l], m = sizes[l+1], s = act === "relu" && l < sizes.length - 2 ? Math.sqrt(2/n) : Math.sqrt(1/n);
+    const W = new Float64Array(m*n); for (let k = 0; k < W.length; k++) W[k] = gauss(R)*s;
+    L.push({n, m, W, b: new Float64Array(m), gW: new Float64Array(m*n), gb: new Float64Array(m), mW: new Float64Array(m*n), vW: new Float64Array(m*n), mb: new Float64Array(m), vb: new Float64Array(m)});
+  }
+  return {sizes, act, L, t: 0, R};
+}
+function fwd(net, x, keep = 1){
+  let a = x; const as = [a], ms = [];
+  for (let l = 0; l < net.L.length; l++){
+    const Ly = net.L[l], out = new Float64Array(Ly.m), last = l === net.L.length - 1; let mask = null;
+    for (let j = 0; j < Ly.m; j++){ let s = Ly.b[j]; for (let i = 0; i < Ly.n; i++) s += Ly.W[j*Ly.n + i]*a[i]; out[j] = last ? 1/(1 + Math.exp(-s)) : ACT[net.act].f(s); }
+    if (!last && keep < 1){ mask = new Float64Array(Ly.m); for (let j = 0; j < Ly.m; j++){ mask[j] = net.R() < keep ? 1/keep : 0; out[j] *= mask[j]; } }
+    ms.push(mask); as.push(out); a = out;
+  }
+  return {as, ms};
+}
+const pred = (net, x) => fwd(net, x).as[net.L.length][0];
+function bce(p, y){ p = Math.min(1 - 1e-9, Math.max(1e-9, p)); return -(y ? Math.log(p) : Math.log(1 - p)); }
+function epoch(net, X, Y, lr, keep = 1){
+  const L = net.L; L.forEach(Ly => { Ly.gW.fill(0); Ly.gb.fill(0); }); let loss = 0;
+  for (let k = 0; k < X.length; k++){
+    const {as, ms} = fwd(net, X[k], keep), p = as[L.length][0]; loss += bce(p, Y[k]);
+    let d = new Float64Array([p - Y[k]]);
+    for (let l = L.length - 1; l >= 0; l--){
+      const Ly = L[l], a = as[l];
+      for (let j = 0; j < Ly.m; j++){ Ly.gb[j] += d[j]; for (let i = 0; i < Ly.n; i++) Ly.gW[j*Ly.n + i] += d[j]*a[i]; }
+      if (l > 0){ const nd = new Float64Array(Ly.n), m = ms[l-1];
+        for (let i = 0; i < Ly.n; i++){ let s = 0; for (let j = 0; j < Ly.m; j++) s += Ly.W[j*Ly.n + i]*d[j]; const raw = m ? (m[i] ? a[i]/m[i] : 0) : a[i]; nd[i] = s*ACT[net.act].d(raw)*(m ? m[i] : 1); }
+        d = nd; }
+    }
+  }
+  net.t++; const b1 = .9, b2 = .999, c1 = 1 - b1**net.t, c2 = 1 - b2**net.t, N = X.length;
+  const upd = (P, G, M, V) => { for (let k = 0; k < P.length; k++){ const g = G[k]/N; M[k] = b1*M[k] + (1 - b1)*g; V[k] = b2*V[k] + (1 - b2)*g*g; P[k] -= lr*(M[k]/c1)/(Math.sqrt(V[k]/c2) + 1e-8); } };
+  L.forEach(Ly => { upd(Ly.W, Ly.gW, Ly.mW, Ly.vW); upd(Ly.b, Ly.gb, Ly.mb, Ly.vb); });
+  return loss/N;
+}
+const acc = (net, X, Y) => X.filter((x, i) => (pred(net, x) >= .5 ? 1 : 0) === Y[i]).length/X.length;
+function dataset(kind, n, seed){
+  const R = rng(seed), X = [], Y = [];
+  for (let i = 0; i < n; i++){
+    let x, y, c = i % 2;
+    if (kind === "circles"){ const a = R()*Math.PI*2, r = c ? .45*Math.sqrt(R()) : .72 + R()*.33; x = r*Math.cos(a) + gauss(R)*.06; y = r*Math.sin(a) + gauss(R)*.06; }
+    else if (kind === "xor"){ x = (R()*2 - 1)*.95; y = (R()*2 - 1)*.95; const g = .06; if (Math.abs(x) < g) x += x < 0 ? -g : g; if (Math.abs(y) < g) y += y < 0 ? -g : g; c = x*y > 0 ? 1 : 0; x += gauss(R)*.05; y += gauss(R)*.05; }
+    else if (kind === "moons"){ const a = R()*Math.PI; x = c ? Math.cos(a) - .5 : .5 - Math.cos(a); y = c ? Math.sin(a) - .25 : .25 - Math.sin(a); x = x*.8 + gauss(R)*.09; y = y*.8 + gauss(R)*.09; }
+    else { const t = .25 + R()*3.2, r = t/3.6, a = t*2.1 + (c ? Math.PI : 0); x = r*Math.cos(a) + gauss(R)*.035; y = r*Math.sin(a) + gauss(R)*.035; }
+    X.push([x, y]); Y.push(c);
+  }
+  return {X, Y};
+}
+function paintField(ctx, W, H, toData, f, cell = 6, a = .3){
+  const cp = tok("--k1"), cn = tok("--k2");
+  for (let py = 0; py < H; py += cell) for (let px = 0; px < W; px += cell){ const v = f(toData(px + cell/2, py + cell/2)); ctx.fillStyle = v >= .5 ? cp : cn; ctx.globalAlpha = Math.abs(v - .5)*2*a + .03; ctx.fillRect(px, py, cell, cell); }
+  ctx.globalAlpha = 1;
+}
+
+/* ---------------- perceptron ---------------- */
+(function perceptron(){
+  const cv = $("#cvPer"), {ctx, fit} = setupCanvas(cv);
+  const sets = {sep: (() => { const R = rng(21), X = [], Y = []; for (let i = 0; i < 40; i++){ const c = i % 2 ? 1 : -1; X.push([c*.3 + gauss(R)*.2 - .1, c*.25 + gauss(R)*.2 + .1]); Y.push(c); } return {X, Y}; })(),
+                xor: (() => { const d = dataset("xor", 40, 22); return {X: d.X, Y: d.Y.map(v => v ? 1 : -1)}; })()};
+  let S = sets.sep, w = [0, 0], b = 0, ep = 0, hist = [], timer = 0;
+  const lam = .1, sgn = v => v >= 0 ? 1 : -1, out = x => sgn(w[0]*x[0] + w[1]*x[1] + b);
+  const errs = () => S.X.filter((x, i) => out(x) !== S.Y[i]).length;
+  function one(){ S.X.forEach((x, i) => { const e = S.Y[i] - out(x); if (e){ w[0] += lam*e*x[0]; w[1] += lam*e*x[1]; b += lam*e; } }); ep++; hist.push(errs()); }
+  function draw(){
+    const r = fit(), W = r.width, H = r.height; if (!W) return; ctx.clearRect(0, 0, W, H);
+    const sc = Math.min(W, H)/2.6, X = v => W/2 + v*sc, Y = v => H/2 - v*sc;
+    if (ep) paintField(ctx, W, H, (px, py) => [(px - W/2)/sc, (H/2 - py)/sc], p => out(p) > 0 ? 1 : 0, 8, .12);
+    if (ep && (w[0] || w[1])){ ctx.strokeStyle = tok("--ink"); ctx.lineWidth = 2.5; ctx.beginPath();
+      if (Math.abs(w[1]) > Math.abs(w[0])){ const yA = x => -(w[0]*x + b)/w[1]; ctx.moveTo(0, Y(yA(-W/2/sc))); ctx.lineTo(W, Y(yA(W/2/sc))); } else { const xA = y => -(w[1]*y + b)/w[0]; ctx.moveTo(X(xA(H/2/sc)), 0); ctx.lineTo(X(xA(-H/2/sc)), H); } ctx.stroke(); }
+    S.X.forEach((x, i) => dot(ctx, X(x[0]), Y(x[1]), 5, S.Y[i] > 0));
+    $("#perE").textContent = ep; $("#perM").textContent = ep ? `${errs()} of ${S.X.length}` : "–";
+    const e = errs();
+    $("#perNote").textContent = !ep ? "Press a button to train. Each epoch passes over all 40 records once." : e === 0 ? `All records correct after ${hist.indexOf(0) + 1} epoch${hist.indexOf(0) ? "s" : ""}. On linearly separable data the perceptron always gets there.` : S === sets.xor ? `Still ${e} wrong after ${ep} epochs. No straight line separates XOR, so one neuron never converges: we need hidden layers.` : `${e} still wrong. Keep going.`;
+  }
+  const reset = () => { clearTimeout(timer); w = [0, 0]; b = 0; ep = 0; hist = []; draw(); };
+  const db = $$("#perData .chip"); db.forEach(bt => bt.onclick = () => { press(db, bt); S = sets[bt.dataset.d]; reset(); });
+  $("#perStep").onclick = () => { clearTimeout(timer); one(); draw(); };
+  $("#perRun").onclick = () => { clearTimeout(timer); let n = 0; const tick = () => { one(); draw(); if (++n < 20) timer = setTimeout(tick, reduce ? 0 : 80); }; tick(); };
+  $("#perReset").onclick = reset;
+  liveR(cv, "per", draw);
+})();
+
+/* ---------------- MLP diagram and activation plots ---------------- */
+(function mlpDiagram(){
+  const L = [2, 4, 4, 1], xs = [40, 165, 290, 410], NS = "http://www.w3.org/2000/svg", pos = L.map((n, l) => Array.from({length: n}, (_, i) => [xs[l], 105 + (i - (n - 1)/2)*44]));
+  const lines = $("#mlpLines"), nodes = $("#mlpNodes"), mk = (t, a) => { const e = document.createElementNS(NS, t); Object.entries(a).forEach(([k, v]) => e.setAttribute(k, v)); return e; };
+  for (let l = 0; l < 3; l++) pos[l].forEach(p => pos[l+1].forEach(q => lines.appendChild(mk("line", {x1: p[0], y1: p[1], x2: q[0], y2: q[1]}))));
+  pos.forEach((ps, l) => ps.forEach(p => nodes.appendChild(mk("circle", {class: "nd " + (l === 0 ? "in" : l === 3 ? "out" : "hid"), cx: p[0], cy: p[1], r: 15}))));
+  const plot = (id, f, lo, hi) => { const cv = $("#" + id), {ctx, fit} = setupCanvas(cv);
+    const draw = () => { const r = fit(), W = r.width, H = r.height; if (!W) return; ctx.clearRect(0, 0, W, H); const X = z => (z + 4)/8*W, Y = v => H - 8 - (v - lo)/(hi - lo)*(H - 16);
+      ctx.strokeStyle = tok("--line"); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, Y(0)); ctx.lineTo(W, Y(0)); ctx.moveTo(X(0), 0); ctx.lineTo(X(0), H); ctx.stroke();
+      ctx.strokeStyle = tok("--accent"); ctx.lineWidth = 3; ctx.beginPath(); for (let z = -4; z <= 4; z += .05){ z === -4 ? ctx.moveTo(X(z), Y(f(z))) : ctx.lineTo(X(z), Y(f(z))); } ctx.stroke(); };
+    liveR(cv, id, draw); };
+  plot("actSig", z => 1/(1 + Math.exp(-z)), -.1, 1.1); plot("actTanh", Math.tanh, -1.1, 1.1); plot("actRelu", z => Math.max(0, z), -.3, 4.2);
+})();
+
+/* ---------------- MLP playground ---------------- */
+(function playground(){
+  const cv = $("#cvPg"), {ctx, fit} = setupCanvas(cv);
+  let kind = "circles", layers = 1, width = 4, act = "tanh", D, net, ep = 0, loss = null, running = false, raf = 0;
+  const lr = .03;
+  function build(){ const d = dataset(kind, 200, 61 + ["circles","xor","moons","spiral"].indexOf(kind));
+    D = {X: d.X.slice(0, 150), Y: d.Y.slice(0, 150), Xt: d.X.slice(150), Yt: d.Y.slice(150)};
+    net = Net([2, ...Array(layers).fill(width), 1], act, 7); ep = 0; loss = null;
+    const nW = net.L.reduce((s, Ly) => s + Ly.W.length + Ly.b.length, 0);
+    $("#pgArch").textContent = `Network: 2 → ${layers ? Array(layers).fill(width).join(" → ") + " → " : ""}1 · ${nW} weights and biases · ${act}`; }
+  function draw(){
+    const r = fit(), W = r.width, H = r.height; if (!W) return; ctx.clearRect(0, 0, W, H);
+    const sc = Math.min(W, H)/2.5, X = v => W/2 + v*sc, Y = v => H/2 - v*sc;
+    paintField(ctx, W, H, (px, py) => [(px - W/2)/sc, (H/2 - py)/sc], p => pred(net, p), 7, .32);
+    D.X.forEach((x, i) => dot(ctx, X(x[0]), Y(x[1]), 4.5, D.Y[i]));
+    $("#pgE").textContent = ep; $("#pgLoss").textContent = loss === null ? "–" : loss.toFixed(3);
+    $("#pgTr").textContent = ep ? pct(acc(net, D.X, D.Y)) : "–"; $("#pgTe").textContent = ep ? pct(acc(net, D.Xt, D.Yt)) : "–";
+  }
+  function loop(){ if (!running) return; for (let k = 0; k < 8; k++){ loss = epoch(net, D.X, D.Y, lr); ep++; } draw(); if (ep >= 3000){ stop(); return; } raf = requestAnimationFrame(loop); }
+  const go = $("#pgGo");
+  function stop(){ running = false; cancelAnimationFrame(raf); go.textContent = ep ? "Continue" : "Train"; }
+  go.onclick = () => { if (running) stop(); else { running = true; go.textContent = "Pause"; loop(); } };
+  const reset = () => { stop(); build(); go.textContent = "Train"; draw(); };
+  $("#pgReset").onclick = reset;
+  const dc = $$("#pgData .chip"); dc.forEach(b => b.onclick = () => { press(dc, b); kind = b.dataset.d; reset(); });
+  const ac = $$("#pgAct .chip"); ac.forEach(b => b.onclick = () => { press(ac, b); act = b.dataset.a; reset(); });
+  $("#pgL").oninput = e => { layers = +e.target.value; $("#pgLv").textContent = layers; reset(); };
+  $("#pgN").oninput = e => { width = +e.target.value; $("#pgNv").textContent = width; reset(); };
+  visible(cv, v => { if (!v && running) stop(); });
+  build(); liveR(cv, "pg", draw);
+})();
+
+/* ---------------- gradient descent on one weight ---------------- */
+(function gd(){
+  const R = rng(66), P = []; for (let i = 0; i < 30; i++){ const x = -2 + 4*R(); P.push({x, y: R() < 1/(1 + Math.exp(-2.5*x)) ? 1 : 0}); }
+  const sig = z => 1/(1 + Math.exp(-z)), L = w => P.reduce((s, p) => s + bce(sig(w*p.x), p.y), 0)/P.length, G = w => P.reduce((s, p) => s + (sig(w*p.x) - p.y)*p.x, 0)/P.length;
+  let wS = 1; for (let i = 0; i < 60; i++){ const h = P.reduce((s, p) => { const q = sig(wS*p.x); return s + q*(1 - q)*p.x*p.x; }, 0)/P.length; wS -= G(wS)/h; }
+  const ETA = [.25, 1, 4, 8, 16, 32]; let eta = 4, path = [-1], timer = 0;
+  const cv = $("#cvGd"), {ctx, fit} = setupCanvas(cv), lo = -2, hi = 6;
+  function draw(){
+    const r = fit(), W = r.width, H = r.height; if (!W) return; ctx.clearRect(0, 0, W, H);
+    const pad = {l:44, r:14, t:14, b:40}, X = w => pad.l + (Math.max(lo, Math.min(hi, w)) - lo)/(hi - lo)*(W - pad.l - pad.r), Y = v => H - pad.b - Math.min(v, 2.2)/2.2*(H - pad.t - pad.b);
+    axes(ctx, W, H, pad, "weight w", "loss L(w)", [-2,0,2,4,6].map(v => [v, X(v)]), [0, .5, 1, 1.5, 2].map(v => [v, Y(v)]));
+    ctx.strokeStyle = tok("--accent"); ctx.lineWidth = 2.5; ctx.beginPath(); for (let w = lo; w <= hi; w += .02) w === lo ? ctx.moveTo(X(w), Y(L(w))) : ctx.lineTo(X(w), Y(L(w))); ctx.stroke();
+    ctx.setLineDash([4,4]); ctx.strokeStyle = tok("--muted"); ctx.beginPath(); ctx.moveTo(X(wS), Y(L(wS))); ctx.lineTo(X(wS), H - pad.b); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = tok("--c4"); ctx.lineWidth = 1.5; ctx.beginPath(); path.forEach((w, i) => i ? ctx.lineTo(X(w), Y(L(w))) : ctx.moveTo(X(w), Y(L(w)))); ctx.stroke();
+    path.forEach((w, i) => { const off = w < lo || w > hi; ctx.fillStyle = tok(i === path.length - 1 ? "--ink" : "--c4"); ctx.beginPath(); ctx.arc(X(w), Y(L(w)), i === path.length - 1 ? 6 : 4, 0, 7); ctx.fill(); if (off && i === path.length - 1){ ctx.font = F12(); ctx.textAlign = w > hi ? "right" : "left"; ctx.fillText(`w = ${w.toFixed(1)}, off the chart`, X(w) + (w > hi ? -10 : 10), Y(L(w)) - 10); } });
+    const w = path[path.length - 1];
+    $("#gdS").textContent = path.length - 1; $("#gdW").textContent = w.toFixed(3); $("#gdL").textContent = L(w).toFixed(3); $("#gdG").textContent = G(w).toFixed(3);
+    let note = `The dashed line marks the best weight, w = ${wS.toFixed(2)}. Pick η and step.`;
+    if (path.length > 3){ const q = path.slice(-6), d = q.slice(1).map((v, i) => v - q[i]), alt = d.slice(1).filter((v, i) => v*d[i] < 0).length, far = Math.abs(w - wS), farOld = Math.abs(q[0] - wS);
+      note = far < .01 ? `Converged to w = ${w.toFixed(3)} after ${path.findIndex(v => Math.abs(v - wS) < .01)} steps.` : alt >= 2 && far >= farOld*.6 ? "Too large: each step overshoots the minimum and the weight jumps around without settling." : alt >= 1 ? "Large steps: it overshoots the minimum, but the jumps shrink." : Math.abs(d[d.length - 1]) < .05 && far > .3 ? "Too small: every step is tiny, so it needs many steps." : "Heading downhill."; }
+    $("#gdNote").textContent = note;
+  }
+  const step = () => { const w = path[path.length - 1]; path.push(w - eta*G(w)); };
+  $("#gdEta").oninput = e => { eta = ETA[+e.target.value]; $("#gdEtaV").textContent = eta; };
+  $("#gdStep").onclick = () => { clearTimeout(timer); step(); draw(); };
+  $("#gdRun").onclick = () => { clearTimeout(timer); let n = 0; const tick = () => { step(); draw(); if (++n < 15) timer = setTimeout(tick, reduce ? 0 : 160); }; tick(); };
+  $("#gdReset").onclick = () => { clearTimeout(timer); path = [-1]; draw(); };
+  $("#gdEta").value = 2; $("#gdEtaV").textContent = eta;
+  liveR(cv, "gd", draw);
+})();
+
+/* ---------------- backpropagation calculator ---------------- */
+(function backprop(){
+  const sig = z => 1/(1 + Math.exp(-z)), ids = ["bpX","bpY","bpW1","bpW2"], init = ids.map(i => $("#" + i).value);
+  let fwd = false, back = 0, prevLoss = null;
+  const n = v => (Math.abs(v) < 5e-4 && v !== 0 ? v.toExponential(1) : v.toFixed(3));
+  function vals(){
+    const [x, y, w1, w2] = ids.map(i => +$("#" + i).value || 0);
+    const z1 = w1*x, h = sig(z1), z2 = w2*h, yh = sig(z2), L = .5*(yh - y)**2;
+    const s5 = yh - y, s4 = yh*(1 - yh), s3 = w2, s2 = h*(1 - h);
+    const gyh = s5, gz2 = gyh*s4, gh = gz2*s3, gz1 = gh*s2, gw2 = gz2*h, gw1 = gz1*x;
+    return {x, y, w1, w2, z1, h, z2, yh, L, s5, s4, s3, s2, gyh, gz2, gh, gz1, gw2, gw1};
+  }
+  function draw(){
+    const V = vals(), F = v => fwd ? n(v) : "?";
+    const val = (name, what, v, g, step) => `<div class="v${back === step ? " hot" : ""}"><span class="n">${name}</span><b>${F(v)}</b><span class="n">${what}</span><span class="g">${g !== null && back >= step ? `∂L/∂${name} = ${n(g)}` : ""}</span></div>`;
+    const op = (sym, lab, v, step) => `<div class="o${back === step ? " hot" : ""}"><span class="op">${sym}</span><span class="ar">→</span><span class="sl">${back >= step ? `slope ${lab}<br><b>${n(v)}</b>` : ""}</span></div>`;
+    $("#bpG").innerHTML =
+      val("x", "input", V.x, null, 99) + op("× w₁", "x", V.x, 5) +
+      val("z₁", "w₁·x", V.z1, V.gz1, 4) + op("σ", "h(1−h)", V.s2, 4) +
+      val("h", "σ(z₁)", V.h, V.gh, 3) + op("× w₂", "w₂", V.s3, 3) +
+      val("z₂", "w₂·h", V.z2, V.gz2, 2) + op("σ", "ŷ(1−ŷ)", V.s4, 2) +
+      val("ŷ", "σ(z₂)", V.yh, V.gyh, 1) + op("loss", "ŷ−y", V.s5, 1) +
+      val("L", "½(ŷ − y)²", V.L, null, 99);
+    $("#bpW2c").innerHTML = back >= 2 ? `<span class="tag" style="color:var(--c4)">Gradient for w₂</span><br>z₂ = w₂·h, so ∂L/∂w₂ = ∂L/∂z₂ × h = ${n(V.gz2)} × ${n(V.h)} = <b>${n(V.gw2)}</b>` : `<span class="tag" style="color:var(--muted)">Gradient for w₂</span><br>after backward step 2`;
+    $("#bpW1c").innerHTML = back >= 5 ? `<span class="tag" style="color:var(--c4)">Gradient for w₁</span><br>z₁ = w₁·x, so ∂L/∂w₁ = ∂L/∂z₁ × x = ${n(V.gz1)} × ${n(V.x)} = <b>${n(V.gw1)}</b>` : `<span class="tag" style="color:var(--muted)">Gradient for w₁</span><br>after backward step 5`;
+    const notes = [
+      fwd ? `Forward pass done: the network predicts ŷ = ${n(V.yh)} for target y = ${V.y}, so the loss is L = ${n(V.L)}. Now go backwards.` : "Press 1 · Forward pass: compute each value from left to right.",
+      `Step 1. L = ½(ŷ − y)². Its slope is ŷ − y = ${n(V.s5)}, so ∂L/∂ŷ = ${n(V.gyh)}.`,
+      `Step 2. ŷ = σ(z₂). The S-curve's slope here is ŷ(1 − ŷ) = ${n(V.s4)}. Multiply: ∂L/∂z₂ = ${n(V.gyh)} × ${n(V.s4)} = ${n(V.gz2)}. That already gives the gradient for w₂.`,
+      `Step 3. z₂ = w₂·h, so z₂ changes w₂ = ${n(V.s3)} times as fast as h. Multiply: ∂L/∂h = ${n(V.gz2)} × ${n(V.s3)} = ${n(V.gh)}. We reused ∂L/∂z₂: no need to start again from L.`,
+      `Step 4. h = σ(z₁), slope h(1 − h) = ${n(V.s2)}. Multiply: ∂L/∂z₁ = ${n(V.gh)} × ${n(V.s2)} = ${n(V.gz1)}.`,
+      `Step 5. z₁ = w₁·x, so ∂L/∂w₁ = ∂L/∂z₁ × x = ${n(V.gw1)}. Every weight now has its gradient. Press 3 to update.`];
+    $("#bpNote").textContent = prevLoss !== null && back === 0 && fwd ? `Updated: w ← w − η·∂L/∂w with η = 1. The loss went from ${n(prevLoss)} to ${n(V.L)}.` : notes[back];
+    $("#bpB").disabled = !fwd || back >= 5; $("#bpU").disabled = back < 5;
+  }
+  $("#bpF").onclick = () => { fwd = true; back = 0; prevLoss = null; draw(); };
+  $("#bpB").onclick = () => { if (fwd && back < 5){ back++; draw(); } };
+  $("#bpU").onclick = () => { const V = vals(); prevLoss = V.L; $("#bpW1").value = (V.w1 - V.gw1).toFixed(4); $("#bpW2").value = (V.w2 - V.gw2).toFixed(4); back = 0; fwd = true; draw(); };
+  $("#bpR").onclick = () => { ids.forEach((i, k) => $("#" + i).value = init[k]); fwd = false; back = 0; prevLoss = null; draw(); };
+  ids.forEach(i => $("#" + i).addEventListener("input", () => { back = 0; prevLoss = null; draw(); }));
+  draw();
+})();
+
+/* ---------------- overfitting: training vs validation loss ---------------- */
+(function overfit(){
+  const R = rng(83), mk = n => { const X = [], Y = []; for (let i = 0; i < n; i++){ const c = i % 2; X.push([(c ? .35 : -.35) + gauss(R)*.42, gauss(R)*.42]); Y.push(R() < .1 ? 1 - c : c); } return {X, Y}; };
+  const T = mk(40), V = mk(400), cv = $("#cvOf"), {ctx, fit} = setupCanvas(cv);
+  let keep = 1, H = null, busy = false;
+  function draw(){
+    const r = fit(), W = r.width, Hh = r.height; if (!W) return; ctx.clearRect(0, 0, W, Hh);
+    const pad = {l:46, r:14, t:14, b:40}, X = e => pad.l + e/1500*(W - pad.l - pad.r), Y = v => Hh - pad.b - Math.min(v, 1.6)/1.6*(Hh - pad.t - pad.b);
+    axes(ctx, W, Hh, pad, "epoch", "loss", [0,500,1000,1500].map(v => [v, X(v)]), [0,.4,.8,1.2,1.6].map(v => [v, Y(v)]));
+    if (!H) { ctx.fillStyle = tok("--muted"); ctx.font = F12(); ctx.textAlign = "center"; ctx.fillText("Press Train to run 1,500 epochs", W/2, Hh/2); return; }
+    const line = (k, col, dash) => { ctx.strokeStyle = col; ctx.lineWidth = 2.5; ctx.setLineDash(dash); ctx.beginPath(); H.forEach((h, i) => i ? ctx.lineTo(X(h.e), Y(h[k])) : ctx.moveTo(X(h.e), Y(h[k]))); ctx.stroke(); ctx.setLineDash([]); };
+    line("tr", tok("--c1"), []); line("va", tok("--c4"), []);
+    const b = H.reduce((a, h) => h.va < a.va ? h : a, H[0]);
+    ctx.setLineDash([5,4]); ctx.strokeStyle = tok("--ink"); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(X(b.e), pad.t); ctx.lineTo(X(b.e), Hh - pad.b); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font = F12(); ctx.textAlign = "right"; ctx.fillStyle = tok("--c1"); ctx.fillText("training loss", W - pad.r - 8, Hh - pad.b - 30); ctx.fillStyle = tok("--c4"); ctx.fillText("validation loss (cut off above 1.6)", W - pad.r - 8, Hh - pad.b - 14); ctx.textAlign = "left"; ctx.fillStyle = tok("--ink"); ctx.fillText("stop here", X(b.e) + 6, pad.t + 44);
+  }
+  function report(){
+    const b = H.reduce((a, h) => h.va < a.va ? h : a, H[0]), e = H[H.length - 1];
+    $("#ofBest").textContent = b.e; $("#ofA1").textContent = pct(b.acc); $("#ofL").textContent = `${b.va.toFixed(2)} · ${e.va.toFixed(2)}`; $("#ofA2").textContent = pct(e.acc);
+    $("#ofNote").textContent = `Training loss ends at ${e.tr.toFixed(2)}. ${keep < 1 ? "With dropout" : "Without dropout"}, validation loss is lowest at epoch ${b.e} and ${e.va > b.va*1.15 ? `rises to ${e.va.toFixed(2)} by epoch 1,500` : "stays close to it"}.`;
+  }
+  $("#ofGo").onclick = () => {
+    if (busy) return; busy = true; const net = Net([2, 32, 32, 1], "relu", 5); net.R = rng(9); H = [];
+    let e = 0; const chunk = () => { for (let k = 0; k < 50; k++){ const l = epoch(net, T.X, T.Y, .003, keep); e++; if (e % 10 === 0 || e === 1){ const va = V.X.reduce((s, x, i) => s + bce(pred(net, x), V.Y[i]), 0)/V.X.length, tr = T.X.reduce((s, x, i) => s + bce(pred(net, x), T.Y[i]), 0)/T.X.length; H.push({e, tr, va, acc: acc(net, V.X, V.Y)}); } }
+      draw(); if (e < 1500) requestAnimationFrame(chunk); else { busy = false; report(); } };
+    chunk();
+  };
+  const dc = $$("#ofDrop .chip"); dc.forEach(b => b.onclick = () => { if (busy) return; press(dc, b); keep = 1 - +b.dataset.p; H = null; ["#ofBest","#ofA1","#ofL","#ofA2"].forEach(i => $(i).textContent = "–"); $("#ofNote").textContent = ""; draw(); });
+  liveR(cv, "of", draw);
+})();
+const CURVE = {"25": {"tfidf": [0.59, 0.055], "emb": [0.771, 0.041]}, "50": {"tfidf": [0.661, 0.033], "emb": [0.831, 0.025]}, "100": {"tfidf": [0.663, 0.024], "emb": [0.851, 0.018]}, "200": {"tfidf": [0.718, 0.023], "emb": [0.872, 0.013]}, "300": {"tfidf": [0.751, 0.021], "emb": [0.88, 0.009]}, "600": {"tfidf": [0.804, 0.011], "emb": [0.894, 0.005]}, "1400": {"tfidf": [0.833, 0.0], "emb": [0.908, 0.0]}};
+const NN = {"q": "The battery died after two days.", "hits": [["After a year the battery went completely dead on my headset.", 1, 0.638], ["Battery has no life.", 1, 0.617], ["Battery lasts only a few hours.", 1, 0.607], ["Battery charge-life is quite long.", 0, 0.568], ["AFter the first charge kept going dead after 12 minutes.", 1, 0.568]]};
+const TOK = ["the", "delivery", "was", "late", "and", "the", "box", "arrived", "damaged", "."];
+const TOKM = {"unboxing": ["un", "##box", "##ing"], "refundable": ["ref", "##unda", "##ble"], "HKU": ["hk", "##u"], "embeddings": ["em", "##bed", "##ding", "##s"]};
+const EMBS = 3.31;
+const GLOVE = {"late": {"vec8": [0.237, -0.283, 0.017, 0.128, 0.232, 0.035, 0.421, 0.032], "nn": [["early", 0.908], ["earlier", 0.815], ["after", 0.813], ["last", 0.787], ["ago", 0.782]]}, "damaged": {"vec8": [-0.356, 0.283, -0.308, 0.088, -0.303, 0.025, 0.301, 0.159], "nn": [["destroyed", 0.84], ["damage", 0.803], ["wrecked", 0.778], ["badly", 0.739], ["severely", 0.733]]}, "refund": {"vec8": [0.274, -0.209, 0.484, -0.527, -0.288, 0.272, -0.2, 0.822], "nn": [["refunds", 0.848], ["payment", 0.711], ["refunded", 0.673], ["rebate", 0.655], ["fees", 0.641]]}, "excellent": {"vec8": [-0.282, 0.184, -0.068, 0.277, -0.067, -0.414, 0.308, -0.111], "nn": [["good", 0.794], ["quality", 0.761], ["terrific", 0.742], ["superb", 0.74], ["best", 0.729]]}};
+const GIDX = {"late": 288, "damaged": 2731, "refund": 16901, "excellent": 4345};
+
+/* ---------------- hidden layers as learned features ---------------- */
+(function features(){
+  const d = dataset("circles", 200, 44), cv = $("#cvFe"), {ctx, fit} = setupCanvas(cv);
+  let seed = 3, net = null, t = 0, raf = 0;
+  function train(){ net = Net([2, 6, 2, 1], "tanh", seed); for (let e = 0; e < 400; e++) epoch(net, d.X, d.Y, .02); }
+  const hid = x => fwd(net, x).as[2], SIN = 1.35;
+  const pick = [0, 1, 2].map(k => d.X.reduce((bi, x, i) => { const r = Math.hypot(x[0], x[1]), want = [.25, .9, 1.2][k]; return Math.abs(r - want) < Math.abs(Math.hypot(...d.X[bi]) - want) ? i : bi; }, 0));
+  function draw(){
+    if (!net) return; const r = fit(), W = r.width, H = r.height; if (!W) return; ctx.clearRect(0, 0, W, H);
+    const sc = Math.min(W, H)/2.3, P = (u, v) => [W/2 + u*sc, H/2 - v*sc], out = net.L[2], e = t*t*(3 - 2*t);
+    if (e < .999) paintField(ctx, W, H, (px, py) => [(px - W/2)/sc*SIN, (H/2 - py)/sc*SIN], p => pred(net, p), 7, .28*(1 - e));
+    if (e > .001) paintField(ctx, W, H, (px, py) => [(px - W/2)/sc, (H/2 - py)/sc], h => 1/(1 + Math.exp(-(out.W[0]*h[0] + out.W[1]*h[1] + out.b[0]))), 7, .28*e);
+    if (e > .6){ ctx.globalAlpha = (e - .6)/.4; ctx.strokeStyle = tok("--ink"); ctx.lineWidth = 2.5; ctx.setLineDash([8,6]); ctx.beginPath();
+      const [a1, a2, b0] = [out.W[0], out.W[1], out.b[0]];
+      if (Math.abs(a2) > Math.abs(a1)){ const y = u => -(a1*u + b0)/a2; ctx.moveTo(...P(-1.3, y(-1.3))); ctx.lineTo(...P(1.3, y(1.3))); } else { const x = v => -(a2*v + b0)/a1; ctx.moveTo(...P(x(-1.3), -1.3)); ctx.lineTo(...P(x(1.3), 1.3)); }
+      ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1; }
+    const pos = x => { const h = hid(x); return [(1 - e)*x[0]/SIN + e*h[0], (1 - e)*x[1]/SIN + e*h[1]]; };
+    d.X.forEach((x, i) => { const [u, v] = pos(x); dot(ctx, ...P(u, v), 4, d.Y[i]); });
+    pick.forEach((i, k) => { const [px, py] = P(...pos(d.X[i])); ctx.beginPath(); ctx.arc(px, py, 10, 0, 7); ctx.strokeStyle = tok("--ink"); ctx.lineWidth = 2; ctx.stroke();
+      ctx.font = `700 13px ${tok("--mono")}`; ctx.fillStyle = tok("--ink"); ctx.textAlign = "left"; ctx.fillText("ABC"[k], px + 12, py - 8); });
+    ctx.font = `12px ${tok("--mono")}`; ctx.fillStyle = tok("--muted"); ctx.textAlign = "left";
+    ctx.fillText(e < .5 ? "x₁ →" : "h₁ →", W - 46, H - 10); ctx.fillText(e < .5 ? "↑ x₂" : "↑ h₂", 8, 18);
+    $("#feTv").textContent = e < .02 ? "input space" : e > .98 ? "hidden space" : "moving…";
+    $("#feS0").classList.toggle("dim", e > .5); $("#feS1").classList.toggle("dim", e <= .5);
+    $("#feNote").textContent = `Training accuracy ${pct(acc(net, d.X, d.Y))}. Ring records such as B and C end up on one side of the line, disc records such as A on the other.`;
+  }
+  function animate(to){ cancelAnimationFrame(raf); const go = () => { t = reduce ? to : t + (to > t ? .02 : -.02); if ((to > t0 && t >= to) || (to < t0 && t <= to)) t = to; $("#feT").value = Math.round(t*100); draw(); if (t !== to) raf = requestAnimationFrame(go); }; const t0 = t; go(); }
+  $("#feT").oninput = e => { cancelAnimationFrame(raf); t = +e.target.value/100; draw(); };
+  $("#fePlay").onclick = () => animate(t < .5 ? 1 : 0);
+  $("#feAgain").onclick = () => { seed++; train(); draw(); };
+  let done = false; visible(cv, v => { if (v && !done){ done = true; train(); draw(); } });
+  liveR(cv, "fe", draw);
+})();
+
+/* ---------------- embedding layer: GloVe rows and neighbours ---------------- */
+(function embedLayer(){
+  function show(w){
+    const g = GLOVE[w];
+    $("#emVec").innerHTML = `<span>"${w}" → token id ${GIDX[w].toLocaleString("en-US")} → row ${GIDX[w].toLocaleString("en-US")} of the table</span><span class="tot">(${g.vec8.map(v => v.toFixed(3)).join(", ")}, … 92 more)</span>`;
+    $("#emNN").innerHTML = `<thead><tr><th>Nearest word</th><th>Cosine similarity</th></tr></thead><tbody>` + g.nn.map(([a, b]) => `<tr><td>${a}</td><td>${b.toFixed(3)}</td></tr>`).join("") + "</tbody>";
+  }
+  const bs = $$("#emW .chip"); bs.forEach(b => b.onclick = () => { press(bs, b); show(b.dataset.w); }); show("late");
+})();
+
+/* ---------------- tokens and next-token prediction ---------------- */
+(function transformer(){
+  const box = $("#trBox"), cap = $("#trCap"), cards = $$("#transformer .trc"); let cur = 0, run = 0;
+  const wait = ms => new Promise(r => setTimeout(r, reduce ? 0 : ms));
+  const hash = t => { let h = 7; for (const c of t) h = (h*31 + c.charCodeAt(0)) >>> 0; return h; };
+  const vec = t => { let h = hash(t); return Array.from({length: 6}, () => { h = (h*1103515245 + 12345) >>> 0; return .15 + (h % 1000)/1000*.85; }); };
+  const vecHTML = (v, on) => `<span class="trvec${on ? " on" : ""}">${v.map(a => `<i style="opacity:${a.toFixed(2)}"></i>`).join("")}</span>`;
+  const TITLES = ["Idea 1 · Tokens and the embedding layer", "Idea 2 · Attention: a weighted mix", "Idea 3 · Next-token prediction"];
+  function select(i){ cur = i; run++; cards.forEach((c, k) => c.setAttribute("aria-pressed", String(k === i))); $("#trTitle").textContent = TITLES[i]; [still0, still1, still2][i](); }
+  // ---------- 1 · tokens ----------
+  function still0(){ box.innerHTML = `<div class="trsent">"The delivery was late and the box arrived damaged."</div><div class="trrow" id="trT"></div><div class="trrow" id="trSplit"></div>`; cap.textContent = "Press Play: the sentence is cut into tokens, and each token gets its vector from the embedding layer."; }
+  async function play0(id){
+    still0(); const row = $("#trT"); await wait(500);
+    row.innerHTML = TOK.map(t => `<span class="trtok"><span>${t}</span>${vecHTML(vec(t), false)}</span>`).join("");
+    cap.textContent = "Step 1: cut the text into tokens from a fixed vocabulary (lower case, punctuation is its own token).";
+    for (const el of $$(".trtok", row)){ if (id !== run) return; el.classList.add("on"); await wait(180); }
+    await wait(500); if (id !== run) return;
+    cap.textContent = "Step 2: the embedding layer looks up one learned vector per token. The same token always gets the same vector: both “the” match.";
+    for (const v of $$(".trvec", row)){ if (id !== run) return; v.classList.add("on"); await wait(120); }
+    await wait(800); if (id !== run) return;
+    const sp = $("#trSplit"); cap.textContent = "Step 3: a word missing from the vocabulary is split into known pieces (## marks a piece that continues a word).";
+    for (const [w, pcs] of Object.entries(TOKM).slice(0, 3)){ if (id !== run) return;
+      const g = document.createElement("span"); g.className = "trrow"; g.style.marginRight = "18px"; g.innerHTML = `<span class="mono" style="font-size:.9rem">${w} →</span>` + pcs.map(t => `<span class="trtok">${t}</span>`).join(""); sp.appendChild(g);
+      for (const el of $$(".trtok", g)){ el.classList.add("on"); await wait(160); } await wait(250); }
+  }
+  // ---------- 2 · attention ----------
+  const AW = {6: .38, 7: .18, 8: .16, 5: .08, 3: .07, 1: .05, 2: .03, 4: .02, 0: .02, 9: .01};
+  function tokPos(){ let x = 10; return TOK.map(t => { const w = t.length*9 + 20, p = {x, w, c: x + w/2}; x += w + 8; return p; }); }
+  function svg1(k){ // k = number of arcs shown (in weight order), mix = show mixed vector
+    const P = tokPos(), Wd = P[P.length - 1].x + P[P.length - 1].w + 10, y0 = 150, tgt = P[8];
+    const order = Object.entries(AW).sort((a, b) => b[1] - a[1]).map(([i, w]) => [+i, w]);
+    let h = "";
+    order.slice(0, k).forEach(([i, w]) => { if (i === 8) return; const a = P[i], mx = (a.c + tgt.c)/2, top = y0 - 16 - Math.min(110, Math.abs(a.c - tgt.c)*.45);
+      h += `<path d="M${tgt.c} ${y0 - 14} Q${mx} ${top} ${a.c} ${y0 - 14}" style="fill:none;stroke:var(--c2)" stroke-width="${(1 + w*22).toFixed(1)}" stroke-linecap="round" opacity=".85"/>`;
+      h += `<text x="${a.c}" y="${y0 - 20}" text-anchor="middle" font-size="12" font-family="var(--mono)" font-weight="700" style="fill:var(--ink)">${w.toFixed(2)}</text>`; });
+    TOK.forEach((t, i) => { const p = P[i], on = i === 8; h += `<rect x="${p.x}" y="${y0 - 12}" width="${p.w}" height="26" rx="7" style="fill:${on ? "var(--marker)" : "var(--surface)"};stroke:var(--edge)" stroke-width="2"/><text x="${p.c}" y="${y0 + 5}" text-anchor="middle" font-size="14" font-family="var(--mono)" style="fill:${on ? "var(--sticker-ink)" : "var(--ink)"}">${t}</text>`; });
+    const sw = AW[8];
+    if (order.slice(0, k).some(([i]) => i === 8)) h += `<text x="${tgt.c}" y="${y0 + 32}" text-anchor="middle" font-size="12" font-family="var(--mono)" font-weight="700" style="fill:var(--ink)">itself ${sw.toFixed(2)}</text>`;
+    return `<svg class="trsvg" viewBox="0 0 ${Wd} ${y0 + 40}" role="img" aria-label="Attention weights from the token damaged to the other tokens">${h}</svg>`;
+  }
+  function mixRow(show){ const v = TOK.map(vec), m = [0,1,2,3,4,5].map(j => TOK.reduce((s, _, i) => s + (AW[i] || 0)*v[i][j], 0));
+    return `<div class="trrow" style="align-items:center;gap:10px"><span class="mono" style="font-size:.85rem">"damaged" before</span>${vecHTML(v[8], true)}<span class="mono" style="font-size:.85rem">→ after attention</span>${vecHTML(m, show)}<span class="mono" style="font-size:.85rem">= 0.38·box + 0.18·arrived + 0.16·damaged + …</span></div>`; }
+  function still1(){ box.innerHTML = `<span class="illus">Illustrative weights for one head</span>` + svg1(0) + mixRow(false); cap.textContent = "Press Play: “damaged” looks at every token and decides how much of each one to mix into its own vector."; }
+  async function play1(id){
+    still1(); await wait(400);
+    for (let k = 1; k <= 10; k++){ if (id !== run) return; box.innerHTML = `<span class="illus">Illustrative weights for one head</span>` + svg1(k) + mixRow(false); cap.textContent = k < 3 ? "The biggest weight goes to “box”: what was damaged? The weights are positive and sum to 1." : "Smaller weights go to the other tokens."; await wait(k < 3 ? 650 : 220); }
+    await wait(500); if (id !== run) return;
+    box.innerHTML = `<span class="illus">Illustrative weights for one head</span>` + svg1(10) + mixRow(false); await wait(50); $$(".trvec", box)[1].classList.add("on");
+    cap.textContent = "The new vector of “damaged” is the weighted mix: it now carries information about the box. Every token does this at once, in every layer.";
+  }
+  // ---------- 3 · next token ----------
+  const STEPS = [["the box arrived", [["damaged", .41], ["broken", .17], ["late", .12], ["open", .08], ["today", .05], ["(all others)", .17]]],
+                 ["the box arrived damaged", [["and", .34], [".", .29], [",", .12], ["again", .06], ["(all others)", .19]]],
+                 ["the box arrived damaged and", [["the", .27], ["late", .21], ["empty", .10], ["i", .08], ["(all others)", .34]]]];
+  function ctxHTML(text, added){ const ws = text.split(" "); return `<div class="trnext">${ws.map((w, i) => i >= ws.length - added ? `<span class="new">${w}</span>` : w).join(" ")} <span class="slot">&nbsp;</span></div>`; }
+  function bars(P){ return `<div class="trbars">${P.map(([t, p], i) => `<div class="row${i === 0 ? " top" : ""}"><span>${t}</span><div class="trk"><i data-w="${(p/.45*100).toFixed(1)}"></i></div><span>${p.toFixed(2)}</span></div>`).join("")}</div>`; }
+  function still2(){ box.innerHTML = `<span class="illus">Illustrative probabilities</span>` + ctxHTML(STEPS[0][0], 0) + bars(STEPS[0][1]); cap.textContent = "Press Play: the model scores every token in the vocabulary, the next token is chosen, appended, and the loop repeats."; }
+  async function play2(id){
+    for (let s = 0; s < STEPS.length; s++){
+      if (id !== run) return; const [c, P] = STEPS[s];
+      box.innerHTML = `<span class="illus">Illustrative probabilities</span>` + ctxHTML(c, s ? 1 : 0) + bars(P);
+      cap.textContent = `Step ${s + 1}: given “${c}”, the model gives every possible next token a probability.`;
+      await wait(60); $$(".trbars i", box).forEach(i => i.style.width = i.dataset.w + "%"); await wait(1300); if (id !== run) return;
+      cap.textContent = `Pick “${P[0][0]}” (here the most likely; chat models usually sample), append it, and predict again.`; await wait(1100);
+    }
+    if (id !== run) return; box.innerHTML = `<span class="illus">Illustrative probabilities</span>` + ctxHTML(STEPS[2][0] + " the", 1);
+    cap.textContent = "Generation is this loop, one token at a time. Pretraining teaches exactly this: predict the next token of real text.";
+  }
+  cards.forEach((c, k) => c.onclick = () => select(k));
+  $("#trPlay").onclick = () => { const id = ++run; [play0, play1, play2][cur](id); };
+  select(0);
+})();
+
+/* ---------------- attention visualizer (illustrative scores) ---------------- */
+(function attention(){
+  const T = TOK, n = T.length, S = Array.from({length: n}, (_, i) => Array.from({length: n}, (_, j) => i === j ? 1 : 0));
+  const pair = (i, j, v) => { S[i][j] += v; };
+  // hand-written scores: 0 the 1 delivery 2 was 3 late 4 and 5 the 6 box 7 arrived 8 damaged 9 .
+  pair(8, 6, 3); pair(8, 7, 1.5); pair(3, 1, 3); pair(3, 2, 1); pair(7, 6, 2); pair(7, 1, 1); pair(6, 8, 2.5); pair(6, 5, 1);
+  pair(1, 3, 2.5); pair(1, 0, 1); pair(2, 1, 1.5); pair(2, 3, 1.5); pair(4, 3, 1); pair(4, 8, 1); pair(9, 8, 1); pair(9, 3, 1); pair(0, 1, 2); pair(5, 6, 2);
+  const soft = r => { const m = Math.max(...r), e = r.map(v => Math.exp(v - m)), s = e.reduce((a, b) => a + b, 0); return e.map(v => v/s); };
+  $("#attToks").innerHTML = T.map((t, i) => `<button data-i="${i}" aria-pressed="false">${t}</button>`).join("");
+  const bs = $$("#attToks button");
+  function show(i){
+    press(bs, bs[i]); const w = soft(S[i]), top = w.map((v, j) => [v, j]).sort((a, b) => b[0] - a[0]).slice(0, 3);
+    $("#attBars").innerHTML = T.map((t, j) => `<div class="row"><span>${t}${j === i ? " (self)" : ""}</span><div class="trk"><i style="width:${w[j]*100}%"></i></div><span>${w[j].toFixed(2)}</span></div>`).join("");
+    $("#attCalc").innerHTML = `<span>Query token: <b>${T[i]}</b></span><span>Scores: ${S[i].map(v => v.toFixed(1)).join(", ")}</span><span>weight<sub>j</sub> = e<sup>score<sub>j</sub></sup> / Σ e<sup>score</sup></span>` + top.map(([v, j]) => `<span>${T[j]}: ${v.toFixed(3)}</span>`).join("") + `<span class="tot">Sum of all weights = ${w.reduce((a, b) => a + b, 0).toFixed(3)}</span><span>new vector(${T[i]}) = Σ weight<sub>j</sub> × vector(token j)</span>`;
+  }
+  bs.forEach(b => b.onclick = () => show(+b.dataset.i)); show(8);
+})();
+
+/* ---------------- route 2: learning curve ---------------- */
+(function route2(){
+  const Ns = Object.keys(CURVE).map(Number), cv = $("#cvLc"), {ctx, fit} = setupCanvas(cv); let k = 4;
+  function draw(){
+    const r = fit(), W = r.width, H = r.height; if (!W) return; ctx.clearRect(0, 0, W, H);
+    const pad = {l:46, r:16, t:14, b:42}, lx = v => Math.log(v), X = v => pad.l + (lx(v) - lx(20))/(lx(1600) - lx(20))*(W - pad.l - pad.r), Y = v => H - pad.b - (v - .5)/.45*(H - pad.t - pad.b);
+    axes(ctx, W, H, pad, "labelled training reviews n (log scale)", "F1", Ns.map(v => [v, X(v)]), [.5,.6,.7,.8,.9].map(v => [v.toFixed(1), Y(v)]));
+    [["tfidf", "--muted", "TF-IDF + LR"], ["emb", "--c4", "Embeddings + LR"]].forEach(([key, col, name]) => {
+      ctx.fillStyle = tok(col); ctx.globalAlpha = .15; ctx.beginPath(); Ns.forEach((n, i) => { const [m, s] = CURVE[n][key]; i ? ctx.lineTo(X(n), Y(m + s)) : ctx.moveTo(X(n), Y(m + s)); }); Ns.slice().reverse().forEach(n => { const [m, s] = CURVE[n][key]; ctx.lineTo(X(n), Y(m - s)); }); ctx.fill(); ctx.globalAlpha = 1;
+      ctx.strokeStyle = tok(col); ctx.lineWidth = 2.5; ctx.beginPath(); Ns.forEach((n, i) => { const m = CURVE[n][key][0]; i ? ctx.lineTo(X(n), Y(m)) : ctx.moveTo(X(n), Y(m)); }); ctx.stroke();
+      Ns.forEach(n => { ctx.fillStyle = tok(col); ctx.beginPath(); ctx.arc(X(n), Y(CURVE[n][key][0]), n === Ns[k] ? 7 : 4, 0, 7); ctx.fill(); });
+      ctx.font = F12(); ctx.textAlign = "right"; ctx.fillText(name, X(1400) - 8, Y(CURVE[1400][key][0]) + (key === "emb" ? -12 : 30));
+    });
+    ctx.setLineDash([4,4]); ctx.strokeStyle = tok("--ink"); ctx.beginPath(); ctx.moveTo(X(Ns[k]), pad.t); ctx.lineTo(X(Ns[k]), H - pad.b); ctx.stroke(); ctx.setLineDash([]);
+    const c = CURVE[Ns[k]]; $("#lcNv").textContent = Ns[k].toLocaleString("en-US");
+    $("#lcT").textContent = `${c.tfidf[0].toFixed(3)}${c.tfidf[1] ? " ± " + c.tfidf[1].toFixed(3) : ""}`; $("#lcE").textContent = `${c.emb[0].toFixed(3)}${c.emb[1] ? " ± " + c.emb[1].toFixed(3) : ""}`;
+  }
+  $("#lcN").oninput = e => { k = +e.target.value; draw(); };
+  $("#lcNN").innerHTML = `<span>Query: "${NN.q}"</span>` + NN.hits.map(([t, y, s]) => `<span>${s.toFixed(3)} · ${y ? "neg." : "pos."} · ${t}</span>`).join("");
+  const n3 = CURVE[300], nF = CURVE[1400];
+  $("#lcFoot").innerHTML = `With 300 labels, embeddings + LR reach F1 ${n3.emb[0].toFixed(3)}; TF-IDF + LR needs all 1,400 labels to reach ${nF.tfidf[0].toFixed(3)}. Data: UCI Sentiment Labelled Sentences (Kotzias et al., 2015), 1,000 Amazon and 1,000 Yelp reviews, half negative. F1 for the negative class, mean ± sd over 10 random training draws (one draw at n = 1,400). Embeddings: all-MiniLM-L6-v2, 384 dimensions, ${EMBS} s per 1,000 reviews on a CPU.`;
+  liveR(cv, "lc", draw);
+})();
+
+/* ---------------- cost calculator ---------------- */
+(function cost(){
+  const F = [["N","Records to label, N",100000],["tok","Tokens per record",60],["ins","Prompt instructions, tokens",120],["shot","Extra tokens for 5 examples",300],["out","Output tokens per record",3],
+    ["pin","LLM US$ per 1M input tokens",3],["pout","LLM US$ per 1M output tokens",15],["rpm","LLM calls per minute",300],["l2","Labels for embeddings + LR",300],
+    ["l3","Labels for fine-tuning",1000],["lab","US$ per human label",.1],["ft","Fine-tuning compute, US$",20],["sec","Local model, s per 1,000 records",EMBS]];
+  $("#costIn").innerHTML = F.map(([k, t, v]) => `<label>${t}<input type="number" min="0" step="any" id="ci_${k}" value="${v}"></label>`).join("");
+  const money = v => v < .01 && v > 0 ? "< 0.01" : v.toLocaleString("en-US", {maximumFractionDigits: v < 100 ? 2 : 0}), time = s => s < 90 ? `${s.toFixed(0)} s` : s < 5400 ? `${(s/60).toFixed(0)} min` : `${(s/3600).toFixed(1)} h`;
+  function upd(){
+    const g = {}; F.forEach(([k]) => g[k] = Math.max(0, +$("#ci_" + k).value || 0));
+    const llm = extra => 1000*(((g.ins + extra + g.tok)*g.pin + g.out*g.pout)/1e6);
+    const loc = g.N/1000*g.sec, llmT = g.rpm ? g.N/g.rpm*60 : Infinity;
+    const R = [["TF-IDF + LR (baseline)", g.l2, g.l2*g.lab, 0, "seconds"], ["Zero-shot prompting", 0, 0, llm(0), time(llmT)], ["Few-shot prompting (5 examples)", 5, 5*g.lab, llm(g.shot), time(llmT)],
+      ["Embeddings + LR", g.l2, g.l2*g.lab, 0, time(loc)], ["Fine-tuning a small model", g.l3, g.l3*g.lab + g.ft, 0, time(loc)]];
+    $("#costT").innerHTML = `<thead><tr><th>Route</th><th>Labels</th><th>One-off, US$</th><th>Per 1,000 records, US$</th><th>Total for N, US$</th><th>Time for N</th></tr></thead><tbody>` + R.map(([n, l, o, p, t]) => `<tr><td>${n}</td><td>${l.toLocaleString("en-US")}</td><td>${money(o)}</td><td>${p ? money(p) : "≈ 0 (local)"}</td><td>${money(o + p*g.N/1000)}</td><td>${t}</td></tr>`).join("") + "</tbody>";
+    const z = llm(0)/1000, be = z ? g.l2*g.lab/z : Infinity;
+    $("#costNote").textContent = `Zero-shot costs US$ ${money(z*1000)} per 1,000 records here, so the one-off labelling cost of embeddings + LR (US$ ${money(g.l2*g.lab)}) is paid back after ${isFinite(be) ? Math.ceil(be).toLocaleString("en-US") : "—"} records. Local routes use the measured ${g.sec} s per 1,000 records; prompting time assumes the call rate shown. Fine-tuned inference is assumed to run at the same local speed.`;
+  }
+  $$("#costIn input").forEach(i => i.oninput = upd); upd();
+})();
+
+/* ---------------- reliability of an LLM classifier (illustrative outputs) ---------------- */
+(function reliable(){
+  const D = [["I would not recommend this place.",1,1,1,1,95],["If you want a sandwich just go to any Firehouse!!!!!",0,1,1,0,90],["My headset works just peachy-keen.",0,0,0,0,95],["The selection of food was not the best.",1,1,1,1,90],
+    ["say bye bye to your tip lady!",1,1,0,1,85],["I probably won't be coming back here.",1,1,1,1,95],["Works like a charm.. Works as advertised.",0,0,0,0,95],["I am sorry I made this purchase.",1,1,1,1,95],
+    ["This place has a lot of promise but fails to deliver.",1,1,1,1,90],["New Battery works great in phone.",0,0,0,0,95],["Thank you for wasting my money.",1,1,1,1,90],["It definitely was not as good as my S11.",0,1,1,1,90],
+    ["I don't think it would hold it too securly on your belt.",1,1,0,1,85],["The meat was pretty dry, I had the sliced brisket and pulled pork.",1,1,1,1,90],["If you're not familiar, check it out.",0,0,0,0,90],["OMG I felt like I had never eaten Thai food until this dish.",0,0,0,0,95]];
+  $("#relT").innerHTML = `<thead><tr><th>#</th><th>Review</th><th>Human</th><th>A1</th><th>A2</th><th>B1</th><th>Conf.</th></tr></thead><tbody>` + D.map((r, i) => `<tr><td>${i+1}</td><td>${r[0]}</td><td>${r[1]}</td>${[2,3,4].map(k => `<td class="${r[k] !== r[1] ? "x" : ""} ${k === 3 && r[3] !== r[2] ? "d" : ""}">${r[k]}</td>`).join("")}<td>${r[5]}%</td></tr>`).join("") + "</tbody>";
+  const n = D.length, accK = k => D.filter(r => r[k] === r[1]).length/n, agree = (a, b) => D.filter(r => r[a] === r[b]).length/n;
+  const kappa = (a, b) => { const po = agree(a, b), pa = D.filter(r => r[a]).length/n, pb = D.filter(r => r[b]).length/n, pe = pa*pb + (1 - pa)*(1 - pb); return (po - pe)/(1 - pe); };
+  const conf = D.reduce((s, r) => s + r[5], 0)/n;
+  const st = (k, v) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`;
+  $("#relS").innerHTML = st("Accuracy · A run 1", pct(accK(2))) + st("Accuracy · A run 2", pct(accK(3))) + st("Run 1 vs run 2 agree", `${pct(agree(2, 3))} · κ ${kappa(2, 3).toFixed(2)}`) + st("Prompt A vs B agree", pct(agree(2, 4))) + st("Mean stated confidence", conf.toFixed(1) + "%") + st("Measured accuracy · A run 1", pct(accK(2)));
+})();
+
+/* ---------------- check yourself ---------------- */
+(function qz(){
+  const Q = [
+    ["A network has 2 inputs, one hidden layer of 5 neurons and 1 output. How many weights and biases does it learn?", ["11","21","15"], 1, "Hidden layer: 2 × 5 weights + 5 biases = 15. Output: 5 weights + 1 bias = 6. Total 21."],
+    ["You remove every activation function from a 3-layer MLP. What boundary can it draw?", ["Any curve","Only a straight line","Only circles"], 1, "A product of linear maps is one linear map, so the network is a linear model again."],
+    ["Validation loss is lowest at epoch 140 and rises after it, while training loss keeps falling. What do you do?", ["Train longer","Keep the weights from epoch 140","Remove the validation set"], 1, "That is early stopping: the rise in validation loss means the network has started to fit noise."],
+    ["A clinic wants to flag 2 million notes. No labels yet, and the notes may not leave the clinic. Which route?", ["Zero-shot through an external API","Label a few hundred notes; local embeddings + LR","Fine-tune a large model through an API"], 1, "Privacy rules out external APIs. A few hundred labels and a local embedding model are cheap, fast and inspectable."],
+    ["You need labels for 40 reviews, once, by tomorrow. No labels, no privacy issue.", ["Zero-shot prompting, then check them","Fine-tune a small model","Collect 1,000 labels first"], 0, "With 40 records the cost per record does not matter and there is nothing to train on. Prompt, then verify every label."],
+    ["An auditor must see why each record was flagged, and the result must be reproducible next year. Which is weakest?", ["TF-IDF + LR, versioned","Embeddings + LR, versioned","Prompting a hosted LLM"], 2, "Hosted models change under the same name, outputs vary run to run, and the reason for a label is hard to inspect."],
+  ];
+  const host = $("#quiz"), sc = $("#quizScore"); let answered = 0, right = 0;
+  const upd = () => sc.textContent = answered < Q.length ? `${answered} of ${Q.length} answered · ${right} correct` : `Done: ${right} of ${Q.length} correct`;
+  Q.forEach(([q, O, a, why]) => {
+    const d = document.createElement("div"); d.className = "q";
+    d.innerHTML = `<p>${q}</p><div class="opts">${O.map((o, i) => `<button data-i="${i}">${o}</button>`).join("")}</div><p class="fb"></p>`;
+    $$("button", d).forEach(b => b.onclick = () => {
+      if (d.classList.contains("done")) return;
+      const i = +b.dataset.i; b.classList.add("picked"); d.classList.add("done", i === a ? "right" : "wrong");
+      answered++; if (i === a) right++;
+      $(".fb", d).innerHTML = `<b>${i === a ? "Correct." : "Not quite: " + O[a] + "."}</b> ${why}`; upd();
+    });
+    host.appendChild(d);
+  });
+  upd();
+})();
+
+/* ================= LAB ================= */
+segBar("#labBar", "#labDetail", [
+  "<h3>Brief · 5 minutes</h3><p style='margin-top:6px'>Open the prepared notebook in Google Colab (see the next page). It holds 300 labelled reviews, a fixed train/test split, and sentence embeddings computed in advance.</p>",
+  "<h3>Guided work · 30 minutes</h3><ol class='clean' style='margin-top:6px'><li>Train TF-IDF + logistic regression and embeddings + logistic regression. Record F1 on the test reviews and the run time.</li><li>LLM zero-shot: the notebook prints a prepared message with the test reviews. Paste it into your own chat LLM, paste the answer back, and score it. Do it twice, in two new chats.</li><li>Fill in the comparison table: F1, cost, time, and agreement between the two LLM runs.</li></ol>",
+  "<h3>Share-out · 10 minutes</h3><p style='margin-top:6px'>We compare F1, cost and time across the three methods, and how often the two LLM runs agreed.</p>"
+]);
+
+(function lab6(){
+  const M = ["TF-IDF + LR","Embeddings + LR","LLM zero-shot"];
+  $("#l6T").innerHTML = `<thead><tr><th>Method</th><th>F1</th><th>Cost, US$</th><th>Time, s</th></tr></thead><tbody>` + M.map((m, i) => `<tr><td>${m}</td>${["f","c","t"].map(k => `<td><input class="txt" type="number" min="0" step="any" id="l6${k}${i}" aria-label="${m} ${k === "f" ? "F1" : k === "c" ? "cost" : "time"}" style="text-align:right"></td>`).join("")}</tr>`).join("") + "</tbody>";
+  const ins = $$("#labresults input");
+  function upd(){
+    const v = M.map((m, i) => ({m, f: $("#l6f" + i).value, c: $("#l6c" + i).value, t: $("#l6t" + i).value}));
+    const fs = v.filter(o => o.f !== ""); let s = [];
+    if (fs.length){ const best = fs.reduce((a, b) => +b.f > +a.f ? b : a); s.push(`Best F1: ${best.m} (${(+best.f).toFixed(3)})`);
+      if (v[0].f !== "") fs.filter(o => o !== v[0]).forEach(o => s.push(`${o.m} vs baseline: ${(+o.f - +v[0].f >= 0 ? "+" : "") + (+o.f - +v[0].f).toFixed(3)} F1`)); }
+    const ag = $("#l6Agree").value; if (ag !== "") s.push(`LLM runs disagree on ${(100 - +ag).toFixed(1)} of every 100 reviews`);
+    $("#l6Sum").textContent = s.length ? s.join(" · ") : "Enter the class's numbers.";
+  }
+  ins.forEach(i => i.oninput = upd);
+  $("#l6Clear").onclick = () => { ins.forEach(i => i.value = ""); upd(); };
+  upd();
+})();
+
+/* ---------------- presentation mode: one board per screen ---------------- */
+(function present(){
+  const root = document.documentElement, mainEl = $("main");
+  const slides = $$("main > section.board, main > .part-break");
+  if (!slides.length) return;
+  const ico = {
+    play:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>',
+    prev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+    next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>',
+    fs:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+    fsx:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>',
+    close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+  };
+  const mk = (tag, cls, html, label) => { const e = document.createElement(tag); e.className = cls; if (html) e.innerHTML = html; if (label){ e.setAttribute("aria-label", label); e.title = label; } return e; };
+  const startBtn = mk("button", "present-btn", ico.play + "<span>Present</span>", "Present: one board at a time, full screen (P)");
+  const prog = mk("div", "deck-ui deck-progress");
+  const sidePrev = mk("button", "deck-ui deck-side prev", ico.prev, "Previous board (←)");
+  const sideNext = mk("button", "deck-ui deck-side next", ico.next, "Next board (→)");
+  const bar = mk("div", "deck-ui deck-bar"); bar.setAttribute("role", "toolbar"); bar.setAttribute("aria-label", "Presentation controls");
+  const bPrev = mk("button", "", ico.prev, "Previous board (←)"), bNext = mk("button", "", ico.next, "Next board (→)");
+  const count = mk("span", "deck-count"); count.setAttribute("aria-live", "polite");
+  const bFs = mk("button", "", ico.fs, "Full screen (F)"), bExit = mk("button", "", ico.close, "End presentation (Esc)");
+  bar.append(bPrev, count, bNext, bFs, bExit);
+  document.body.append(startBtn, prog, sidePrev, sideNext, bar);
+  const spacer = mk("div", "deck-ui deck-spacer"); mainEl.appendChild(spacer);
+  const keysHint = $(".rail .keys");
+  if (keysHint) keysHint.innerHTML = 'Press <kbd>P</kbd> to present one board at a time, then <kbd>←</kbd> <kbd>→</kbd>. <kbd>F</kbd> toggles full screen.';
+
+  let idx = 0, on = false, fsByUs = false;
+  const label = el => el.dataset.nav || (el.querySelector("h2") ? el.querySelector("h2").textContent : "");
+  const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+  function enterFs(){ const f = root.requestFullscreen || root.webkitRequestFullscreen; if (!f || fsEl()) return; try { const p = f.call(root); fsByUs = true; if (p && p.catch) p.catch(() => { fsByUs = false; }); } catch(e){ fsByUs = false; } }
+  function exitFs(){ const f = document.exitFullscreen || document.webkitExitFullscreen; if (f && fsEl()){ try { const p = f.call(document); if (p && p.catch) p.catch(() => {}); } catch(e){} } }
+  function fsIcon(){ const isFs = !!fsEl(); bFs.innerHTML = isFs ? ico.fsx : ico.fs; bFs.title = isFs ? "Exit full screen (F)" : "Full screen (F)"; bFs.setAttribute("aria-label", bFs.title); }
+
+  function fit(){
+    if (!on) return;
+    const el = slides[idx], vw = innerWidth, vh = innerHeight;
+    const narrow = vw < 700, pad = narrow ? 18 : 84, barH = 70, topPad = 22;
+    const W = Math.min(1180, vw - 2*pad);
+    root.style.setProperty("--deck-w", W + "px");
+    root.style.setProperty("--deck-s", 1);
+    const h = el.offsetHeight;
+    // phones: keep full size and scroll; larger screens: scale the board to fit the screen
+    let s = narrow ? 1 : Math.max(0.6, Math.min(1.6, (vw - 2*pad) / W, (vh - barH - topPad) / h));
+    const top = Math.max(topPad, (vh - barH - h*s) / 2 + 6);
+    root.style.setProperty("--deck-s", s.toFixed(4));
+    root.style.setProperty("--deck-top", top + "px");
+    spacer.style.top = (top + h*s + barH + 10) + "px";
+    // canvases size themselves from their on-screen box, so nudge them to redraw at the new scale
+    $$("canvas.cv, .cv", el).forEach(c => { c.style.width = "calc(100% - 1px)"; requestAnimationFrame(() => { c.style.width = ""; }); });
+  }
+  function show(i){
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((el, k) => el.classList.toggle("is-current", k === idx));
+    mainEl.scrollTop = 0;
+    count.textContent = `${idx + 1} / ${slides.length} · ${label(slides[idx])}`;
+    prog.style.width = ((idx + 1) / slides.length * 100) + "%";
+    bPrev.disabled = sidePrev.disabled = idx === 0;
+    bNext.disabled = sideNext.disabled = idx === slides.length - 1;
+    const b = boards.indexOf(slides[idx]); if (b >= 0) current = b;
+    requestAnimationFrame(fit);
+  }
+  function start(){
+    if (on) return;
+    on = true; root.classList.add("presenting");
+    let i = slides.indexOf(boards[current]); if (i < 0) i = 0;
+    enterFs(); show(i);
+  }
+  function stop(){
+    if (!on) return;
+    on = false; root.classList.remove("presenting");
+    slides.forEach(el => el.classList.remove("is-current"));
+    if (fsByUs) exitFs(); fsByUs = false;
+    const el = slides[idx];
+    requestAnimationFrame(() => el.scrollIntoView({block: "start"}));
+  }
+  startBtn.onclick = start;
+  bPrev.onclick = sidePrev.onclick = () => show(idx - 1);
+  bNext.onclick = sideNext.onclick = () => show(idx + 1);
+  bExit.onclick = stop;
+  bFs.onclick = () => { if (fsEl()) { fsByUs = false; exitFs(); } else enterFs(); };
+  const onFs = () => { fsIcon(); if (on && !fsEl() && fsByUs){ fsByUs = false; stop(); } else requestAnimationFrame(fit); };
+  document.addEventListener("fullscreenchange", onFs); document.addEventListener("webkitfullscreenchange", onFs);
+  addEventListener("resize", () => requestAnimationFrame(fit));
+  new ResizeObserver(() => { if (on) requestAnimationFrame(fit); }).observe(mainEl);
+  slides.forEach(el => new ResizeObserver(() => { if (on && el.classList.contains("is-current")) fit(); }).observe(el));
+
+  // keys: capture phase so the scrolling navigation never sees them while presenting
+  addEventListener("keydown", e => {
+    const t = e.target, typing = t.closest && t.closest("input,textarea,select,[contenteditable]");
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!on){
+      if (!typing && (e.key === "p" || e.key === "P")){ e.preventDefault(); start(); }
+      return;
+    }
+    if (typing) return;
+    const onBtn = t.closest && t.closest("button,a,summary");
+    let handled = true;
+    if (e.key === "ArrowRight" || e.key === "PageDown" || (e.key === " " && !onBtn) || (e.key === "Enter" && !onBtn)) show(idx + 1);
+    else if (e.key === "ArrowLeft" || e.key === "PageUp" || e.key === "Backspace") show(idx - 1);
+    else if (e.key === "Home") show(0);
+    else if (e.key === "End") show(slides.length - 1);
+    else if (e.key === "Escape") stop();
+    else if (e.key === "f" || e.key === "F") bFs.onclick();
+    else if (e.key === "p" || e.key === "P") stop();
+    else handled = false;
+    if (handled){ e.preventDefault(); e.stopImmediatePropagation(); e.stopPropagation(); }
+  }, true);
+
+  // swipe on touch screens, but not on demos that use dragging
+  let sx = 0, sy = 0, swipe = false;
+  mainEl.addEventListener("touchstart", e => { if (!on || e.touches.length !== 1) return; swipe = !e.target.closest("canvas,.scene,input,select,button,svg,.tbl-wrap"); sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, {passive: true});
+  mainEl.addEventListener("touchend", e => { if (!on || !swipe) return; const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy; if (Math.abs(dx) > 60 && Math.abs(dy) < 50) show(idx + (dx < 0 ? 1 : -1)); }, {passive: true});
+})();
+})();
+</script>
+
+</body>
+</html>
