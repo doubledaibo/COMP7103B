@@ -1,0 +1,212 @@
+I run the online shop of a UK gift-ware company (home decorations, bags, kitchen and party items, Christmas goods).
+From 7,900 invoices (June to November 2011) I mined association rules with the Apriori algorithm.
+Below are 200 of the rules: the 192 with the highest support and the 8 with the lowest lift. Each line gives:
+rule ID | rule {left side} → {right side} | support (share of invoices that contain all items of the rule)
+| confidence (share of invoices with the left side that also contain the right side) | lift (confidence divided by the support of the right side).
+
+Rules:
+R001 | {GREEN REGENCY TEACUP AND SAUCER, ROSES REGENCY TEACUP AND SAUCER} → {PINK REGENCY TEACUP AND SAUCER} | support 3.09% | confidence 76.2% | lift 16.69
+R002 | {PINK REGENCY TEACUP AND SAUCER} → {GREEN REGENCY TEACUP AND SAUCER, ROSES REGENCY TEACUP AND SAUCER} | support 3.09% | confidence 67.6% | lift 16.69
+R003 | {GREEN REGENCY TEACUP AND SAUCER} → {PINK REGENCY TEACUP AND SAUCER, ROSES REGENCY TEACUP AND SAUCER} | support 3.09% | confidence 55.8% | lift 15.98
+R004 | {PINK REGENCY TEACUP AND SAUCER, ROSES REGENCY TEACUP AND SAUCER} → {GREEN REGENCY TEACUP AND SAUCER} | support 3.09% | confidence 88.4% | lift 15.98
+R005 | {WOODEN HEART CHRISTMAS SCANDINAVIAN} → {WOODEN STAR CHRISTMAS SCANDINAVIAN} | support 4.14% | confidence 77.9% | lift 14.97
+R006 | {WOODEN STAR CHRISTMAS SCANDINAVIAN} → {WOODEN HEART CHRISTMAS SCANDINAVIAN} | support 4.14% | confidence 79.6% | lift 14.97
+R007 | {GREEN REGENCY TEACUP AND SAUCER} → {PINK REGENCY TEACUP AND SAUCER} | support 3.75% | confidence 67.7% | lift 14.82
+R008 | {PINK REGENCY TEACUP AND SAUCER} → {GREEN REGENCY TEACUP AND SAUCER} | support 3.75% | confidence 82.0% | lift 14.82
+R009 | {GREEN REGENCY TEACUP AND SAUCER, PINK REGENCY TEACUP AND SAUCER} → {ROSES REGENCY TEACUP AND SAUCER} | support 3.09% | confidence 82.4% | lift 14.34
+R010 | {ROSES REGENCY TEACUP AND SAUCER} → {GREEN REGENCY TEACUP AND SAUCER, PINK REGENCY TEACUP AND SAUCER} | support 3.09% | confidence 53.7% | lift 14.34
+R011 | {DOLLY GIRL LUNCH BOX} → {SPACEBOY LUNCH BOX} | support 3.06% | confidence 64.2% | lift 13.42
+R012 | {SPACEBOY LUNCH BOX} → {DOLLY GIRL LUNCH BOX} | support 3.06% | confidence 64.0% | lift 13.42
+R013 | {PINK REGENCY TEACUP AND SAUCER} → {ROSES REGENCY TEACUP AND SAUCER} | support 3.49% | confidence 76.5% | lift 13.30
+R014 | {ROSES REGENCY TEACUP AND SAUCER} → {PINK REGENCY TEACUP AND SAUCER} | support 3.49% | confidence 60.8% | lift 13.30
+R015 | {GREEN REGENCY TEACUP AND SAUCER} → {ROSES REGENCY TEACUP AND SAUCER} | support 4.05% | confidence 73.2% | lift 12.74
+R016 | {ROSES REGENCY TEACUP AND SAUCER} → {GREEN REGENCY TEACUP AND SAUCER} | support 4.05% | confidence 70.5% | lift 12.74
+R017 | {SET OF 12 MINI LOAF BAKING CASES} → {SET OF 12 FAIRY CAKE BAKING CASES} | support 3.05% | confidence 67.3% | lift 12.14
+R018 | {SET OF 12 FAIRY CAKE BAKING CASES} → {SET OF 12 MINI LOAF BAKING CASES} | support 3.05% | confidence 55.0% | lift 12.14
+R019 | {CHARLOTTE BAG SUKI DESIGN} → {WOODLAND CHARLOTTE BAG} | support 3.05% | confidence 53.7% | lift 11.07
+R020 | {WOODLAND CHARLOTTE BAG} → {CHARLOTTE BAG SUKI DESIGN} | support 3.05% | confidence 62.9% | lift 11.07
+R021 | {CHARLOTTE BAG PINK POLKADOT} → {RED RETROSPOT CHARLOTTE BAG} | support 3.53% | confidence 72.5% | lift 10.70
+R022 | {RED RETROSPOT CHARLOTTE BAG} → {CHARLOTTE BAG PINK POLKADOT} | support 3.53% | confidence 52.1% | lift 10.70
+R023 | {RED RETROSPOT CHARLOTTE BAG} → {STRAWBERRY CHARLOTTE BAG} | support 3.42% | confidence 50.5% | lift 10.36
+R024 | {STRAWBERRY CHARLOTTE BAG} → {RED RETROSPOT CHARLOTTE BAG} | support 3.42% | confidence 70.1% | lift 10.36
+R025 | {ALARM CLOCK BAKELIKE GREEN} → {ALARM CLOCK BAKELIKE RED} | support 4.16% | confidence 62.0% | lift 10.05
+R026 | {ALARM CLOCK BAKELIKE RED} → {ALARM CLOCK BAKELIKE GREEN} | support 4.16% | confidence 67.6% | lift 10.05
+R027 | {WOODLAND CHARLOTTE BAG} → {RED RETROSPOT CHARLOTTE BAG} | support 3.14% | confidence 64.8% | lift 9.56
+R028 | {RED RETROSPOT CHARLOTTE BAG} → {WOODLAND CHARLOTTE BAG} | support 3.14% | confidence 46.4% | lift 9.56
+R029 | {CHARLOTTE BAG SUKI DESIGN} → {RED RETROSPOT CHARLOTTE BAG} | support 3.48% | confidence 61.2% | lift 9.04
+R030 | {RED RETROSPOT CHARLOTTE BAG} → {CHARLOTTE BAG SUKI DESIGN} | support 3.48% | confidence 51.4% | lift 9.04
+R031 | {JUMBO BAG 50'S CHRISTMAS} → {JUMBO BAG VINTAGE CHRISTMAS} | support 3.54% | confidence 46.4% | lift 8.82
+R032 | {JUMBO BAG VINTAGE CHRISTMAS} → {JUMBO BAG 50'S CHRISTMAS} | support 3.54% | confidence 67.5% | lift 8.82
+R033 | {CHOCOLATE HOT WATER BOTTLE} → {HOT WATER BOTTLE TEA AND SYMPATHY} | support 3.14% | confidence 49.1% | lift 8.34
+R034 | {HOT WATER BOTTLE TEA AND SYMPATHY} → {CHOCOLATE HOT WATER BOTTLE} | support 3.14% | confidence 53.3% | lift 8.34
+R035 | {JUMBO BAG APPLES} → {JUMBO BAG PEARS} | support 3.94% | confidence 47.0% | lift 8.17
+R036 | {JUMBO BAG PEARS} → {JUMBO BAG APPLES} | support 3.94% | confidence 68.5% | lift 8.17
+R037 | {WOODEN FRAME ANTIQUE WHITE} → {WOODEN PICTURE FRAME WHITE FINISH} | support 3.90% | confidence 56.4% | lift 7.86
+R038 | {WOODEN PICTURE FRAME WHITE FINISH} → {WOODEN FRAME ANTIQUE WHITE} | support 3.90% | confidence 54.3% | lift 7.86
+R039 | {GARDENERS KNEELING PAD CUP OF TEA} → {GARDENERS KNEELING PAD KEEP CALM} | support 5.67% | confidence 71.1% | lift 7.36
+R040 | {GARDENERS KNEELING PAD KEEP CALM} → {GARDENERS KNEELING PAD CUP OF TEA} | support 5.67% | confidence 58.7% | lift 7.36
+R041 | {SMALL WHITE HEART OF WICKER} → {LARGE WHITE HEART OF WICKER} | support 3.52% | confidence 48.2% | lift 7.21
+R042 | {LARGE WHITE HEART OF WICKER} → {SMALL WHITE HEART OF WICKER} | support 3.52% | confidence 52.7% | lift 7.21
+R043 | {PAPER CHAIN KIT 50'S CHRISTMAS} → {PAPER CHAIN KIT VINTAGE CHRISTMAS} | support 4.95% | confidence 47.5% | lift 6.56
+R044 | {PAPER CHAIN KIT VINTAGE CHRISTMAS} → {PAPER CHAIN KIT 50'S CHRISTMAS} | support 4.95% | confidence 68.4% | lift 6.56
+R045 | {LUNCH BAG SPACEBOY DESIGN} → {LUNCH BAG WOODLAND} | support 3.30% | confidence 41.3% | lift 6.50
+R046 | {LUNCH BAG WOODLAND} → {LUNCH BAG SPACEBOY DESIGN} | support 3.30% | confidence 52.0% | lift 6.50
+R047 | {LUNCH BAG APPLE DESIGN} → {LUNCH BAG VINTAGE LEAF DESIGN} | support 3.09% | confidence 36.3% | lift 6.27
+R048 | {LUNCH BAG VINTAGE LEAF DESIGN} → {LUNCH BAG APPLE DESIGN} | support 3.09% | confidence 53.4% | lift 6.27
+R049 | {JUMBO BAG PEARS} → {JUMBO BAG VINTAGE LEAF} | support 3.06% | confidence 53.3% | lift 6.21
+R050 | {JUMBO BAG VINTAGE LEAF} → {JUMBO BAG PEARS} | support 3.06% | confidence 35.7% | lift 6.21
+R051 | {JUMBO BAG RED RETROSPOT, JUMBO BAG VINTAGE DOILY} → {JUMBO BAG VINTAGE LEAF} | support 3.04% | confidence 51.7% | lift 6.03
+R052 | {JUMBO BAG VINTAGE LEAF} → {JUMBO BAG RED RETROSPOT, JUMBO BAG VINTAGE DOILY} | support 3.04% | confidence 35.4% | lift 6.03
+R053 | {LUNCH BAG APPLE DESIGN} → {LUNCH BAG WOODLAND} | support 3.18% | confidence 37.3% | lift 5.87
+R054 | {LUNCH BAG WOODLAND} → {LUNCH BAG APPLE DESIGN} | support 3.18% | confidence 50.0% | lift 5.87
+R055 | {LUNCH BAG PINK POLKADOT} → {LUNCH BAG RED RETROSPOT} | support 4.43% | confidence 57.1% | lift 5.84
+R056 | {LUNCH BAG RED RETROSPOT} → {LUNCH BAG PINK POLKADOT} | support 4.43% | confidence 45.3% | lift 5.84
+R057 | {LUNCH BAG CARS BLUE} → {LUNCH BAG WOODLAND} | support 3.04% | confidence 37.1% | lift 5.84
+R058 | {LUNCH BAG WOODLAND} → {LUNCH BAG CARS BLUE} | support 3.04% | confidence 47.8% | lift 5.84
+R059 | {LUNCH BAG PINK POLKADOT} → {LUNCH BAG BLACK SKULL.} | support 4.18% | confidence 53.8% | lift 5.82
+R060 | {LUNCH BAG BLACK SKULL.} → {LUNCH BAG PINK POLKADOT} | support 4.18% | confidence 45.1% | lift 5.82
+R061 | {LUNCH BAG WOODLAND} → {LUNCH BAG SUKI DESIGN} | support 3.19% | confidence 50.2% | lift 5.80
+R062 | {LUNCH BAG SUKI DESIGN} → {LUNCH BAG WOODLAND} | support 3.19% | confidence 36.8% | lift 5.80
+R063 | {JUMBO BAG VINTAGE DOILY} → {JUMBO BAG RED RETROSPOT, JUMBO BAG VINTAGE LEAF} | support 3.04% | confidence 25.4% | lift 5.78
+R064 | {JUMBO BAG RED RETROSPOT, JUMBO BAG VINTAGE LEAF} → {JUMBO BAG VINTAGE DOILY} | support 3.04% | confidence 69.2% | lift 5.78
+R065 | {LUNCH BAG CARS BLUE} → {LUNCH BAG PINK POLKADOT} | support 3.65% | confidence 44.5% | lift 5.74
+R066 | {LUNCH BAG PINK POLKADOT} → {LUNCH BAG CARS BLUE} | support 3.65% | confidence 47.0% | lift 5.74
+R067 | {LUNCH BAG SPACEBOY DESIGN} → {LUNCH BAG SUKI DESIGN} | support 3.95% | confidence 49.4% | lift 5.70
+R068 | {LUNCH BAG SUKI DESIGN} → {LUNCH BAG SPACEBOY DESIGN} | support 3.95% | confidence 45.6% | lift 5.70
+R069 | {LUNCH BAG SPACEBOY DESIGN} → {LUNCH BAG CARS BLUE} | support 3.73% | confidence 46.7% | lift 5.70
+R070 | {LUNCH BAG CARS BLUE} → {LUNCH BAG SPACEBOY DESIGN} | support 3.73% | confidence 45.6% | lift 5.70
+R071 | {LUNCH BAG RED RETROSPOT} → {LUNCH BAG WOODLAND} | support 3.52% | confidence 36.0% | lift 5.67
+R072 | {LUNCH BAG WOODLAND} → {LUNCH BAG RED RETROSPOT} | support 3.52% | confidence 55.4% | lift 5.67
+R073 | {LUNCH BAG CARS BLUE} → {LUNCH BAG SUKI DESIGN} | support 4.01% | confidence 49.0% | lift 5.66
+R074 | {LUNCH BAG SUKI DESIGN} → {LUNCH BAG CARS BLUE} | support 4.01% | confidence 46.3% | lift 5.66
+R075 | {LUNCH BAG BLACK SKULL.} → {LUNCH BAG SUKI DESIGN} | support 4.53% | confidence 49.0% | lift 5.66
+R076 | {LUNCH BAG SUKI DESIGN} → {LUNCH BAG BLACK SKULL.} | support 4.53% | confidence 52.3% | lift 5.66
+R077 | {JUMBO SHOPPER VINTAGE RED PAISLEY} → {JUMBO STORAGE BAG SUKI} | support 3.33% | confidence 43.3% | lift 5.52
+R078 | {JUMBO STORAGE BAG SUKI} → {JUMBO SHOPPER VINTAGE RED PAISLEY} | support 3.33% | confidence 42.4% | lift 5.52
+R079 | {LUNCH BAG VINTAGE LEAF DESIGN} → {LUNCH BAG VINTAGE DOILY} | support 3.29% | confidence 56.9% | lift 5.51
+R080 | {LUNCH BAG VINTAGE DOILY} → {LUNCH BAG VINTAGE LEAF DESIGN} | support 3.29% | confidence 31.9% | lift 5.51
+R081 | {LUNCH BAG APPLE DESIGN} → {LUNCH BAG SUKI DESIGN} | support 4.04% | confidence 47.4% | lift 5.47
+R082 | {LUNCH BAG SUKI DESIGN} → {LUNCH BAG APPLE DESIGN} | support 4.04% | confidence 46.6% | lift 5.47
+R083 | {LUNCH BAG WOODLAND} → {LUNCH BAG BLACK SKULL.} | support 3.22% | confidence 50.6% | lift 5.47
+R084 | {LUNCH BAG BLACK SKULL.} → {LUNCH BAG WOODLAND} | support 3.22% | confidence 34.7% | lift 5.47
+R085 | {LUNCH BAG RED RETROSPOT} → {LUNCH BAG SUKI DESIGN} | support 4.56% | confidence 46.6% | lift 5.39
+R086 | {LUNCH BAG SUKI DESIGN} → {LUNCH BAG RED RETROSPOT} | support 4.56% | confidence 52.6% | lift 5.39
+R087 | {JUMBO BAG APPLES} → {JUMBO STORAGE BAG SUKI} | support 3.53% | confidence 42.1% | lift 5.37
+R088 | {JUMBO STORAGE BAG SUKI} → {JUMBO BAG APPLES} | support 3.53% | confidence 45.0% | lift 5.37
+R089 | {JUMBO BAG PEARS} → {JUMBO BAG VINTAGE DOILY} | support 3.66% | confidence 63.7% | lift 5.32
+R090 | {JUMBO BAG VINTAGE DOILY} → {JUMBO BAG PEARS} | support 3.66% | confidence 30.5% | lift 5.32
+R091 | {LUNCH BAG BLACK SKULL.} → {LUNCH BAG CARS BLUE} | support 4.03% | confidence 43.5% | lift 5.31
+R092 | {LUNCH BAG CARS BLUE} → {LUNCH BAG BLACK SKULL.} | support 4.03% | confidence 49.1% | lift 5.31
+R093 | {LUNCH BAG PINK POLKADOT} → {LUNCH BAG SUKI DESIGN} | support 3.54% | confidence 45.7% | lift 5.28
+R094 | {LUNCH BAG SUKI DESIGN} → {LUNCH BAG PINK POLKADOT} | support 3.54% | confidence 40.9% | lift 5.28
+R095 | {JUMBO STORAGE BAG SUKI} → {JUMBO BAG PINK POLKADOT} | support 3.41% | confidence 43.4% | lift 5.26
+R096 | {JUMBO BAG PINK POLKADOT} → {JUMBO STORAGE BAG SUKI} | support 3.41% | confidence 41.3% | lift 5.26
+R097 | {LUNCH BAG BLACK SKULL.} → {LUNCH BAG SPACEBOY DESIGN} | support 3.87% | confidence 41.9% | lift 5.23
+R098 | {LUNCH BAG SPACEBOY DESIGN} → {LUNCH BAG BLACK SKULL.} | support 3.87% | confidence 48.4% | lift 5.23
+R099 | {LUNCH BAG APPLE DESIGN} → {LUNCH BAG RED RETROSPOT} | support 4.29% | confidence 50.4% | lift 5.15
+R100 | {LUNCH BAG RED RETROSPOT} → {LUNCH BAG APPLE DESIGN} | support 4.29% | confidence 43.9% | lift 5.15
+R101 | {LUNCH BAG RED RETROSPOT} → {LUNCH BAG BLACK SKULL.} | support 4.66% | confidence 47.7% | lift 5.15
+R102 | {LUNCH BAG BLACK SKULL.} → {LUNCH BAG RED RETROSPOT} | support 4.66% | confidence 50.3% | lift 5.15
+R103 | {LUNCH BAG APPLE DESIGN} → {LUNCH BAG SPACEBOY DESIGN} | support 3.51% | confidence 41.2% | lift 5.14
+R104 | {LUNCH BAG SPACEBOY DESIGN} → {LUNCH BAG APPLE DESIGN} | support 3.51% | confidence 43.8% | lift 5.14
+R105 | {LUNCH BAG APPLE DESIGN} → {LUNCH BAG BLACK SKULL.} | support 4.01% | confidence 47.1% | lift 5.09
+R106 | {LUNCH BAG BLACK SKULL.} → {LUNCH BAG APPLE DESIGN} | support 4.01% | confidence 43.4% | lift 5.09
+R107 | {LUNCH BAG APPLE DESIGN} → {LUNCH BAG PINK POLKADOT} | support 3.34% | confidence 39.2% | lift 5.06
+R108 | {LUNCH BAG PINK POLKADOT} → {LUNCH BAG APPLE DESIGN} | support 3.34% | confidence 43.1% | lift 5.06
+R109 | {JUMBO BAG APPLES} → {JUMBO BAG VINTAGE LEAF} | support 3.58% | confidence 42.7% | lift 4.98
+R110 | {JUMBO BAG VINTAGE LEAF} → {JUMBO BAG APPLES} | support 3.58% | confidence 41.7% | lift 4.98
+R111 | {JUMBO BAG APPLES} → {JUMBO BAG PINK POLKADOT} | support 3.44% | confidence 41.1% | lift 4.98
+R112 | {JUMBO BAG PINK POLKADOT} → {JUMBO BAG APPLES} | support 3.44% | confidence 41.7% | lift 4.98
+R113 | {JUMBO BAG ALPHABET} → {JUMBO BAG APPLES} | support 3.33% | confidence 41.7% | lift 4.97
+R114 | {JUMBO BAG APPLES} → {JUMBO BAG ALPHABET} | support 3.33% | confidence 39.7% | lift 4.97
+R115 | {LUNCH BAG PINK POLKADOT} → {LUNCH BAG SPACEBOY DESIGN} | support 3.08% | confidence 39.6% | lift 4.96
+R116 | {LUNCH BAG SPACEBOY DESIGN} → {LUNCH BAG PINK POLKADOT} | support 3.08% | confidence 38.4% | lift 4.96
+R117 | {LUNCH BAG APPLE DESIGN} → {LUNCH BAG VINTAGE DOILY} | support 4.34% | confidence 51.0% | lift 4.94
+R118 | {LUNCH BAG VINTAGE DOILY} → {LUNCH BAG APPLE DESIGN} | support 4.34% | confidence 42.1% | lift 4.94
+R119 | {JUMBO BAG VINTAGE DOILY} → {JUMBO BAG VINTAGE LEAF} | support 5.06% | confidence 42.3% | lift 4.93
+R120 | {JUMBO BAG VINTAGE LEAF} → {JUMBO BAG VINTAGE DOILY} | support 5.06% | confidence 59.0% | lift 4.93
+R121 | {JUMBO BAG APPLES} → {JUMBO SHOPPER VINTAGE RED PAISLEY} | support 3.16% | confidence 37.8% | lift 4.91
+R122 | {JUMBO SHOPPER VINTAGE RED PAISLEY} → {JUMBO BAG APPLES} | support 3.16% | confidence 41.2% | lift 4.91
+R123 | {JUMBO BAG PINK POLKADOT} → {JUMBO BAG RED RETROSPOT} | support 5.62% | confidence 68.1% | lift 4.88
+R124 | {JUMBO BAG RED RETROSPOT} → {JUMBO BAG PINK POLKADOT} | support 5.62% | confidence 40.3% | lift 4.88
+R125 | {JUMBO BAG RED RETROSPOT} → {JUMBO BAG STRAWBERRY} | support 3.80% | confidence 27.2% | lift 4.83
+R126 | {JUMBO BAG STRAWBERRY} → {JUMBO BAG RED RETROSPOT} | support 3.80% | confidence 67.4% | lift 4.83
+R127 | {LUNCH BAG APPLE DESIGN} → {LUNCH BAG CARS BLUE} | support 3.37% | confidence 39.5% | lift 4.83
+R128 | {LUNCH BAG CARS BLUE} → {LUNCH BAG APPLE DESIGN} | support 3.37% | confidence 41.1% | lift 4.83
+R129 | {JUMBO BAG PINK POLKADOT} → {JUMBO SHOPPER VINTAGE RED PAISLEY} | support 3.05% | confidence 37.0% | lift 4.81
+R130 | {JUMBO SHOPPER VINTAGE RED PAISLEY} → {JUMBO BAG PINK POLKADOT} | support 3.05% | confidence 39.7% | lift 4.81
+R131 | {LUNCH BAG CARS BLUE} → {LUNCH BAG RED RETROSPOT} | support 3.85% | confidence 47.0% | lift 4.81
+R132 | {LUNCH BAG RED RETROSPOT} → {LUNCH BAG CARS BLUE} | support 3.85% | confidence 39.4% | lift 4.81
+R133 | {JUMBO BAG RED RETROSPOT} → {JUMBO BAG SCANDINAVIAN BLUE PAISLEY} | support 3.22% | confidence 23.0% | lift 4.79
+R134 | {JUMBO BAG SCANDINAVIAN BLUE PAISLEY} → {JUMBO BAG RED RETROSPOT} | support 3.22% | confidence 66.8% | lift 4.79
+R135 | {LUNCH BAG RED RETROSPOT} → {LUNCH BAG SPACEBOY DESIGN} | support 3.73% | confidence 38.2% | lift 4.78
+R136 | {LUNCH BAG SPACEBOY DESIGN} → {LUNCH BAG RED RETROSPOT} | support 3.73% | confidence 46.7% | lift 4.78
+R137 | {JUMBO BAG RED RETROSPOT} → {JUMBO BAG WOODLAND ANIMALS} | support 3.24% | confidence 23.2% | lift 4.65
+R138 | {JUMBO BAG WOODLAND ANIMALS} → {JUMBO BAG RED RETROSPOT} | support 3.24% | confidence 65.0% | lift 4.65
+R139 | {LUNCH BAG RED RETROSPOT} → {LUNCH BAG VINTAGE DOILY} | support 4.66% | confidence 47.7% | lift 4.62
+R140 | {LUNCH BAG VINTAGE DOILY} → {LUNCH BAG RED RETROSPOT} | support 4.66% | confidence 45.2% | lift 4.62
+R141 | {JUMBO BAG PINK VINTAGE PAISLEY} → {JUMBO BAG RED RETROSPOT} | support 3.63% | confidence 63.2% | lift 4.53
+R142 | {JUMBO BAG RED RETROSPOT} → {JUMBO BAG PINK VINTAGE PAISLEY} | support 3.63% | confidence 26.0% | lift 4.53
+R143 | {JUMBO BAG ALPHABET} → {JUMBO BAG VINTAGE LEAF} | support 3.10% | confidence 38.8% | lift 4.52
+R144 | {JUMBO BAG VINTAGE LEAF} → {JUMBO BAG ALPHABET} | support 3.10% | confidence 36.1% | lift 4.52
+R145 | {LUNCH BAG PINK POLKADOT} → {LUNCH BAG VINTAGE DOILY} | support 3.59% | confidence 46.3% | lift 4.49
+R146 | {LUNCH BAG VINTAGE DOILY} → {LUNCH BAG PINK POLKADOT} | support 3.59% | confidence 34.8% | lift 4.49
+R147 | {JUMBO BAG RED RETROSPOT} → {JUMBO STORAGE BAG SUKI} | support 4.85% | confidence 34.7% | lift 4.42
+R148 | {JUMBO STORAGE BAG SUKI} → {JUMBO BAG RED RETROSPOT} | support 4.85% | confidence 61.8% | lift 4.42
+R149 | {JUMBO BAG BAROQUE BLACK WHITE} → {JUMBO BAG RED RETROSPOT} | support 3.46% | confidence 60.4% | lift 4.33
+R150 | {JUMBO BAG RED RETROSPOT} → {JUMBO BAG BAROQUE BLACK WHITE} | support 3.46% | confidence 24.8% | lift 4.33
+R151 | {JUMBO BAG APPLES} → {JUMBO BAG RED RETROSPOT} | support 5.04% | confidence 60.1% | lift 4.31
+R152 | {JUMBO BAG RED RETROSPOT} → {JUMBO BAG APPLES} | support 5.04% | confidence 36.1% | lift 4.31
+R153 | {JUMBO BAG RED RETROSPOT} → {JUMBO BAG VINTAGE DOILY, JUMBO BAG VINTAGE LEAF} | support 3.04% | confidence 21.8% | lift 4.30
+R154 | {JUMBO BAG VINTAGE DOILY, JUMBO BAG VINTAGE LEAF} → {JUMBO BAG RED RETROSPOT} | support 3.04% | confidence 60.0% | lift 4.30
+R155 | {PARTY BUNTING} → {SPOTTY BUNTING} | support 4.48% | confidence 43.0% | lift 4.26
+R156 | {SPOTTY BUNTING} → {PARTY BUNTING} | support 4.48% | confidence 44.5% | lift 4.26
+R157 | {JUMBO BAG VINTAGE DOILY} → {JUMBO BAG APPLES} | support 4.25% | confidence 35.5% | lift 4.24
+R158 | {JUMBO BAG APPLES} → {JUMBO BAG VINTAGE DOILY} | support 4.25% | confidence 50.8% | lift 4.24
+R159 | {LUNCH BAG VINTAGE DOILY} → {LUNCH BAG BLACK SKULL.} | support 4.04% | confidence 39.1% | lift 4.23
+R160 | {LUNCH BAG BLACK SKULL.} → {LUNCH BAG VINTAGE DOILY} | support 4.04% | confidence 43.6% | lift 4.23
+R161 | {LUNCH BAG SPACEBOY DESIGN} → {LUNCH BAG VINTAGE DOILY} | support 3.48% | confidence 43.5% | lift 4.22
+R162 | {LUNCH BAG VINTAGE DOILY} → {LUNCH BAG SPACEBOY DESIGN} | support 3.48% | confidence 33.7% | lift 4.22
+R163 | {LUNCH BAG SUKI DESIGN} → {LUNCH BAG VINTAGE DOILY} | support 3.68% | confidence 42.5% | lift 4.12
+R164 | {LUNCH BAG VINTAGE DOILY} → {LUNCH BAG SUKI DESIGN} | support 3.68% | confidence 35.7% | lift 4.12
+R165 | {JUMBO BAG RED RETROSPOT} → {JUMBO SHOPPER VINTAGE RED PAISLEY} | support 4.42% | confidence 31.6% | lift 4.12
+R166 | {JUMBO SHOPPER VINTAGE RED PAISLEY} → {JUMBO BAG RED RETROSPOT} | support 4.42% | confidence 57.5% | lift 4.12
+R167 | {LUNCH BAG VINTAGE DOILY} → {JUMBO BAG VINTAGE DOILY} | support 4.75% | confidence 46.0% | lift 3.84
+R168 | {JUMBO BAG VINTAGE DOILY} → {LUNCH BAG VINTAGE DOILY} | support 4.75% | confidence 39.6% | lift 3.84
+R169 | {JUMBO BAG ALPHABET} → {JUMBO BAG VINTAGE DOILY} | support 3.53% | confidence 44.2% | lift 3.69
+R170 | {JUMBO BAG VINTAGE DOILY} → {JUMBO BAG ALPHABET} | support 3.53% | confidence 29.5% | lift 3.69
+R171 | {JUMBO BAG RED RETROSPOT} → {JUMBO BAG VINTAGE LEAF} | support 4.39% | confidence 31.5% | lift 3.67
+R172 | {JUMBO BAG VINTAGE LEAF} → {JUMBO BAG RED RETROSPOT} | support 4.39% | confidence 51.2% | lift 3.67
+R173 | {LUNCH BAG CARS BLUE} → {LUNCH BAG VINTAGE DOILY} | support 3.04% | confidence 37.1% | lift 3.60
+R174 | {LUNCH BAG VINTAGE DOILY} → {LUNCH BAG CARS BLUE} | support 3.04% | confidence 29.4% | lift 3.60
+R175 | {JUMBO BAG RED RETROSPOT} → {JUMBO BAG VINTAGE DOILY} | support 5.87% | confidence 42.1% | lift 3.51
+R176 | {JUMBO BAG VINTAGE DOILY} → {JUMBO BAG RED RETROSPOT} | support 5.87% | confidence 49.0% | lift 3.51
+R177 | {JUMBO BAG VINTAGE DOILY} → {JUMBO SHOPPER VINTAGE RED PAISLEY} | support 3.23% | confidence 27.0% | lift 3.51
+R178 | {JUMBO SHOPPER VINTAGE RED PAISLEY} → {JUMBO BAG VINTAGE DOILY} | support 3.23% | confidence 42.0% | lift 3.51
+R179 | {JUMBO BAG VINTAGE DOILY} → {JUMBO STORAGE BAG SUKI} | support 3.24% | confidence 27.1% | lift 3.45
+R180 | {JUMBO STORAGE BAG SUKI} → {JUMBO BAG VINTAGE DOILY} | support 3.24% | confidence 41.3% | lift 3.45
+R181 | {JUMBO BAG ALPHABET} → {JUMBO BAG RED RETROSPOT} | support 3.84% | confidence 48.0% | lift 3.44
+R182 | {JUMBO BAG RED RETROSPOT} → {JUMBO BAG ALPHABET} | support 3.84% | confidence 27.5% | lift 3.44
+R183 | {JUMBO BAG PINK POLKADOT} → {JUMBO BAG VINTAGE DOILY} | support 3.25% | confidence 39.4% | lift 3.29
+R184 | {JUMBO BAG VINTAGE DOILY} → {JUMBO BAG PINK POLKADOT} | support 3.25% | confidence 27.2% | lift 3.29
+R185 | {JUMBO BAG RED RETROSPOT} → {LUNCH BAG RED RETROSPOT} | support 3.86% | confidence 27.7% | lift 2.83
+R186 | {LUNCH BAG RED RETROSPOT} → {JUMBO BAG RED RETROSPOT} | support 3.86% | confidence 39.5% | lift 2.83
+R187 | {LUNCH BAG RED RETROSPOT} → {JUMBO BAG VINTAGE DOILY} | support 3.30% | confidence 33.8% | lift 2.82
+R188 | {JUMBO BAG VINTAGE DOILY} → {LUNCH BAG RED RETROSPOT} | support 3.30% | confidence 27.6% | lift 2.82
+R189 | {LUNCH BAG VINTAGE DOILY} → {JUMBO BAG RED RETROSPOT} | support 3.15% | confidence 30.6% | lift 2.19
+R190 | {JUMBO BAG RED RETROSPOT} → {LUNCH BAG VINTAGE DOILY} | support 3.15% | confidence 22.6% | lift 2.19
+R191 | {WHITE HANGING HEART T-LIGHT HOLDER} → {JUMBO BAG RED RETROSPOT} | support 3.05% | confidence 24.0% | lift 1.72
+R192 | {JUMBO BAG RED RETROSPOT} → {WHITE HANGING HEART T-LIGHT HOLDER} | support 3.05% | confidence 21.8% | lift 1.72
+R193 | {HOT WATER BOTTLE KEEP CALM} → {SPOTTY BUNTING} | support 0.80% | confidence 9.4% | lift 0.94
+R194 | {SPOTTY BUNTING} → {HOT WATER BOTTLE KEEP CALM} | support 0.80% | confidence 7.9% | lift 0.94
+R195 | {HOT WATER BOTTLE KEEP CALM} → {PARTY BUNTING} | support 0.80% | confidence 9.4% | lift 0.90
+R196 | {PARTY BUNTING} → {HOT WATER BOTTLE KEEP CALM} | support 0.80% | confidence 7.6% | lift 0.90
+R197 | {ASSORTED COLOUR BIRD ORNAMENT} → {PAPER CHAIN KIT 50'S CHRISTMAS} | support 0.85% | confidence 9.0% | lift 0.87
+R198 | {PAPER CHAIN KIT 50'S CHRISTMAS} → {ASSORTED COLOUR BIRD ORNAMENT} | support 0.85% | confidence 8.1% | lift 0.87
+R199 | {ASSORTED COLOUR BIRD ORNAMENT} → {JUMBO BAG RED RETROSPOT} | support 1.09% | confidence 11.6% | lift 0.83
+R200 | {JUMBO BAG RED RETROSPOT} → {ASSORTED COLOUR BIRD ORNAMENT} | support 1.09% | confidence 7.8% | lift 0.83
+
+Task: write a short summary of these rules for my sales team, about 250 words, in 3 to 5 short paragraphs (one per theme).
+Do not copy the list. Point out the best opportunities for cross-selling. Cite exactly ten rules in total.
+Each time you cite a rule, give its ID, the rule and its numbers in square brackets, like this:
+[R012: {SPACEBOY LUNCH BOX} → {DOLLY GIRL LUNCH BOX}, support 3.06%, confidence 64.0%, lift 13.42]

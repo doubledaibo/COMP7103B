@@ -1,0 +1,1943 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}.latsvg{width:100%;height:auto;display:block;background:var(--surface);border:2px solid var(--edge);border-radius:var(--r)}
+.latsvg .nd{cursor:pointer}.latsvg .nd ellipse{fill:var(--surface);stroke:var(--edge);stroke-width:1.5}.latsvg .nd text{font-family:var(--mono);font-size:12px;fill:var(--ink);pointer-events:none}
+.latsvg .nd.sub ellipse{fill:color-mix(in srgb,var(--c2) 30%,var(--surface))}.latsvg .nd.sel ellipse{fill:var(--marker);stroke-width:2.5}
+.latsvg line{stroke:var(--line);stroke-width:1}.latsvg line.hot{stroke:var(--c2);stroke-width:2.5}
+.latsvg .lv{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+/* class colours (purple filled / grey), as in Lecture 4; here: maximal = purple, closed = grey */
+:root{--k1:#6A35FF;--k2:#7A8A80}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--k1:#B79BFF;--k2:#8FA597}}
+:root[data-theme="dark"]{--k1:#B79BFF;--k2:#8FA597}
+.nt,.stat .k.nt{text-transform:none}
+#uTable th,#uTable td.nt{text-transform:none}
+#clSup th,#clSup td{padding-left:6px;padding-right:6px}
+#clSup th{letter-spacing:0}
+#clSup td.hit{background:color-mix(in srgb,var(--k2) 22%,var(--surface))}
+</style>
+</head>
+<body>
+<title>Association Analysis I</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&family=Unbounded:wght@600;700;800&display=swap">
+<style>
+/* Layout: a lecture rail on the left, one long column of numbered "boards" on the right; each board is one slide's idea, made interactive. */
+:root{
+  --bg:#F3F8F9; --surface:#FFFFFF; --surface-2:#E3F0F3; --ink:#0E2228; --muted:#4D666E; --line:#CBDDE2;
+  --accent:#04617B; --accent-2:#1489B0; --good:#0B8466; --signal:#BF2A2F; --warn:#B26A00;
+  --c1:#04617B; --c2:#1489B0; --c3:#0B8466; --c4:#BF2A2F; --c5:#7A5BB5;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#09161B; --surface:#0F2129; --surface-2:#153039; --ink:#E2F0F3; --muted:#92ADB5; --line:#244049;
+  --accent:#43C3DB; --accent-2:#8AD9EA; --good:#3FD69B; --signal:#FF6F6A; --warn:#F2B04A;
+  --c1:#43C3DB; --c2:#8AD9EA; --c3:#3FD69B; --c4:#FF6F6A; --c5:#B79BFF; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#09161B; --surface:#0F2129; --surface-2:#153039; --ink:#E2F0F3; --muted:#92ADB5; --line:#244049;
+  --accent:#43C3DB; --accent-2:#8AD9EA; --good:#3FD69B; --signal:#FF6F6A; --warn:#F2B04A;
+  --c1:#43C3DB; --c2:#8AD9EA; --c3:#3FD69B; --c4:#FF6F6A; --c5:#B79BFF; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;margin:0}
+.page{display:grid;grid-template-columns:210px minmax(0,1fr);gap:48px;max-width:1260px;margin:0 auto;padding-inline:24px;padding-block:28px 80px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.02;font-weight:700}
+h2{font-size:clamp(1.6rem,3vw,2.15rem);line-height:1.1;font-weight:700}
+h3{font-size:1.15rem;font-weight:600;line-height:1.25}
+p{margin:0}
+.lead{font-size:1.12rem;color:var(--muted);max-width:62ch}
+.mono{font-family:var(--mono)}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+
+/* rail */
+.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;max-height:calc(100vh - 48px);overflow:auto;font-size:.88rem}
+.rail .course{font-family:var(--mono);font-size:.75rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.rail .ltitle{font-family:var(--display);font-weight:700;font-size:1.05rem;line-height:1.2;margin:4px 0 18px}
+.rail ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.rail .part{font-family:var(--mono);font-size:.7rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin:14px 0 4px}
+.rail a{display:block;color:var(--muted);text-decoration:none;padding:4px 10px;border-radius:6px;border-left:2px solid transparent}
+.rail a:hover{color:var(--ink);background:var(--surface-2)}
+.rail a.on{color:var(--ink);background:var(--surface-2);font-weight:600}
+.rail .keys{margin-top:18px;color:var(--muted);font-size:.78rem}
+kbd{font-family:var(--mono);font-size:.75rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--surface)}
+
+main{min-width:0;display:grid;gap:88px}
+section.board{scroll-margin-top:24px;display:grid;gap:22px}
+.part-break{padding:26px 0 0;border-top:1px solid var(--line);display:grid;gap:6px}
+.part-break .n{font-family:var(--display);font-size:clamp(3rem,7vw,5rem);line-height:.9;color:var(--accent);font-weight:700}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:28px;align-items:center}
+.hero .meta{display:grid;gap:16px}
+.stage-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;cursor:pointer;font-size:.92rem}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"],.chip[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.scene{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:var(--r);background:radial-gradient(120% 90% at 30% 20%,var(--surface) 0%,var(--surface-2) 100%);overflow:hidden;touch-action:none}
+.scene canvas{display:block;width:100%!important;height:100%!important}
+.scene .hint{position:absolute;right:12px;bottom:10px;font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.scene .legend{position:absolute;left:12px;top:10px;font-family:var(--mono);font-size:.72rem;color:var(--muted);display:grid;gap:2px}
+.caption{min-height:4.8em;border-left:3px solid var(--accent);padding-left:14px}
+.caption b{font-weight:600}
+
+/* generic */
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:grid;gap:8px;align-content:start;min-width:0}
+.card .tag{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase}
+.card p{color:var(--muted)}
+.card.bad{background:color-mix(in srgb,var(--signal) 7%,var(--surface));border-color:color-mix(in srgb,var(--signal) 30%,var(--line))}
+.card.good{background:color-mix(in srgb,var(--good) 8%,var(--surface));border-color:color-mix(in srgb,var(--good) 30%,var(--line))}
+ul.clean{margin:0;padding-left:1.1em;display:grid;gap:6px}
+.note{font-size:.85rem;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;min-width:0}
+
+/* roadmap */
+.phases{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.phase{display:grid;gap:6px;align-content:start}
+.phase .pn{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-bottom:4px;border-bottom:2px solid var(--pc)}
+.wk{display:flex;gap:10px;align-items:baseline;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:.88rem;line-height:1.3}
+.wk .num{font-family:var(--mono);font-size:.8rem;color:var(--pc);font-weight:500;min-width:1.4em}
+.wk:hover{border-color:var(--pc)}
+.wk[aria-pressed="true"]{background:var(--surface-2);border-color:var(--pc);font-weight:600}
+.wkdetail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.wkdetail h4{margin:0 0 4px;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+/* assessment */
+.bars{display:grid;gap:14px}
+.barrow{display:grid;grid-template-columns:5.5em minmax(0,1fr);gap:12px;align-items:center}
+.barrow .lbl{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.bar{display:flex;height:54px;border-radius:8px;overflow:hidden;background:var(--surface-2)}
+.seg{display:flex;flex-direction:column;justify-content:center;padding:0 10px;color:#fff;font-size:.82rem;line-height:1.15;white-space:nowrap;overflow:hidden;transition:flex-basis .6s ease}
+.seg b{font-family:var(--mono);font-size:.95rem}
+.seg.ai{background:var(--c1)} .seg.ai2{background:var(--c3)} .seg.ex{background:#5B6F76}
+.legend-row{display:flex;gap:18px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* quiz */
+.quiz{display:grid;gap:12px}
+.q{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.q .opts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.q .opts button{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:6px 10px;font-size:.82rem;cursor:pointer}
+.q .opts button:hover{border-color:var(--accent)}
+.q .fb{grid-column:1/-1;font-size:.88rem;display:none}
+.q.done .fb{display:block}
+.q.right{border-color:var(--good)} .q.wrong{border-color:var(--signal)}
+.q.right .fb b{color:var(--good)} .q.wrong .fb b{color:var(--signal)}
+.q button.picked{background:var(--surface-2);font-weight:600}
+.score{font-family:var(--mono);font-size:.9rem;color:var(--muted)}
+
+/* playground */
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.play{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;align-items:start}
+.cv{width:100%;aspect-ratio:3/2;max-width:100%;display:block;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);touch-action:none;cursor:crosshair}
+.side{display:grid;gap:14px;min-width:0}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.stat .k{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stat .v{font-family:var(--mono);font-size:1.35rem;font-variant-numeric:tabular-nums}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--bg);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:.9rem;font-weight:500}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:hover{filter:brightness(1.08)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.items{display:flex;gap:6px;flex-wrap:wrap}
+.items button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:.85rem;cursor:pointer}
+.items button.a{background:var(--c3);border-color:var(--c3);color:#fff}
+.items button.c{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.tx{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;font-family:var(--mono);font-size:.8rem}
+.tx div{border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--surface);color:var(--muted)}
+.tx div.hitA{border-color:var(--c1);color:var(--ink)}
+.tx div.hit{border-color:var(--c3);background:color-mix(in srgb,var(--c3) 12%,var(--surface));color:var(--ink)}
+.tx-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+
+/* kdd */
+.stage-panel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.stage-panel h4{margin:0 0 6px;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stage-panel .fail{color:var(--signal)}
+.scene.wide{aspect-ratio:16/7}
+
+/* stepper */
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.steps button{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 12px;cursor:pointer;display:grid;gap:2px}
+.steps button .s{font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.steps button[aria-selected="true"]{border-color:var(--accent);background:var(--surface-2)}
+.exflow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+
+/* case */
+.case{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.agent{font-family:var(--mono);font-size:.92rem;background:var(--surface-2);border-radius:8px;padding:14px 16px;line-height:1.5}
+.feat{display:grid;gap:8px}
+.feat label{display:flex;gap:10px;align-items:center;cursor:pointer;font-family:var(--mono);font-size:.88rem}
+.feat input{accent-color:var(--accent);width:18px;height:18px}
+.meter{height:12px;border-radius:6px;background:var(--surface-2);position:relative;overflow:hidden}
+.meter i{position:absolute;inset:0 auto 0 0;background:var(--accent);transition:width .5s ease}
+.meter .base{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.verdict{border-radius:8px;padding:12px 14px;font-size:.92rem}
+.verdict.leak{background:color-mix(in srgb,var(--signal) 12%,var(--surface));color:var(--ink);border:1px solid var(--signal)}
+.verdict.meh{background:color-mix(in srgb,var(--warn) 12%,var(--surface));border:1px solid var(--warn)}
+.verdict.ok{background:color-mix(in srgb,var(--good) 10%,var(--surface));border:1px solid var(--good)}
+
+/* table */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:.92rem;background:var(--surface)}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface-2)}
+td:first-child{font-weight:600}
+tr:last-child td{border-bottom:none}
+
+/* checklist */
+.checks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.check{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--good);margin-top:3px}
+.check:has(input:checked){border-color:var(--good);background:color-mix(in srgb,var(--good) 7%,var(--surface))}
+.check b{display:block;margin-bottom:2px}
+.check span{color:var(--muted);font-size:.92rem}
+.progress{font-family:var(--mono);font-size:.9rem;color:var(--muted)}
+
+.lab{counter-reset:s;display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.lab li{display:grid;grid-template-columns:2.4em minmax(0,1fr);gap:12px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.lab li::before{counter-increment:s;content:counter(s);font-family:var(--display);font-weight:700;font-size:1.5rem;color:var(--accent)}
+.lab li.key::before{color:var(--signal)}
+.next{background:var(--accent);color:var(--bg);border-radius:var(--r);padding:20px 22px;display:grid;gap:4px}
+.next .eyebrow{color:var(--bg);opacity:.8}
+
+@media (max-width:980px){
+  .page{grid-template-columns:minmax(0,1fr);gap:24px;padding-inline:16px}
+  .rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);max-height:none;padding-block:8px;border-bottom:1px solid var(--line);margin-inline:-16px;padding-inline:16px}
+  .rail .course,.rail .ltitle,.rail .part,.rail .keys{display:none}
+  .rail ol{display:flex;overflow-x:auto;gap:4px;scrollbar-width:none}
+  .rail a{white-space:nowrap}
+  .hero,.play,.case,.tx-wrap{grid-template-columns:minmax(0,1fr)}
+  .phases{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid4,.checks{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stage-panel,.wkdetail,.exflow{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:620px){
+  .grid3,.grid2,.grid4,.checks,.phases,.steps{grid-template-columns:minmax(0,1fr)}
+  .q{grid-template-columns:minmax(0,1fr)} .q .opts{justify-content:flex-start}
+  .scene.wide{aspect-ratio:4/3}
+  main{gap:64px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---- chapter 1 ---- */
+main a{color:var(--accent)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.lab-s{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);min-width:4.6em}
+.chip.sm{padding:4px 11px;font-size:.84rem}
+table.sm{min-width:0;font-size:.86rem}
+table.sm th,table.sm td{padding:7px 10px}
+table.sm td:first-child{font-weight:400}
+table.num td{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+table.num th{text-align:right}
+table.num td:first-child,table.num th:first-child{text-align:left}
+table .hl{background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
+table tr.tot td{font-weight:600;background:var(--surface-2)}
+.formula{background:var(--surface-2);border-radius:8px;padding:12px 16px;overflow-x:auto;font-size:1.05rem}
+.formula math{font-size:1.1em}
+.quote{border-left:3px solid var(--accent);padding-left:14px;font-size:1.05rem}
+.ill{width:100%;height:100%;display:block}
+.ill text{font-family:var(--mono);font-size:11px;fill:var(--muted);text-anchor:middle}
+.ill .ln{stroke:var(--muted);stroke-width:1.6;fill:none}
+.ill .ink{stroke:var(--ink);stroke-width:1.4;fill:var(--surface)}
+.ill .f1{fill:var(--c1)} .ill .f2{fill:var(--c2)} .ill .f3{fill:var(--c3)} .ill .f4{fill:var(--c4)} .ill .fw{fill:var(--warn)} .ill .fs{fill:var(--surface-2)}
+.ill .k{transition:opacity .4s}
+.ill .k.dim{opacity:.28}
+.ill .k.cur .ln{stroke:var(--accent);stroke-width:2.6}
+.ill .k.cur text{fill:var(--ink);font-weight:600}
+.ill .lane{font-size:10px;letter-spacing:.08em;text-anchor:start;fill:var(--accent)}
+.ill .mk{fill:var(--muted)}
+.ladder{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;align-items:end}
+.ladder div{border-radius:8px;padding:8px 10px;color:var(--bg);font-size:.86rem;line-height:1.25;font-weight:500}
+.axisrow{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.74rem;color:var(--muted);border-top:2px solid var(--line);padding-top:4px;margin-top:6px}
+.bar button.seg{border:0;cursor:pointer;text-align:left;font:inherit;color:var(--bg)}
+.mob{display:none}
+.bar button.seg[aria-pressed="true"]{box-shadow:inset 0 -5px 0 rgba(0,0,0,.35)}
+.tl{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:6px}
+.tl button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:0 0 8px;cursor:pointer;display:grid;gap:4px;overflow:hidden;font-size:.82rem}
+.tl button i{display:block;height:6px;background:var(--pc)}
+.tl button b{font-family:var(--mono);font-size:.95rem;color:var(--pc)}
+.tl button[aria-pressed="true"]{border-color:var(--pc);background:var(--surface-2)}
+.tl button .t{color:var(--muted);font-size:.72rem;line-height:1.2;padding:0 4px}
+.wkdetail h4,.flowtxt h4{margin:0 0 4px;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.steps.s5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.steps.s7{grid-template-columns:repeat(7,minmax(0,1fr))}
+.pane{display:grid;gap:14px}
+.strike{text-decoration:line-through;opacity:.5}
+.tok{display:inline-block;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 11px;font-family:var(--mono);font-size:.82rem;margin:2px}
+.tok.on{border-color:var(--accent);background:var(--accent);color:var(--bg)}
+.arrow{font-family:var(--mono);color:var(--accent);padding:0 6px}
+#clsBoard[data-show="ind"] .ci,#clsBoard[data-show="cls"] .cc{background:color-mix(in srgb,var(--accent) 16%,var(--surface))}
+#clsBoard[data-show="train"] #tTrain,#clsBoard[data-show="test"] #tTest{outline:3px solid var(--accent);outline-offset:-1px}
+.cc{color:var(--signal);font-weight:600}
+.lbl3{position:absolute;left:0;top:0;font-family:var(--mono);font-size:.72rem;color:var(--muted);pointer-events:none;white-space:nowrap;transform:translate(-50%,-50%)}
+.lbl3.t{color:var(--accent);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase}
+.flowwrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.flow{width:100%;min-width:560px;height:auto;display:block}
+.flow text{font-family:var(--mono);font-size:12px;fill:var(--muted);text-anchor:middle}
+.flow .nd rect,.flow .nd circle,.flow .nd path{fill:var(--surface);stroke:var(--accent-2);stroke-width:1.5;transition:fill .3s}
+.flow .nd text{fill:var(--ink)}
+.flow .nd.hi rect,.flow .nd.hi circle,.flow .nd.hi path{fill:color-mix(in srgb,var(--warn) 35%,var(--surface));stroke:var(--warn)}
+.flow .ed path{fill:none;stroke:var(--muted);stroke-width:1.6}
+.flow .ed.hi path{stroke:var(--warn);stroke-width:3.2}
+.flow .ed.hi text{fill:var(--signal);font-weight:600}
+.flow .rf path{stroke:var(--accent-2);stroke-width:1;opacity:.45;fill:none}
+.flow .rf.hi path{opacity:1;stroke-width:2;stroke:var(--signal)}
+.flow .mk{fill:var(--muted)}
+.flowtxt{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:980px){.ladder{grid-template-columns:minmax(0,1fr)} .ladder div{margin:0!important} .axisrow{display:none} .mob{display:block} .tl{grid-template-columns:repeat(6,minmax(0,1fr))} .steps.s7{grid-template-columns:repeat(4,minmax(0,1fr))} .flowtxt{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){.steps.s5,.steps.s7{grid-template-columns:repeat(3,minmax(0,1fr))} .steps.s5 button,.steps.s7 button{padding:8px} .tl{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* ---------- presentation mode: one board per screen, like slides ---------- */
+.present-btn{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 14px);z-index:20;display:inline-flex;gap:8px;align-items:center;border:1px solid var(--accent);background:var(--accent);color:var(--bg);border-radius:999px;padding:8px 16px 8px 13px;font:500 .9rem var(--body);cursor:pointer;box-shadow:0 2px 12px color-mix(in srgb,var(--ink) 18%,transparent)}
+.present-btn:hover{filter:brightness(1.08)}
+.present-btn svg,.deck-bar svg{width:18px;height:18px;display:block}
+html:not(.presenting) .deck-ui{display:none!important}
+html.presenting .present-btn{display:none}
+html.presenting,html.presenting body{height:100%;overflow:hidden}
+html.presenting .rail{display:none}
+html.presenting .page{display:block;max-width:none;padding:0;margin:0}
+html.presenting main{position:fixed;inset:0;display:block;background:var(--bg);overflow-x:hidden;overflow-y:auto;z-index:10;padding:0}
+html.presenting main > section.board,html.presenting main > .part-break{display:none}
+html.presenting main > section.board.is-current,html.presenting main > .part-break.is-current{display:grid;position:absolute;left:50%;top:var(--deck-top,24px);width:var(--deck-w,1180px);margin:0;transform-origin:top center;transform:translateX(-50%) scale(var(--deck-s,1))}
+html.presenting main > .part-break.is-current{border-top:none;padding:0;gap:14px}
+html.presenting main > .part-break.is-current .n{font-size:8rem}
+html.presenting main > .part-break.is-current h2{font-size:3.4rem}
+.deck-bar{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);z-index:30;display:flex;gap:2px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;box-shadow:0 2px 14px color-mix(in srgb,var(--ink) 14%,transparent);opacity:.45;transition:opacity .2s}
+.deck-bar:hover,.deck-bar:focus-within{opacity:1}
+.deck-bar button{border:none;background:transparent;color:var(--ink);border-radius:999px;width:38px;height:38px;display:grid;place-items:center;cursor:pointer}
+.deck-bar button:hover{background:var(--surface-2)}
+.deck-bar button:disabled{opacity:.3;cursor:default;background:transparent}
+.deck-count{font-family:var(--mono);font-size:.8rem;color:var(--muted);padding:0 10px;white-space:nowrap;max-width:46vw;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.deck-side{position:fixed;top:0;bottom:0;width:64px;z-index:25;border:none;background:transparent;cursor:pointer;color:var(--muted);display:grid;place-items:center;opacity:0;transition:opacity .2s}
+.deck-side svg{width:34px;height:34px}
+.deck-side.prev{left:0}
+.deck-side.next{right:0}
+.deck-side:hover,.deck-side:focus-visible{opacity:1}
+.deck-side:disabled{display:none}
+.deck-spacer{position:absolute;left:0;width:1px;height:1px;pointer-events:none}
+.deck-progress{position:fixed;left:0;top:0;height:3px;background:var(--accent);z-index:30;transition:width .3s ease}
+@media (max-width:700px){.deck-side{display:none!important}.present-btn{padding:7px 12px}}
+@media (prefers-reduced-motion:reduce){.deck-progress,.deck-bar,.deck-side{transition:none}}
+
+/* ================= "sticker pop" theme layer (chapter 1) =================
+   Layout stays the same. Bold ink outlines, hard offset shadows, sticker labels,
+   marker-pen headings and a dotted notebook background. */
+:root{
+  --bg:#F3EFFF; --surface:#FFFFFF; --surface-2:#ECE5FF; --ink:#17132B; --muted:#585074; --line:#D6CCF5;
+  --accent:#6A35FF; --accent-2:#E8307F; --good:#0E9A6E; --signal:#E5372B; --warn:#FFB703;
+  --c1:#6A35FF; --c2:#E8307F; --c3:#0C946C; --c4:#E8590C; --c5:#1883CC;
+  --edge:#17132B; --shadow:#17132B; --dot:#CFC4F2; --marker:#FFD54A; --sticker:#FFD54A; --sticker-ink:#17132B;
+  --display:"Unbounded", "Arial Black", "Segoe UI", system-ui, sans-serif;
+  --body:"Rubik", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"Space Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:16px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#110D22; --surface:#1C1736; --surface-2:#28214D; --ink:#F4F0FF; --muted:#B3A8DB; --line:#3A3166;
+  --accent:#A68BFF; --accent-2:#FF6AAE; --good:#33E0A1; --signal:#FF6B63; --warn:#FFC93D;
+  --c1:#A68BFF; --c2:#FF6AAE; --c3:#33E0A1; --c4:#FF9F55; --c5:#55C8FF;
+  --edge:#7B67D6; --shadow:#05030C; --dot:#2A2350; --marker:#7A4FE0; --sticker:#FFC93D; --sticker-ink:#17132B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#110D22; --surface:#1C1736; --surface-2:#28214D; --ink:#F4F0FF; --muted:#B3A8DB; --line:#3A3166;
+  --accent:#A68BFF; --accent-2:#FF6AAE; --good:#33E0A1; --signal:#FF6B63; --warn:#FFC93D;
+  --c1:#A68BFF; --c2:#FF6AAE; --c3:#33E0A1; --c4:#FF9F55; --c5:#55C8FF;
+  --edge:#7B67D6; --shadow:#05030C; --dot:#2A2350; --marker:#7A4FE0; --sticker:#FFC93D; --sticker-ink:#17132B; color-scheme:dark}
+
+body{background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.3px,transparent 1.5px);background-size:22px 22px;font-size:17.5px}
+h1{font-size:clamp(2rem,4.4vw,3.1rem);font-weight:800;letter-spacing:-.02em;line-height:1.08}
+h2{font-size:clamp(1.35rem,2.6vw,1.85rem);font-weight:700;letter-spacing:-.015em;line-height:1.2;
+   text-decoration:underline;text-decoration-color:var(--marker);text-decoration-thickness:.32em;text-underline-offset:-.12em;text-decoration-skip-ink:none}
+h3{font-family:var(--body);font-weight:600;font-size:1.12rem}
+.lead{color:var(--muted)}
+
+/* sticker labels */
+.eyebrow{display:inline-block;justify-self:start;width:fit-content;background:var(--sticker);color:var(--sticker-ink);border:2px solid var(--edge);border-radius:8px;padding:3px 10px 2px;font-weight:700;font-size:.72rem;letter-spacing:.06em;transform:rotate(-1.5deg);box-shadow:2px 2px 0 var(--shadow)}
+section.board:nth-of-type(even) .eyebrow{transform:rotate(1.2deg)}
+.card .tag{font-weight:700}
+
+/* hero squiggle */
+.hero h1::after,.hero-title h1::after{content:"";display:block;width:150px;height:16px;margin-top:12px;background:var(--accent-2);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 16'%3E%3Cpath d='M3 10c12-10 22 8 34 0s22-10 34 0 22 8 34 0 22-10 34 0' fill='none' stroke='black' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 16'%3E%3Cpath d='M3 10c12-10 22 8 34 0s22-10 34 0 22 8 34 0 22-10 34 0' fill='none' stroke='black' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
+
+/* chunky outlined surfaces */
+.card,.panel,.stat,.q,.check,.lab li,.tbl-wrap,.flowwrap,.tl button,.wk,.steps button{border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow)}
+.card,.panel{border-radius:var(--r)}
+.card.bad{border-color:var(--signal);box-shadow:4px 4px 0 var(--signal)}
+.card.good{border-color:var(--good);box-shadow:4px 4px 0 var(--good)}
+.stat{border-radius:12px}
+.stat .v{font-weight:700}
+.scene,.cv{border:2px solid var(--edge);box-shadow:6px 6px 0 var(--accent-2);border-radius:var(--r)}
+.scene{background:radial-gradient(120% 90% at 30% 20%,var(--surface) 0%,var(--surface-2) 100%)}
+.formula{border:2px dashed var(--accent);background:var(--surface)}
+.quote{border-left:5px solid var(--accent-2)}
+.caption{border-left:5px solid var(--accent-2)}
+table{background:var(--surface)}
+th{background:var(--accent);color:#FFFFFF;font-weight:700}
+.tbl-wrap{border-radius:12px}
+.tok{border:2px solid var(--edge)}
+.tok.on{background:var(--accent-2);border-color:var(--edge);color:#FFFFFF}
+
+/* buttons that feel pressable */
+.chip,.btn,.items button,.q .opts button{border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);font-weight:500;transition:transform .12s ease,box-shadow .12s ease,background .15s}
+.chip:hover,.btn:hover,.items button:hover,.q .opts button:hover{transform:translate(-1px,-1px) rotate(-1deg);box-shadow:4px 4px 0 var(--shadow);filter:none}
+.chip:active,.btn:active,.items button:active,.q .opts button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--shadow)}
+.chip[aria-pressed="true"],.chip[aria-selected="true"]{background:var(--accent-2);border-color:var(--edge);color:#FFFFFF}
+.btn{background:var(--accent);color:#FFFFFF;border-color:var(--edge)}
+.btn.ghost{background:var(--surface);color:var(--ink)}
+.steps button[aria-selected="true"],.wk[aria-pressed="true"],.tl button[aria-pressed="true"]{background:var(--marker);border-color:var(--edge);color:var(--sticker-ink)}
+.steps button[aria-selected="true"] .s,.tl button[aria-pressed="true"] .t{color:var(--sticker-ink)}
+.q.right{border-color:var(--good);box-shadow:4px 4px 0 var(--good)}
+.q.wrong{border-color:var(--signal);box-shadow:4px 4px 0 var(--signal)}
+.check:has(input:checked){box-shadow:4px 4px 0 var(--good)}
+
+/* bars and ladder */
+.bar{border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow);border-radius:12px}
+.ladder div{border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);border-radius:10px;color:#FFFFFF;font-weight:600}
+
+/* part dividers: outlined giant numbers */
+.part-break{border-top:3px dashed var(--edge)}
+.part-break .n{color:var(--surface);-webkit-text-stroke:3px var(--edge);text-shadow:7px 7px 0 var(--accent-2);font-weight:800;font-size:clamp(3.4rem,8vw,6rem)}
+.part-break:nth-of-type(2n) .n{text-shadow:7px 7px 0 var(--c3)}
+
+/* rail */
+.rail .ltitle{font-weight:800;font-size:1rem}
+.rail a{border-radius:999px;border:2px solid transparent;padding:4px 12px}
+.rail a:hover{background:var(--surface);border-color:var(--edge)}
+.rail a.on{background:var(--accent);color:#FFFFFF;border-color:var(--edge);box-shadow:2px 2px 0 var(--shadow)}
+.rail .part{color:var(--accent-2);font-weight:700}
+
+/* next block */
+.next{border:2px solid var(--edge);box-shadow:6px 6px 0 var(--accent-2);background:var(--accent);color:#FFFFFF}
+.next .eyebrow{color:var(--sticker-ink)}
+
+/* presentation controls */
+.present-btn{background:var(--accent-2);color:#FFFFFF;border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);font-weight:600}
+.present-btn:hover{transform:translate(-1px,-1px) rotate(-2deg)}
+.deck-bar{border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);opacity:.6}
+.deck-progress{height:5px;background:var(--accent-2)}
+html.presenting main > .part-break.is-current .n{font-size:9rem;-webkit-text-stroke:4px var(--edge);text-shadow:10px 10px 0 var(--accent-2)}
+html.presenting main > .part-break.is-current h2{font-size:3rem}
+
+@media (prefers-reduced-motion:reduce){.chip:hover,.btn:hover,.items button:hover,.q .opts button:hover,.present-btn:hover{transform:none}}
+html.presenting main{background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.3px,transparent 1.5px);background-size:22px 22px}
+
+.steps button{min-width:0}
+.steps button b{overflow-wrap:anywhere;hyphens:auto}
+@media (max-width:620px){.steps button b{font-size:.8rem!important}}
+
+/* ===== green palette variant: overrides the sticker-pop colours only ===== */
+:root{--bg:#EDF8F0; --surface:#FFFFFF; --surface-2:#DFF2E5; --ink:#10241A; --muted:#4C6656; --line:#C6E6CF; --accent:#0B8A4F; --accent-2:#8BD100; --good:#0B8A4F; --signal:#E5372B; --warn:#FFB703; --c1:#0B8A4F; --c2:#5FA800; --c3:#0F8C8C; --c4:#E8590C; --c5:#6A35FF; --edge:#10241A; --shadow:#10241A; --dot:#BCE0C6; --marker:#FFD54A; --sticker:#FFD54A; --sticker-ink:#10241A; --on-accent:#FFFFFF; --on-accent-2:#10241A;}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0A1912; --surface:#12271C; --surface-2:#1A3727; --ink:#ECFBF1; --muted:#9DC4AB; --line:#2A4D38; --accent:#3EDB8A; --accent-2:#B6F23C; --good:#3EDB8A; --signal:#FF6B63; --warn:#FFC93D; --c1:#3EDB8A; --c2:#B6F23C; --c3:#3FD4D4; --c4:#FF9F55; --c5:#A68BFF; --edge:#3E9E6A; --shadow:#020805; --dot:#173323; --marker:#2E8F55; --sticker:#FFC93D; --sticker-ink:#10241A; --on-accent:#0A1912; --on-accent-2:#0A1912; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0A1912; --surface:#12271C; --surface-2:#1A3727; --ink:#ECFBF1; --muted:#9DC4AB; --line:#2A4D38; --accent:#3EDB8A; --accent-2:#B6F23C; --good:#3EDB8A; --signal:#FF6B63; --warn:#FFC93D; --c1:#3EDB8A; --c2:#B6F23C; --c3:#3FD4D4; --c4:#FF9F55; --c5:#A68BFF; --edge:#3E9E6A; --shadow:#020805; --dot:#173323; --marker:#2E8F55; --sticker:#FFC93D; --sticker-ink:#10241A; --on-accent:#0A1912; --on-accent-2:#0A1912; color-scheme:dark}
+.btn,.rail a.on,div.next,div.next h3,div.next p,th{color:var(--on-accent)}
+.chip[aria-pressed="true"],.chip[aria-selected="true"],.tok.on,.present-btn{color:var(--on-accent-2)}
+</style>
+<style>
+/* ===== Lecture 1 additions: block schedule, AI checks, lab audit form (green tokens only) ===== */
+.blk{display:grid;grid-template-columns:4.6em repeat(5,minmax(0,1fr));gap:8px;align-items:stretch}
+.blk .dh{font-family:var(--mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;font-weight:700}
+.blk .wl{font-family:var(--mono);font-size:.78rem;font-weight:700;color:var(--accent);display:grid;align-content:center}
+.blk .cell{min-width:0;display:grid}
+.blk .lec{display:grid;gap:3px;align-content:start;text-align:left;border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);background:var(--surface);border-radius:12px;padding:8px 10px;cursor:pointer;font-size:.8rem;line-height:1.25;min-height:92px;transition:transform .12s ease,box-shadow .12s ease}
+.blk .lec:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--shadow)}
+.blk .lec b{font-family:var(--mono);font-size:.95rem;color:var(--accent)}
+.blk .lec .t{color:var(--ink)}
+.blk .lec .d{display:none;font-family:var(--mono);font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.blk .lec[aria-pressed="true"]{background:var(--marker);color:var(--sticker-ink)}
+.blk .lec[aria-pressed="true"] b,.blk .lec[aria-pressed="true"] .t,.blk .lec[aria-pressed="true"] .d{color:var(--sticker-ink)}
+.blk .ev{justify-self:start;font-family:var(--mono);font-size:.64rem;font-weight:700;letter-spacing:.03em;background:var(--sticker);color:var(--sticker-ink);border:1.5px solid var(--edge);border-radius:6px;padding:1px 6px;margin-top:2px}
+.blk .free{display:grid;place-items:center;text-align:center;border:2px dashed var(--line);border-radius:12px;padding:8px;font-size:.78rem;color:var(--muted);min-height:92px;background:color-mix(in srgb,var(--surface) 55%,transparent)}
+.blk .free .d{display:none}
+.aichk{font-size:.92rem;color:var(--ink)!important;border-top:2px dashed var(--line);padding-top:8px;margin-top:2px}
+.aichk b{display:block;font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--c3)}
+.labgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+.labgrid .claims{grid-template-columns:repeat(2,minmax(0,1fr))}
+html.presenting .labgrid{grid-template-columns:minmax(0,.8fr) minmax(0,1.5fr)}
+html.presenting .labgrid .claims{grid-template-columns:minmax(0,1fr)}
+.claims{display:grid;gap:8px;margin-top:8px}
+.claims button{display:grid;gap:2px;text-align:left;font:inherit;font-family:var(--body);font-size:.86rem;line-height:1.35;color:var(--ink);background:var(--surface);border:2px solid var(--edge);border-radius:10px;padding:7px 10px;cursor:pointer;box-shadow:2px 2px 0 var(--shadow)}
+.claims button:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--shadow)}
+.claims button[disabled]{opacity:.45;cursor:default;transform:none;box-shadow:none}
+.claims .hint{display:none;font-size:.78rem;color:var(--c3);font-family:var(--mono)}
+.claims.showhints .hint{display:block}
+table.audit{min-width:620px;font-size:.88rem}
+table.audit td{padding:8px;vertical-align:top}
+table.audit td:first-child{font-family:var(--mono);color:var(--muted);width:2.2em;padding-top:14px}
+table.audit textarea,table.audit select{width:100%;font:inherit;font-size:.86rem;color:var(--ink);background:var(--bg);border:2px solid var(--edge);border-radius:8px;padding:6px 8px;resize:vertical}
+table.audit textarea{min-height:3.6em}
+table.audit select{cursor:pointer;min-width:8.5em}
+table.audit td.claim{font-size:.95rem;line-height:1.45;color:var(--ink);padding-top:12px}
+table.audit .step{font-family:var(--mono);font-size:.72rem;color:var(--muted);white-space:nowrap}
+table.audit .vchips{display:flex;flex-wrap:nowrap;gap:6px;width:max-content;padding-right:4px}
+table.audit .vchips .chip{white-space:nowrap}
+table.audit .vchips .chip{font-size:.8rem;padding:4px 10px}
+table.audit tr[data-v="unk"] td{background:color-mix(in srgb,var(--c5) 12%,var(--surface))}
+table.audit tr[data-v="ok"] td{background:color-mix(in srgb,var(--good) 12%,var(--surface))}
+table.audit tr[data-v="part"] td{background:color-mix(in srgb,var(--warn) 16%,var(--surface))}
+table.audit tr[data-v="wrong"] td{background:color-mix(in srgb,var(--signal) 12%,var(--surface))}
+.pf{display:inline-flex;gap:6px;align-items:center;font-size:.88rem;cursor:pointer}
+.pf input{width:18px;height:18px;accent-color:var(--accent)}
+@media (max-width:980px){html.presenting .labgrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){.labgrid .claims{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){
+  .blk{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .blk .dh,.blk .corner{display:none}
+  .blk .wl{grid-column:1/-1;margin-top:6px}
+  .blk .lec .d,.blk .free .d{display:block}
+  .blk .lec,.blk .free{min-height:0}
+}
+/* fix: classification table headers stay readable when a column is highlighted (inherited from Ch1) */
+#clsBoard th.ci,#clsBoard th.cc{color:var(--on-accent)}
+#clsBoard[data-show="ind"] th.ci,#clsBoard[data-show="cls"] th.cc{color:var(--ink)}
+/* segmented bars: truncate labels in narrow segments */
+.bar button.seg span{overflow:hidden;text-overflow:ellipsis}
+/* "new this year" additions and replaced lines */
+.add{border:2px dashed var(--c3);border-radius:var(--r);padding:14px 16px;display:grid;gap:10px;background:color-mix(in srgb,var(--c3) 5%,transparent)}
+.add .addt{font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--c3)}
+.panel .add{margin-top:14px}
+.was del{color:var(--muted);text-decoration-thickness:1.5px}
+.repl{display:inline-block;font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.03em;color:var(--sticker-ink);background:var(--sticker);border:1.5px solid var(--edge);border-radius:6px;padding:0 6px;margin-top:2px}
+
+/* hero: data -> pattern -> knowledge (2D) */
+#aiHeroScene canvas{cursor:crosshair}
+#aiHeroScene .hint{top:8px;bottom:auto}
+.hero-rule{position:absolute;display:grid;gap:3px;background:var(--surface);border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow);border-radius:12px;padding:10px 14px;font-size:.95rem;line-height:1.35}
+.hero-rule .k{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.hero-rule b{color:var(--accent)}
+.hero-rule .n{font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+.hero-tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-family:var(--mono);font-size:.74rem;padding:4px 8px;border-radius:6px;white-space:nowrap}
+
+.hero-title .instructor{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin:0}
+.hero-title .instructor .k{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.hero-title .instructor .name{font-weight:600;font-size:1.05rem;color:var(--ink);border:2px var(--muted);border-radius:8px;padding:2px 10px}
+
+.title-board{padding-block:10vh 8vh}
+.hero-title{display:grid;justify-items:center;text-align:center;gap:20px;max-width:920px;margin:0 auto}
+.hero-title .eyebrow{justify-self:center}
+.hero-title h1{font-size:clamp(2.4rem,6.2vw,4.6rem)}
+.hero-title h1::after{margin-left:auto;margin-right:auto}
+.hero-title .lead{max-width:52ch}
+.hero-title .instructor{justify-content:center;margin-top:6px}
+
+/* ================= Lecture 2 components ================= */
+.qlist{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.dq{display:grid;gap:6px;align-content:start;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:2px solid var(--edge);border-radius:12px;padding:12px;cursor:pointer;box-shadow:3px 3px 0 var(--shadow)}
+.dq .n{font-family:var(--display);font-weight:800;font-size:1.6rem;color:var(--accent)}
+.dq b{font-size:.98rem;line-height:1.3}
+.dq .when{font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;color:var(--good)}
+.dq.later{background:var(--surface-2)}
+.dq.later .when{color:var(--muted)}
+.dq[aria-pressed="true"]{background:var(--marker);color:var(--sticker-ink)}
+.dq[aria-pressed="true"] .n,.dq[aria-pressed="true"] .when{color:var(--sticker-ink)}
+.qgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.sel{font:inherit;font-size:.9rem;border:2px solid var(--edge);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 10px;max-width:100%}
+.txt{font:inherit;font-size:.95rem;width:100%;border:2px solid var(--edge);background:var(--surface);color:var(--ink);border-radius:8px;padding:8px 10px}
+.lbl3.lq{color:var(--c4);font-weight:700;font-size:.82rem;z-index:3}
+.lbl3.ln{color:var(--c1);font-weight:600;z-index:2}
+ol.nn{margin:6px 0;padding-left:1.4em;font-family:var(--mono);font-size:.85rem;display:grid;gap:1px}
+table.pick th,table.pick td,table.pick tr{cursor:pointer}
+table tr.sub td{color:var(--muted);font-size:.8rem}
+.vecrow{display:grid;grid-template-columns:5.6em repeat(var(--n,10),minmax(0,1fr));gap:4px;align-items:center}
+.vecrow .nm{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.vecrow .hd{font-family:var(--mono);font-size:.66rem;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bit,.vecrow input{min-width:0;width:100%;font-family:var(--mono);font-size:.95rem;text-align:center;border:2px solid var(--edge);background:var(--surface);color:var(--ink);border-radius:6px;padding:6px 0;cursor:pointer}
+.vecrow input{cursor:text;-moz-appearance:textfield;appearance:textfield}
+.vecrow input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.bit.on{background:var(--accent);color:#FFFFFF}
+.bit.zz{background:var(--surface-2);color:var(--muted)}
+.mcell{font-family:var(--mono);font-size:.66rem;text-align:center;border-radius:4px;padding:3px 0}
+.m11{background:color-mix(in srgb,var(--good) 28%,var(--surface))}
+.m00{background:var(--surface-2);color:var(--muted)}
+.m10,.m01{background:color-mix(in srgb,var(--signal) 20%,var(--surface))}
+.bag{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-family:var(--mono);font-size:.95rem}
+.bag span{border:2px solid var(--edge);background:var(--surface);border-radius:999px;padding:3px 10px}
+.bag span.br{border:none;background:none;padding:0;font-size:1.4rem;color:var(--muted)}
+.bag span b{color:var(--accent)}
+.words{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;min-height:4.6em}
+.wd{display:grid;gap:4px;justify-items:center}
+.wd b{font-size:1.5rem;font-weight:600;border-bottom:3px solid transparent;padding:0 2px}
+.wd.ch b{color:var(--c4);border-color:var(--c4)}
+.wd i{font-style:normal;font-family:var(--mono);font-size:.7rem;color:var(--muted);max-width:9em;text-align:center}
+.seq{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-family:var(--mono);font-size:.85rem;margin:6px 0}
+.seq span{border:2px solid var(--c1);border-radius:6px;padding:3px 8px}
+svg.traj{width:100%;height:auto;display:block}
+#tmSvg,#weSvg,#prMini{width:100%;height:auto;display:block;overflow:hidden}
+#coWork,#prWork,#euWork,#mWork{overflow-wrap:anywhere}
+#weSvg{max-width:360px;justify-self:center}
+.fig{margin:0;display:grid;gap:6px;justify-items:center}
+.fig img{width:100%;height:auto;max-height:52vh;object-fit:contain;background:#FFFFFF;border:2px solid var(--edge);border-radius:12px;box-shadow:4px 4px 0 var(--shadow)}
+.fig figcaption{font-weight:600;font-size:.95rem}
+.mats{display:grid;grid-template-columns:minmax(0,.7fr) repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+svg.venn{width:min(320px,100%);height:auto;justify-self:center;display:block}
+.pair{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:1rem}
+.pair .mono{background:var(--surface);border:2px solid var(--edge);border-radius:8px;padding:6px 10px}
+.pair .vs{font-family:var(--mono);color:var(--muted)}
+.ladder5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.ladder5 button{display:grid;gap:2px;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:2px solid var(--edge);border-radius:10px;padding:10px 12px;cursor:pointer;box-shadow:3px 3px 0 var(--shadow);min-width:0}
+.ladder5 button .s{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.ladder5 button b{overflow-wrap:anywhere}
+.ladder5 button[aria-selected="true"]{background:var(--marker);color:var(--sticker-ink)}
+.strip-row{display:grid;grid-template-columns:6.5em minmax(0,1fr);gap:4px 10px;align-items:center}
+.strip-row .note{grid-column:2}
+canvas.strip{width:100%;height:46px;display:block;border-radius:6px}
+.res{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.res li{display:grid;grid-template-columns:minmax(0,1fr) 3.4em;gap:8px;align-items:center;border:2px solid var(--edge);background:var(--surface);border-radius:8px;padding:7px 10px;font-size:.9rem;position:relative;overflow:hidden}
+.res li i{position:absolute;left:0;bottom:0;height:4px;background:var(--accent)}
+.res li .sc{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.res li.zero{color:var(--muted)}
+.hitrow{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:start;cursor:pointer}
+.hitrow input{width:17px;height:17px;margin-top:2px;accent-color:var(--good)}
+.stepper{display:inline-flex;align-items:center;gap:8px}
+.stepper button{width:28px;height:28px;border:2px solid var(--edge);border-radius:8px;background:var(--surface);color:var(--ink);font:600 1rem var(--body);cursor:pointer;box-shadow:2px 2px 0 var(--shadow)}
+.stepper b{min-width:1.2em;text-align:center}
+#cvBias{aspect-ratio:4/3}
+table th.hl{background:var(--marker);color:var(--sticker-ink)}
+#topSl input{width:100%}
+#topSl>div{min-width:0}
+#dense .side{min-width:0}
+#dense .sel{width:100%;min-width:0}
+.prmini{display:grid;gap:4px;justify-items:center;align-content:start}
+#prMini{max-width:320px}
+#spScene .lbl3{font-size:.64rem;opacity:.65}
+#spScene .lbl3.lq,#spScene .lbl3.ln{opacity:1}
+.tfgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px;align-items:start}
+#cvLr{aspect-ratio:3/2}
+.lab li .mono{font-family:var(--mono)}
+@media (max-width:900px){
+  .qlist{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ladder5{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:620px){
+  .qlist,.qgrid,.mats{grid-template-columns:minmax(0,1fr)}
+  .vecrow{grid-template-columns:3.6em repeat(var(--n,10),minmax(0,1fr));gap:2px}
+  .bit,.vecrow input{font-size:.78rem;padding:5px 0;border-width:1px}
+  .wd b{font-size:1.15rem}
+  .strip-row{grid-template-columns:minmax(0,1fr)}
+  .strip-row .note{grid-column:1}
+  .stats[style]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .tfgrid{grid-template-columns:minmax(0,1fr)}
+}
+
+/* ================= Lecture 7 components ================= */
+math{font-size:1.08em}
+.formula{background:var(--surface-2);border-radius:8px;padding:10px 14px;overflow-x:auto}
+.pseudo{margin:0;white-space:pre;overflow-x:auto;font-family:var(--mono);font-size:.78rem;background:var(--surface-2);border:2px solid var(--edge);border-radius:10px;padding:12px 16px;line-height:1.5;color:var(--ink)}
+.pseudo .k{color:var(--accent);font-weight:700}
+.pseudo .c{color:var(--muted)}
+.play.wide-l{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+.tx.t5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.tx div{padding:4px 7px}
+.tx div b{color:var(--muted);font-weight:400}
+.tbl-wrap table.mini{min-width:0}
+table.mini th,table.mini td{padding:5px 10px}
+table.mini td{font-family:var(--mono);font-size:.84rem}
+table.mini td:first-child{font-weight:500}
+table.mini tr.on td{background:color-mix(in srgb,var(--good) 10%,var(--surface))}
+table.mini tr.off td{color:var(--muted)}
+table.mini tr.hl td{background:color-mix(in srgb,var(--warn) 30%,var(--surface));color:var(--ink);font-weight:600}
+table.mini td.hit{background:color-mix(in srgb,var(--c1) 14%,var(--surface));color:var(--ink);font-weight:600}
+table.mini td.zero{color:var(--muted)}
+.yes{color:var(--good)} .nay{color:var(--signal)}
+.cset{display:flex;flex-wrap:wrap;gap:6px}
+.cset span,.cset button{font-family:var(--mono);font-size:.8rem;border:1px solid var(--line);border-radius:6px;padding:2px 7px;background:var(--surface);color:var(--ink)}
+.cset button{cursor:pointer}
+.cset button:hover{border-color:var(--accent)}
+.cset button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.cset .f{border-color:var(--good);background:color-mix(in srgb,var(--good) 10%,var(--surface))}
+.cset .i{border-color:var(--signal);background:color-mix(in srgb,var(--signal) 8%,var(--surface))}
+.cset .p{border-style:dashed;color:var(--muted);text-decoration:line-through}
+.passes{display:grid;gap:10px}
+.pass{background:var(--surface);border:2px solid var(--edge);border-radius:var(--r);padding:10px 14px;display:grid;gap:6px;min-width:0;box-shadow:3px 3px 0 var(--shadow)}
+.pass h3{font-size:.95rem;margin:0}
+.pass p{margin:0}
+.pass .lk{font-family:var(--mono);font-size:.82rem}
+.lbl-row{display:flex;justify-content:space-between;gap:10px;font-size:.85rem;color:var(--muted)}
+.lbl-row b{color:var(--ink);font-family:var(--mono);font-weight:500}
+.ctrl{display:grid;gap:4px}
+.cv.lat{aspect-ratio:16/10;cursor:pointer}
+#cvEmb{aspect-ratio:4/3}
+.nest{border:2px solid var(--ink);border-radius:12px;padding:12px;display:grid;gap:10px;background:var(--surface)}
+.nest .nest{border-color:var(--k2);background:color-mix(in srgb,var(--k2) 12%,var(--surface))}
+.nest .nest .nest{border-color:var(--k1);background:color-mix(in srgb,var(--k1) 12%,var(--surface));min-height:4.5em}
+.nest .h{font-family:var(--mono);font-size:.8rem;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.ut input{width:3.4em;font:inherit;font-family:var(--mono);font-size:.82rem;padding:1px 4px;border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--ink)}
+.emb-list{display:grid;gap:4px;font-family:var(--mono);font-size:.84rem}
+.emb-list div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;border-bottom:1px solid var(--line);padding-bottom:3px}
+.verdict.small{font-size:.86rem;padding:9px 12px}
+#lT td{white-space:nowrap}
+#clSup td,#clTdb td{white-space:nowrap}
+.clg{display:grid;grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr);gap:10px;align-items:start}
+#sLog{max-height:56vh;overflow:auto;padding:2px 6px 6px 2px}
+.algo{align-items:start}
+#lT td.vd{font-family:var(--body);font-size:.8rem;font-weight:700}
+#lT tr.ok td.vd{color:var(--good)} #lT tr.bad td.vd{color:var(--signal)} #lT tr.warn td.vd{color:var(--warn)}
+#lT tr.bad td{background:color-mix(in srgb,var(--signal) 7%,var(--surface))}
+#lT tr.warn td{background:color-mix(in srgb,var(--warn) 12%,var(--surface))}
+#lT tr.ok td{background:color-mix(in srgb,var(--good) 8%,var(--surface))}
+#lT .claim{color:var(--muted)}
+.lrgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+table.audit.short{min-width:0}
+@media (max-width:980px){.play.wide-l,.lrgrid,.clg{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){table.mini th,table.mini td{padding:4px 6px}.ut input{width:2.7em}.tx.t5{grid-template-columns:repeat(3,minmax(0,1fr))}.cv.lat{aspect-ratio:1/1}}
+.side{align-content:start}
+</style>
+
+<div class="page">
+<nav class="rail" aria-label="Lecture sections">
+  <div class="course">COMP7103 Data Mining</div>
+  <div class="ltitle">Lecture 7 · Association analysis I</div>
+  <ol id="toc"></ol>
+  <p class="keys">Press <kbd>←</kbd> <kbd>→</kbd> to step through boards while lecturing.</p>
+</nav>
+
+<main>
+<!-- ============ OPENING ============ -->
+<!-- source: title board in the style of Lectures 1-4 -->
+<section class="board title-board" id="opening" data-part="Opening" data-nav="Title">
+  <div class="hero-title">
+    <span class="eyebrow">COMP7103B Data Mining · Lecture 7</span>
+    <h1>Association <br/> Analysis I</h1>
+    <p class="lead">Which items are bought together, <br/> and how to find them without checking every possible itemset.</p>
+    <p class="instructor"><span class="name">Prof. Bo Dai</span></p>
+    <p class="instructor"><span class="name">School of Computing and Data Science, The University of Hong Kong</span></p>
+  </div>
+</section>
+
+<!-- source: new (session format: midterm first, from the spec) + association1.pptx slide 2 -->
+<section class="board" id="plan" data-part="Opening" data-nav="Today's plan">
+  <span class="eyebrow">One 2.5-hour session · midterm first</span>
+  <h2>Today's Plan</h2>
+  <p class="lead">Today starts with the midterm, then a 25-minute break and the lecture. There is no lab today: the Apriori lab is part of Lab 8. Click a part of the bar.</p>
+  <div class="bar" id="planBar">
+    <button class="seg" style="flex-basis:40%;background:var(--signal)" aria-pressed="true"><b>60 min</b><span>Midterm</span></button>
+    <button class="seg" style="flex-basis:16.7%;background:var(--muted)" aria-pressed="false"><b>25 min</b><span>Break</span></button>
+    <button class="seg" style="flex-basis:33.3%;background:var(--c1)" aria-pressed="false"><b>~50 min</b><span>Classical core</span></button>
+    <button class="seg" style="flex-basis:10%;background:var(--c3);padding:0 5px" aria-pressed="false"><b>~15</b><span>AI layer</span></button>
+  </div>
+  <div class="panel" id="planDetail"></div>
+  <div class="grid3">
+    <a class="card" href="#basket" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c1)">Part 1</span><h3>Association rule definition</h3><p>Market baskets, itemsets, support and confidence, and the two steps to find rules.</p></a>
+    <a class="card" href="#hard" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c2)">Part 2</span><h3>The Apriori algorithm</h3><p>The Apriori property, candidate generation and pruning, a step-by-step example.</p></a>
+    <a class="card" href="#maxclosed" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c3)">Part 3</span><h3>Compact representations of mining results</h3><p>Maximal and closed frequent itemsets. High-utility itemsets.</p></a>
+    <a class="card" href="#embed" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c5)">Part 4 · AI layer</span><h3>Rules and AI</h3><p>Item embeddings next to rules, when rules beat black boxes, LLM-suggested rules.</p></a>
+    <div class="card"><span class="tag" style="color:var(--muted)">Reading assignment</span><h3>Tan, chapter 5</h3><p>Pages 357–405.</p></div>
+  </div>
+</section>
+
+<!-- ============ PART 1 ============ -->
+<div class="part-break"><span class="n">01</span><span class="eyebrow">Part 1</span><h2>Association Rule Definition</h2></div>
+
+<!-- source: association1.pptx slides 3-5 -->
+<section class="board" id="basket" data-part="Part 1 · Association rules" data-nav="Market basket analysis">
+  <span class="eyebrow">Market basket analysis</span>
+  <h2>Market Basket Analysis</h2>
+  <p class="lead">The principal application of association rules is market basket analysis. It models supermarket data and discovers associations between different products (or items) that are bought together by customers.</p>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">E.g.</span>
+      <p class="mono" style="color:var(--ink);line-height:1.9">{bread} ⇒ {milk}<br>{diaper} ⇒ {beer}<br>{onion dip, salsa} ⇒ {tortilla chip}</p>
+      <p>The left side is the <b>antecedent</b>; the right side is the <b>consequence</b>.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Data model</span>
+      <p>We consider a (market basket) dataset as a collection of <b>transactions</b> (or transactional records).</p>
+      <p>Each transaction is represented by a set of <b>items</b> (e.g., <span class="mono">{milk, bread, detergent, rice}</span>), also commonly called an <b>itemset</b>.</p>
+      <p class="note">Note: for <i>binary</i> association rules mining, the quantity of each item bought is not considered.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Notation</span>
+      <ul class="clean mono" style="font-size:.88rem">
+        <li>D = dataset</li><li>I = set of all items</li><li>N = total number of transactions in D</li><li>T = a transaction in D</li><li>a, b, c, … = items</li><li>X, Y, Z, … = sets of items (itemsets)</li></ul>
+      <p class="note">Note: every transaction is an itemset.</p></div>
+  </div>
+</section>
+
+<!-- source: association1.pptx slides 6-8 (dataset D transcribed from slide 7) -->
+<section class="board" id="defs" data-part="Part 1 · Association rules" data-nav="Itemsets and support">
+  <span class="eyebrow">Definition · a toy example · pick items</span>
+  <h2>Itemsets and Support</h2>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">Contains</span><p>Given a non-empty itemset X, a transaction T in D <b>contains</b> X iff X ⊆ T ("T contains X" or "T supports X").</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Support count</span><p>The <b>support count</b> of X, denoted by sup(X), is the number of transactions in D that contain X.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">k-itemset</span><p>If an itemset X contains k items, we call X a <b>k-itemset</b>. {c, d} is a 2-itemset.</p></div>
+  </div>
+  <div class="tx-wrap">
+    <div class="side">
+      <div class="tx t5" id="dTable"></div>
+      <p class="note">A toy example dataset D: N = 25, I = {a, b, c, d, e, f}.</p>
+    </div>
+    <div class="side">
+      <p class="note">Click items to build an itemset X. The transactions that contain X light up.</p>
+      <div class="items" id="dItems"></div>
+      <p class="mono" id="dX" style="font-size:1.05rem;margin:0"></p>
+      <div class="stats"><div class="stat"><div class="k">sup(X)</div><div class="v" id="dSup">–</div></div><div class="stat"><div class="k">Contained in</div><div class="v" id="dTids" style="font-size:.9rem">–</div></div></div>
+      <p class="note">Example: the first transaction is {a, b, f}. Transaction 20 is {a, b, c, e}, which contains {a, b, e}; sup({a, b, e}) = 3 (transactions 4, 18, 20). sup({c, d}) = 9.</p>
+    </div>
+  </div>
+</section>
+
+<!-- source: association1.pptx slides 9-12 -->
+<section class="board" id="measures" data-part="Part 1 · Association rules" data-nav="Support and confidence">
+  <span class="eyebrow">Usefulness and certainty · build a rule</span>
+  <h2>Association Rules: Support and Confidence</h2>
+  <p class="lead">An association rule is an induction rule of the form X ⇒ Y: if X occurs, then Y is likely to occur. X and Y are non-empty, disjoint itemsets (X ≠ ∅; Y ≠ ∅; X ∩ Y = ∅).</p>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">Support condition · <span class="nt">ρ<sub>s</sub></span> = support threshold</span><div class="formula"><math display="block"><mrow><mfrac><mrow><mi>sup</mi><mo stretchy="false">(</mo><mi>X</mi><mo>∪</mo><mi>Y</mi><mo stretchy="false">)</mo></mrow><mi>N</mi></mfrac><mo>≥</mo><msub><mi>ρ</mi><mi>s</mi></msub></mrow></math></div><p>The fraction of transactions that mention all the items in the rule. The mined rules concern items that occur in a good portion of the transactions: they are of <b>sufficient interest</b>.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c4)">Confidence condition · <span class="nt">ρ<sub>c</sub></span> = confidence threshold</span><div class="formula"><math display="block"><mrow><mi>P</mi><mo stretchy="false">(</mo><mi>Y</mi><mo>|</mo><mi>X</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mrow><mi>sup</mi><mo stretchy="false">(</mo><mi>X</mi><mo>∪</mo><mi>Y</mi><mo stretchy="false">)</mo></mrow><mrow><mi>sup</mi><mo stretchy="false">(</mo><mi>X</mi><mo stretchy="false">)</mo></mrow></mfrac><mo>≥</mo><msub><mi>ρ</mi><mi>c</mi></msub></mrow></math></div><p>The conditional probability that Y occurs in a transaction given that X occurs in the same transaction: the rules are of <b>high confidence</b>.</p></div>
+  </div>
+  <div class="play">
+    <div class="side">
+      <p class="note">Click an item once for X (left), twice for Y (right), three times to clear. Loaded: the slide example {f} ⇒ {a, b}.</p>
+      <div class="items" id="rItems"></div>
+      <p class="mono" id="rRule" style="font-size:1.1rem;margin:0"></p>
+      <div class="stats"><div class="stat"><div class="k">Support</div><div class="v" id="rSup">–</div></div><div class="stat"><div class="k">Confidence</div><div class="v" id="rConf">–</div></div></div>
+    </div>
+    <div class="side">
+      <div class="ctrl"><div class="lbl-row"><label for="rS">ρ<sub>s</sub></label><b id="rSV">20%</b></div><input type="range" id="rS" min="1" max="60" value="20"></div>
+      <div class="ctrl"><div class="lbl-row"><label for="rC">ρ<sub>c</sub></label><b id="rCV">65%</b></div><input type="range" id="rC" min="5" max="100" value="65"></div>
+      <div class="verdict" id="rVerdict"></div>
+      <p class="note">In practice, the support threshold is much smaller than this.</p>
+    </div>
+  </div>
+</section>
+
+<!-- source: association1.pptx slides 13-14 -->
+<section class="board" id="twostep" data-part="Part 1 · Association rules" data-nav="How to find rules?">
+  <span class="eyebrow">How to find rules?</span>
+  <h2>How to Find Rules?</h2>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c2)">Step 1</span><h3>Find all the frequent itemsets</h3><p>A non-empty itemset S is frequent iff sup(S) ≥ N × ρ<sub>s</sub>. Any valid rule must have all the items mentioned in the rule form a frequent itemset.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c4)">Step 2</span><h3>Generate rules from frequent itemsets</h3><p>For each frequent itemset S, partition S into two non-empty disjoint subsets X and Y (X ∪ Y = S). If sup(X ∪ Y)/sup(X) ≥ ρ<sub>c</sub>, report X ⇒ Y. Repeat for all possible partitionings of S.</p></div>
+  </div>
+  <p>Example: let ρ<sub>s</sub> = 20%. Step 1 finds all frequent itemsets X s.t. sup(X) ≥ ρ<sub>s</sub> × N = 20% × 25 = 5. From D, the set of all <b id="fCount"></b> frequent itemsets is:</p>
+  <div class="tbl-wrap"><table class="mini" id="fTable"></table></div>
+</section>
+
+<!-- source: association1.pptx slides 15-18 -->
+<section class="board" id="rulegen" data-part="Part 1 · Association rules" data-nav="Generating rules">
+  <span class="eyebrow">Step 2 · pick a frequent itemset</span>
+  <h2>Generating Rules from Frequent Itemsets</h2>
+  <p class="lead">A frequent itemset that contains only one item does not generate any rule. A frequent k-itemset generates 2<sup>k</sup> − 2 possible rules. Checking their confidence is easy, provided that the supports of all the subsets are available.</p>
+  <div class="play">
+    <div class="side">
+      <div class="cset" id="gSets"></div>
+      <div class="tbl-wrap"><table class="mini" id="gTable"></table></div>
+    </div>
+    <div class="side">
+      <div class="ctrl"><div class="lbl-row"><label for="gC">ρ<sub>c</sub></label><b id="gCV">65%</b></div><input type="range" id="gC" min="5" max="100" value="65"></div>
+      <div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div class="stat"><div class="k" id="gNk">Rules from this itemset</div><div class="v" id="gN">–</div></div><div class="stat"><div class="k" id="gVk">Valid from this itemset</div><div class="v" id="gV">–</div></div><div class="stat"><div class="k">Valid from all itemsets</div><div class="v" id="gVA">–</div></div></div>
+      <p class="note" id="gAllNote"></p>
+      <div class="cset" id="gAll"></div>
+      <p class="note">Since k is usually small for typical applications, an exhaustive approach for generating (and checking) rules from frequent itemsets is usually not a problem.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PART 2 ============ -->
+<div class="part-break"><span class="n">02</span><span class="eyebrow">Part 2</span><h2>The Apriori Algorithm</h2></div>
+
+<!-- source: association1.pptx slides 19-20 -->
+<section class="board" id="hard" data-part="Part 2 · Apriori" data-nav="Why step 1 is hard">
+  <span class="eyebrow">Step 1 could be expensive · click an itemset</span>
+  <h2>Finding Frequent Itemsets and Counting Their Supports</h2>
+  <p class="lead">If there are m different items in a dataset, then there are 2<sup>m</sup> − 1 possible non-empty itemsets. Checking which itemsets are frequent and finding their supports using a brute-force approach is impractical.</p>
+  <div class="play">
+    <div class="side" style="gap:6px">
+      <svg id="latSvg" class="latsvg" viewBox="0 0 780 430" role="img" aria-label="The itemset lattice for five items a to e"></svg>
+      <p class="note" id="latNote" style="margin:0"></p>
+    </div>
+    <div class="side">
+      <div class="card"><span class="tag" style="color:var(--c2)">The lattice</span><p style="color:var(--ink)">Given m items, we can arrange the 2<sup>m</sup> − 1 possible non-empty candidate itemsets as a <b>lattice</b> structure. Level k holds the k-itemsets. A line joins an itemset to one with one more item: the <b>subset relation</b>.</p></div>
+      <div class="ctrl"><div class="lbl-row"><label for="xM">Number of items m</label><b id="xMV">6</b></div><input type="range" id="xM" min="1" max="64" value="5"></div>
+      <div class="stat"><div class="k">Non-empty itemsets 2<sup>m</sup> − 1</div><div class="v" id="xN" style="font-size:1.1rem;overflow-wrap:anywhere">–</div></div>
+      <div class="stat"><div class="k">A supermarket that carries 10,000 items</div><div class="v" id="xBig" style="font-size:1.05rem">–</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: association1.pptx slides 21-24 -->
+<section class="board" id="property" data-part="Part 2 · Apriori" data-nav="The Apriori property">
+  <span class="eyebrow">The Apriori property · pick an infrequent itemset</span>
+  <h2>The Apriori Property</h2>
+  <p class="lead">Proposed independently by Agrawal and Srikant, and by Mannila, Toivonen and Verkamo.</p>
+  <div class="grid2">
+    <div class="card good"><span class="tag" style="color:var(--good)">Property</span><p style="color:var(--ink)">If X is a frequent itemset, then any non-empty subset of X is also frequent.</p><p><b>Proof.</b> If a transaction T contains X, then for any Y ⊆ X we have Y ⊆ T, so T also contains Y. Therefore sup(Y) ≥ sup(X). Since sup(X) ≥ ρ<sub>s</sub> × N, sup(Y) must be ≥ ρ<sub>s</sub> × N as well. Hence Y is frequent.</p>
+      <p>Example: {c, d, e} is frequent in D (sup = 5), and all its non-empty subsets are frequent:</p>
+      <div class="tbl-wrap"><table class="mini" id="pSubs"></table></div></div>
+    <div class="card bad"><span class="tag" style="color:var(--signal)">Conversely</span><p style="color:var(--ink)">If an itemset X is not frequent, then any superset of X must not be frequent either. We do not need to check any superset of X and find its support count.</p><p>If we know that {charcoal} is not frequent, then we don't need to check the support of {charcoal, milk}, etc. Apriori uses this to prune the large number (2<sup>m</sup> − 1) of itemsets to a manageable number.</p>
+      <p class="note">Infrequent itemsets of D (ρ<sub>s</sub> = 20%) whose subsets are all frequent:</p>
+      <div class="cset" id="pInf"></div>
+      <p id="pOut" class="mono" style="font-size:.88rem;margin:0"></p></div>
+  </div>
+</section>
+
+<!-- source: association1.pptx slide 25 (spec demo: 3D itemset lattice with a min-support slider and Apriori passes) -->
+<section class="board" id="lattice3d" data-part="Part 2 · Apriori" data-nav="Illustrating the Apriori principle">
+  <span class="eyebrow">Illustrating the Apriori principle · step the passes</span>
+  <h2>Illustrating the Apriori Principle</h2>
+  <div class="play wide-l">
+    <div class="scene" id="heroScene">
+      <div class="legend"><span><i class="sw" style="background:var(--good)"></i>counted, frequent</span><span><i class="sw" style="background:var(--signal)"></i>counted, infrequent</span><span><i class="sw" style="background:var(--muted);opacity:.4"></i>pruned, never counted</span></div>
+      <span class="hint">drag to rotate · click a node</span>
+    </div>
+    <div class="side">
+      <p class="note">The lattice of D's 63 non-empty itemsets, the empty set on top. Under each itemset: its <b>support count</b> in D (out of 25 transactions). Follow any line down: the count can only stay the same or drop. Each pass of Apriori counts one level. An infrequent itemset rules out all its supersets.</p>
+      <div class="ctrl"><div class="lbl-row"><label for="heroSup">Minimum support count</label><b id="heroSupV">5</b></div><input type="range" id="heroSup" min="1" max="25" value="5"></div>
+      <div class="btnrow"><button class="btn" id="heroStep">Step one pass</button><button class="btn" id="heroRun">Run all</button><button class="btn ghost" id="heroReset">Reset</button></div>
+      <p class="caption" id="heroCap"></p>
+    </div>
+  </div>
+</section>
+
+<!-- source: association1.pptx slides 26-27, 38, 42 -->
+<section class="board" id="algorithm" data-part="Part 2 · Apriori" data-nav="The Apriori algorithm">
+  <span class="eyebrow">Iterative</span>
+  <h2>The Apriori Algorithm</h2>
+  <div class="grid2 algo">
+    <div class="side">
+      <div class="card"><span class="tag" style="color:var(--c1)">Notation</span><p><b>C<sub>i</sub></b> = set of all candidate i-itemsets · <b>L<sub>i</sub></b> = set of all frequent i-itemsets</p></div>
+      <div class="card"><span class="tag" style="color:var(--c2)">1st iteration</span><p>C<sub>1</sub> = set of all 1-itemsets (e.g., {{a}, {b}, {c}, {d}, {e}}). Scan the dataset once to find all frequent 1-itemsets (i.e., L<sub>1</sub>).</p></div>
+      <div class="card"><span class="tag" style="color:var(--c3)">i<sup>th</sup> iteration</span><p>Construct a <b>candidate set</b> C<sub>i</sub>: an itemset X is in C<sub>i</sub> if it contains i items and all size-(i−1) subsets of X are in L<sub>i−1</sub>. Scan the dataset once to find out which itemsets in C<sub>i</sub> are frequent; those are put into L<sub>i</sub>.</p></div>
+      <p class="note">Apriori terminates when a C<sub>i</sub> generated is empty. The set of frequent itemsets is the union of all the L<sub>i</sub>'s found in the iterations: C<sub>1</sub> → L<sub>1</sub> → C<sub>2</sub> → L<sub>2</sub> → C<sub>3</sub> → ⋯ (scan and count; then apriori-gen).</p>
+    </div>
+<pre class="pseudo"><span class="k">Algorithm</span> Apriori
+<span class="k">Begin</span>
+  Scan the dataset D once, and put all frequent 1-itemsets in L<sub>1</sub>;
+  k = 1;
+  <span class="k">while</span> (L<sub>k</sub> &lt;&gt; NULL) {
+      C<sub>k+1</sub> = Apriori-gen(L<sub>k</sub>);
+      <span class="k">For each</span> transaction T in D <span class="k">do</span>
+          <span class="k">For each</span> c in C<sub>k+1</sub> that is a subset of T <span class="k">do</span>
+              Increment c's support count;
+      L<sub>k+1</sub> = itemsets in C<sub>k+1</sub> whose support count &gt;= ρ<sub>s</sub> * N;
+      k++;
+  }
+<span class="k">End</span></pre>
+  </div>
+</section>
+
+<!-- source: association1.pptx slides 36-37, 43 -->
+<section class="board" id="aprgen" data-part="Part 2 · Apriori" data-nav="From L(i−1) to C(i)">
+  <span class="eyebrow">Candidate generation and pruning</span>
+  <h2>From L<sub>i−1</sub> to C<sub>i</sub></h2>
+  <div class="grid2">
+    <div class="side">
+      <p>The Apriori algorithm uses a function called <b>apriori-gen</b> to generate C<sub>i</sub> given L<sub>i−1</sub>. It considers all pairs of (i−1)-itemsets X and Y from L<sub>i−1</sub> that share i−2 common items, and generates the i-itemset Z = X ∪ Y. Each Z is checked to see if all of its size-(i−1) subsets are in L<sub>i−1</sub>; if yes, Z is put into C<sub>i</sub>. We write C<sub>i</sub> = L<sub>i−1</sub> ⋈ L<sub>i−1</sub>.</p>
+      <div class="card"><span class="tag" style="color:var(--c3)">Example: C<sub>3</sub> from L<sub>2</sub></span><ul class="clean">
+        <li>From {b, d} and {c, d}, apriori-gen generates the 3-itemset {b, c, d}. Since all of {b, c}, {c, d} and {b, d} are in L<sub>2</sub>, {b, c, d} is included in C<sub>3</sub>.</li>
+        <li>From {a, b} and {b, c}, apriori-gen generates the 3-itemset {a, b, c}. Since {a, c} is not in L<sub>2</sub>, {a, b, c} is not included in C<sub>3</sub>.</li></ul></div>
+    </div>
+<pre class="pseudo"><span class="k">Function</span> Apriori-gen (L<sub>k</sub>)
+<span class="k">Begin</span>
+  C<sub>k+1</sub> = NULL;
+  <span class="k">For each</span> itemset X in L<sub>k</sub>
+    <span class="k">For each</span> itemset Y in L<sub>k</sub>
+      <span class="k">If</span> (X∩Y contains k-1 items) {       <span class="c">// join</span>
+          Let Z = X ∪ Y;
+          <span class="k">If</span> every size k subset of Z is in L<sub>k</sub>   <span class="c">// prune</span>
+              C<sub>k+1</sub> = C<sub>k+1</sub> ∪ {Z};
+      }
+  <span class="k">Return</span> C<sub>k+1</sub>;
+<span class="k">End</span></pre>
+  </div>
+</section>
+
+<!-- source: association1.pptx slides 28-41 (spec demo: Apriori step-through table) -->
+<section class="board" id="stepper" data-part="Part 2 · Apriori" data-nav="Apriori step-through">
+  <span class="eyebrow">Example · step through Apriori on D</span>
+  <h2>Apriori Step by Step</h2>
+  <p class="lead">Each pass builds C<sub>k</sub> with apriori-gen, scans D once to count, and keeps L<sub>k</sub>. Change the threshold and watch the candidate sets change.</p>
+  <div class="play">
+    <div class="passes" id="sLog"></div>
+    <div class="side">
+      <div class="ctrl"><div class="lbl-row"><label for="sSup">Minimum support count</label><b id="sSupV">5 (20%)</b></div><input type="range" id="sSup" min="1" max="25" value="5"></div>
+      <div class="btnrow"><button class="btn" id="sStep">Step</button><button class="btn" id="sRun">Run</button><button class="btn ghost" id="sReset">Reset</button></div>
+      <div class="stats"><div class="stat"><div class="k">Itemsets counted</div><div class="v" id="sCounted">–</div></div><div class="stat"><div class="k">Frequent</div><div class="v" id="sFreq">–</div></div><div class="stat"><div class="k">Pruned by apriori-gen</div><div class="v" id="sPruned">–</div></div><div class="stat"><div class="k">Possible itemsets</div><div class="v">63</div></div></div>
+      <div class="legend-row"><span><i class="sw" style="background:var(--good)"></i>frequent</span><span><i class="sw" style="background:var(--signal)"></i>infrequent</span><span><i class="sw" style="border:1px dashed var(--muted)"></i>pruned, not counted</span></div>
+      <p class="note" id="sNote"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PART 3 ============ -->
+<div class="part-break"><span class="n">03</span><span class="eyebrow">Part 3</span><h2>Compact Representation</h2></div>
+
+<!-- source: association1.pptx slides 44-47 -->
+<section class="board" id="maxclosed" data-part="Part 3 · Compact representation" data-nav="Maximal and closed">
+  <span class="eyebrow">Compact representation</span>
+  <h2>Maximal and Closed Itemsets</h2>
+  <p class="lead">The first step of association rule mining is to find all frequent itemsets and their support counts (the set L). L is typically huge! We need a more compact representation.</p>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--k1)">Maximal frequent itemset</span><p style="color:var(--ink)">An itemset is maximal frequent if (1) it is frequent and (2) none of its immediate supersets is frequent. Maximal itemsets lie on the <b>border</b> between frequent and infrequent itemsets.</p>
+      <p><b>Theorem.</b> An itemset X is frequent iff X is a subset of some maximal frequent itemset, i.e. L = {X | X ⊆ Z, where Z is maximal frequent}. Storing Z (a smaller set) is enough to derive L (a larger set).</p></div>
+    <div class="card"><span class="tag" style="color:var(--k2)">Closed itemset</span><p style="color:var(--ink)">An itemset X is closed if none of its immediate supersets has the same support as X.</p>
+      <div class="clg">
+        <div class="tbl-wrap"><table class="mini" id="clTdb"></table></div>
+        <div class="tbl-wrap"><table class="mini" id="clSup"></table></div>
+      </div>
+      <p class="note" id="clNote"></p></div>
+  </div>
+</section>
+
+<!-- source: association1.pptx slides 48-49 (spec demo: closed/maximal lattice highlighter) -->
+<section class="board" id="lattice" data-part="Part 3 · Compact representation" data-nav="Closed and maximal on the lattice">
+  <span class="eyebrow">Example · move the threshold, click a node</span>
+  <h2>Closed and Maximal Itemsets on the Lattice</h2>
+  <div class="play">
+    <canvas class="cv lat" id="cvLat" aria-label="Itemset lattice for five transactions with closed and maximal itemsets marked"></canvas>
+    <div class="side">
+      <p class="note">Five transactions over items A to E. Each node lists the transaction ids that contain it. ABCDE is not supported by any transaction.</p>
+      <div class="tbl-wrap"><table class="mini" id="latTdb"></table></div>
+      <div class="ctrl"><div class="lbl-row"><label for="latSup">Minimum support</label><b id="latSupV">2</b></div><input type="range" id="latSup" min="1" max="5" value="2"></div>
+      <div class="stats"><div class="stat"><div class="k"># Frequent</div><div class="v" id="latF">–</div></div><div class="stat"><div class="k"># Closed</div><div class="v" id="latC">–</div></div><div class="stat"><div class="k"># Maximal</div><div class="v" id="latM">–</div></div></div>
+      <p class="note" id="latInfo">Click a node.</p>
+      <div class="legend-row"><span><i class="sw" style="background:var(--k1)"></i>maximal (and closed)</span><span><i class="sw" style="background:var(--k2)"></i>closed but not maximal</span><span><i class="sw" style="border:2px solid var(--ink)"></i>frequent only</span><span><i class="sw" style="border:1px solid var(--line)"></i>infrequent</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: association1.pptx slides 50-51 -->
+<section class="board" id="maxvclosed" data-part="Part 3 · Compact representation" data-nav="Maximal vs closed">
+  <span class="eyebrow">Maximal vs closed itemsets</span>
+  <h2>Maximal vs Closed Itemsets</h2>
+  <div class="grid2">
+    <div class="side">
+      <div class="nest"><div class="h"><b>Frequent itemsets</b><span id="nF"></span></div>
+        <div class="nest"><div class="h"><b>Closed frequent itemsets</b><span id="nC"></span></div>
+          <div class="nest"><div class="h"><b>Maximal frequent itemsets</b><span id="nM"></span></div></div></div></div>
+      <p class="note">Counts for D at ρ<sub>s</sub> = 20% and for the A–E example at minimum support 2. Every maximal frequent itemset is closed.</p>
+    </div>
+    <div class="side">
+      <div class="card good"><span class="tag" style="color:var(--good)">To deduce all the frequent itemsets and their support counts, we only need</span><ol style="margin:6px 0 0;padding-left:1.3em;color:var(--ink)"><li>The set of all maximal frequent itemsets.</li><li>The support counts of all closed frequent itemsets.</li></ol></div>
+      <div class="card"><span class="tag" style="color:var(--k1)">Maximal</span><p style="color:var(--ink)">Maximal frequent itemsets can infer all frequent itemsets.</p></div>
+      <div class="card"><span class="tag" style="color:var(--k2)">Closed</span><p style="color:var(--ink)">Closed frequent itemsets can infer all frequent itemsets and their supports: sup(X) is the largest support among the closed itemsets that contain X.</p></div>
+      <p class="note">We only need to know the maximal frequent itemsets and the closed frequent itemsets and their support counts to find all rules.</p>
+    </div>
+  </div>
+</section>
+
+<!-- source: association1.pptx slides 52-54 (spec demo: high-utility calculator) -->
+<section class="board" id="utility" data-part="Part 3 · Compact representation" data-nav="High-utility itemsets">
+  <span class="eyebrow">High-utility itemset · pick an itemset</span>
+  <h2>High-Utility Itemsets</h2>
+  <p class="lead">Instead of support, we can evaluate the importance of an itemset by its <b>utility</b>. Each transaction T records the items and their quantities sold: q(a, T) = quantity of a sold in T. Each item a is associated with a unit profit p(a).</p>
+  <div class="grid2" style="align-items:start">
+    <div class="side">
+      <div class="formula"><math display="block"><mrow><mi>σ</mi><mo stretchy="false">(</mo><mi>X</mi><mo>,</mo><mi>T</mi><mo stretchy="false">)</mo><mo>=</mo><munder><mo>∑</mo><mrow><mi>a</mi><mo>∈</mo><mi>X</mi></mrow></munder><mo stretchy="false">(</mo><mi>p</mi><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo><mo>×</mo><mi>q</mi><mo stretchy="false">(</mo><mi>a</mi><mo>,</mo><mi>T</mi><mo stretchy="false">)</mo><mo stretchy="false">)</mo><mspace width="1.2em"/><mi>π</mi><mo stretchy="false">(</mo><mi>X</mi><mo>,</mo><mi>D</mi><mo stretchy="false">)</mo><mo>=</mo><munder><mo>∑</mo><mrow><mi>T</mi><mo>∈</mo><mi>D</mi></mrow></munder><mi>σ</mi><mo stretchy="false">(</mo><mi>X</mi><mo>,</mo><mi>T</mi><mo stretchy="false">)</mo></mrow></math></div>
+      <p class="note">σ(X, T) is the profit of X in T, counted only if X ⊆ T; π(X, D) is the utility of X in D. Objective: find all itemsets X s.t. π(X, D) ≥ min<sub>u</sub>, a minimum utility threshold.</p>
+      <div class="tbl-wrap ut"><table class="mini" id="uTable"></table></div>
+      <p class="note">Last column: σ(X, T), the profit of X in each transaction. Last row: unit profits p(a); edit them.</p>
+    </div>
+    <div class="side">
+      <div class="items" id="uItems"></div>
+      <div class="stats"><div class="stat"><div class="k nt">π(X, D)</div><div class="v" id="uU">–</div></div><div class="stat"><div class="k nt">sup(X)</div><div class="v" id="uS">–</div></div></div>
+      <p class="mono note" id="uCalc" style="margin:0"></p>
+      <div class="ctrl"><div class="lbl-row"><label for="uMin">min<sub>u</sub></label><b id="uMinV">100</b></div><input type="range" id="uMin" min="10" max="300" step="5" value="100"></div>
+      <p class="note" id="uHigh" style="margin:0"></p>
+      <div class="verdict meh" id="uWarn"></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: new (quiz with new examples) -->
+<section class="board" id="check" data-part="Part 3 · Compact representation" data-nav="Check yourself">
+  <span class="eyebrow">Check yourself · new examples</span>
+  <h2>Check Yourself</h2>
+  <p class="lead">A café records 10 orders: {latte, croissant}, {latte, muffin}, {tea, croissant}, {latte, croissant}, {latte}, {tea, muffin}, {latte, croissant, muffin}, {tea}, {latte, croissant}, {croissant}.</p>
+  <div class="quiz qgrid" id="quizBox"></div>
+  <p class="score" id="quizScore"></p>
+</section>
+
+<!-- ============ PART 4 · AI LAYER ============ -->
+<div class="part-break"><span class="n">04</span><span class="eyebrow">Part 4 · AI layer</span><h2>Rules and AI</h2></div>
+
+<!-- source: new (spec AI layer: item embeddings vs rules on the same baskets) -->
+<section class="board" id="embed" data-part="Part 4 · Rules and AI" data-nav="Embeddings vs rules">
+  <span class="eyebrow">AI as a method · with a classical baseline · pick an item</span>
+  <h2>Item Embeddings next to Co-occurrence Rules</h2>
+  <p class="lead">An embedding gives each item a vector. Items bought in <b>similar baskets</b> end up close, even if they are never bought together. A rule only sees items in the <b>same basket</b>. Embeddings find substitutes; rules find complements.</p>
+  <div class="play">
+    <canvas class="cv" id="cvEmb" aria-label="Two-dimensional map of item embeddings"></canvas>
+    <div class="side">
+      <div class="cset" id="eItems"></div>
+      <h3 id="eTitle" style="margin:0"></h3>
+      <div><p class="note" style="margin:0 0 4px"><b style="color:var(--c5)">Nearest by embedding</b> (cosine)</p><div class="emb-list" id="eNN"></div></div>
+      <div><p class="note" style="margin:0 0 4px"><b style="color:var(--c1)">Top rules</b> {item} ⇒ {y} (confidence · lift; lift &lt; 1: bought together less often than by chance)</p><div class="emb-list" id="eRules"></div></div>
+      <div class="verdict ok small" id="eNote"></div>
+    </div>
+  </div>
+  <p class="note">Synthetic data, generated in your browser: 500 baskets from four kinds of shopping trip. Each item's vector is its positive-PMI co-occurrence profile, the count-based relative of item2vec, compared by cosine. The map is a 2D projection of those vectors. All numbers are computed live.</p>
+</section>
+
+<!-- source: new (spec AI layer: when interpretable rules beat black-box models) -->
+<section class="board" id="whenrules" data-part="Part 4 · Rules and AI" data-nav="When rules win">
+  <span class="eyebrow">AI as a method · interpretability</span>
+  <h2>When Interpretable Rules Beat Black-Box Models</h2>
+  <div class="grid2">
+    <div class="card good"><span class="tag" style="color:var(--good)">Prefer rules when</span><ul class="clean">
+      <li><b>Promotions:</b> a manager plans a bundle or a discount and needs to see why.</li>
+      <li><b>Store layout:</b> which products to place near each other.</li>
+      <li><b>Auditability:</b> each rule points to counts anyone can recompute.</li>
+      <li><b>Small data:</b> a few thousand baskets are enough for rules, not for a good embedding.</li></ul></div>
+    <div class="card"><span class="tag" style="color:var(--c5)">Prefer embeddings or other black boxes when</span><ul class="clean">
+      <li>You rank thousands of items for each customer and only ranking quality matters.</li>
+      <li>Substitutes and "similar items" matter, as in search.</li>
+      <li>Rare and new items need a score that rules cannot give.</li>
+      <li>You can test the result on held-out or live data.</li></ul></div>
+  </div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Question</th><th>Co-occurrence rules</th><th>Item embeddings</th></tr></thead>
+    <tbody>
+      <tr><td>What does "related" mean?</td><td>Bought in the same basket: complements</td><td>Bought in similar baskets: also substitutes</td></tr>
+      <tr><td>Can you check a claim?</td><td>Yes: count the transactions</td><td>Only indirectly, through a downstream test</td></tr>
+      <tr><td>Typical use</td><td>Bundles, shelf layout, cross-selling</td><td>Recommendation, search, "similar items"</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- source: new (spec AI layer: LLM-suggested rules recomputed on the data) -->
+<section class="board" id="llm" data-part="Part 4 · Rules and AI" data-nav="LLM-suggested rules">
+  <span class="eyebrow">AI as a tool · verify, don't trust</span>
+  <h2>LLM-Suggested Rules, Recomputed on the Data</h2>
+  <p class="lead">An LLM can propose plausible rules from common sense. It has not seen your transactions. Recompute support, confidence and lift for every suggested rule before you use it.</p>
+  <div class="play wide-l">
+    <div class="tbl-wrap"><table class="mini" id="lT"></table></div>
+    <div class="side">
+      <div class="agent">&gt; Suggest 10 likely association rules for this grocery shop, with their confidence.</div>
+      <div class="ctrl"><div class="lbl-row"><label for="lS">ρ<sub>s</sub></label><b id="lSV">5%</b></div><input type="range" id="lS" min="1" max="20" value="5"></div>
+      <div class="ctrl"><div class="lbl-row"><label for="lC">ρ<sub>c</sub></label><b id="lCV">50%</b></div><input type="range" id="lC" min="10" max="95" step="5" value="50"></div>
+      <div class="btnrow"><button class="btn" id="lGo">Recompute on the 500 baskets</button><button class="btn ghost" id="lHide">Hide</button></div>
+      <div class="stats" id="lStats"></div>
+      <p class="note"><b>Lift</b> = confidence ÷ (fraction of baskets that contain Y). Lift &gt; 1: Y is more likely when X is in the basket. More in Lecture 8.</p>
+    </div>
+  </div>
+  <p class="note">The ten suggestions and their stated confidences are illustrative, written to resemble typical LLM output. The baskets are the 500 synthetic baskets from the embedding board. Support, confidence and lift are computed live.</p>
+</section>
+
+<!-- ============ SUMMARY ============ -->
+<!-- source: learning outcomes, readings and exam scope from the spec -->
+<section class="board" id="summary" data-part="Summary" data-nav="Summary">
+  <span class="eyebrow">Summary</span>
+  <h2>Summary</h2>
+  <div class="grid4">
+    <div class="card"><span class="tag" style="color:var(--c1)">Rules</span><p style="color:var(--ink)">X ⇒ Y is valid when sup(X ∪ Y)/N ≥ ρ<sub>s</sub> and sup(X ∪ Y)/sup(X) ≥ ρ<sub>c</sub>. Step 1 finds frequent itemsets; step 2 generates rules.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Apriori</span><p style="color:var(--ink)">Subsets of frequent itemsets are frequent. Apriori-gen joins L<sub>k</sub> with itself and prunes candidates with an infrequent subset; one scan per level.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Compact representation</span><p style="color:var(--ink)">Maximal frequent itemsets give all frequent itemsets; closed ones also give their supports. Utility breaks the Apriori property.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c5)">Rules and AI</span><p style="color:var(--ink)">Embeddings find substitutes, rules find complements. Recompute every LLM-suggested rule on the data.</p></div>
+  </div>
+  <p class="lab-s" style="color:var(--c3);font-weight:700">What you can do after today</p>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">Compute</span><p style="color:var(--ink)">Compute support and confidence, and run Apriori by hand, including candidate generation and pruning.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Identify</span><p style="color:var(--ink)">Identify maximal and closed frequent itemsets, and compute itemset utility.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c4)">Explain</span><p style="color:var(--ink)">Explain how item embeddings differ from co-occurrence rules, and why an LLM's suggested rules must be recomputed from data.</p></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">Key readings</span><p style="color:var(--ink)">Tan, chapter 5 (pages 357–405).</p></div>
+    <div class="card"><span class="tag" style="color:var(--signal)">Exam-relevant</span><p style="color:var(--ink)">Support, confidence, Apriori by hand, candidate generation and pruning, maximal vs closed, utility calculation.</p></div>
+  </div>
+  <div class="next"><span class="eyebrow">Next</span><h3>Lecture 8 · Association analysis II (Friday)</h3><p>FP-growth, lift, quantitative rules and sequential patterns; checking LLM summaries of rule sets. Lab 8 starts with Apriori on real retail invoices.</p></div>
+</section>
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+"use strict";
+// ===== shared lecture kit: utilities, nav, theme hooks, three.js + canvas helpers =====
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const themeHooks = [];
+function onTheme(f){ themeHooks.push(f); }
+function fireTheme(){ themeHooks.forEach(f => { try { f(); } catch(e){} }); }
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", fireTheme);
+new MutationObserver(fireTheme).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
+
+// seeded RNG so every class sees the same data
+function rng(seed){ let s = seed >>> 0; return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function gauss(r){ let u = 0, v = 0; while(!u) u = r(); while(!v) v = r(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+
+/* ---------------- navigation ---------------- */
+const boards = $$("section.board");
+const toc = $("#toc");
+let lastPart = "";
+boards.forEach(b => {
+  if (b.dataset.part !== lastPart){ lastPart = b.dataset.part; const li = document.createElement("li"); li.className = "part"; li.textContent = lastPart; toc.appendChild(li); }
+  const li = document.createElement("li"); const a = document.createElement("a");
+  a.href = "#" + b.id; a.textContent = b.dataset.nav; a.dataset.id = b.id; li.appendChild(a); toc.appendChild(li);
+});
+const links = $$("#toc a");
+let current = 0;
+const io = new IntersectionObserver(es => {
+  es.forEach(e => { if (e.isIntersecting){ current = boards.indexOf(e.target); links.forEach(l => l.classList.toggle("on", l.dataset.id === e.target.id)); const on = links[current]; if (on && innerWidth < 980) on.scrollIntoView({block:"nearest", inline:"center"}); } });
+}, {rootMargin:"-40% 0px -55% 0px"});
+boards.forEach(b => io.observe(b));
+addEventListener("keydown", e => {
+  if (e.target.closest("input,textarea,select") || e.metaKey || e.ctrlKey || e.altKey) return;
+  let n = null;
+  if (e.key === "ArrowRight" || e.key === "PageDown") n = Math.min(boards.length-1, current+1);
+  if (e.key === "ArrowLeft" || e.key === "PageUp") n = Math.max(0, current-1);
+  if (n === null) return;
+  e.preventDefault(); current = n;
+  boards[n].scrollIntoView({behavior: reduce ? "auto" : "smooth", block:"start"});
+});
+
+/* ---------------- three.js helpers ---------------- */
+const hasGL = typeof THREE !== "undefined";
+function dotTexture(){
+  const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d");
+  const grd = g.createRadialGradient(32,32,0,32,32,30); grd.addColorStop(0,"rgba(255,255,255,1)"); grd.addColorStop(.7,"rgba(255,255,255,1)"); grd.addColorStop(1,"rgba(255,255,255,0)");
+  g.fillStyle = grd; g.beginPath(); g.arc(32,32,30,0,Math.PI*2); g.fill();
+  const t = new THREE.CanvasTexture(c); return t;
+}
+function makeRenderer(host){
+  const r = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  r.setPixelRatio(Math.min(devicePixelRatio, 2)); host.prepend(r.domElement);
+  return r;
+}
+function visible(el, cb){ const o = new IntersectionObserver(es => es.forEach(e => cb(e.isIntersecting))); o.observe(el); }
+function noGL(host){ const p = document.createElement("p"); p.className = "note"; p.style.padding = "24px"; p.textContent = "This 3D view needs WebGL, which this browser has turned off."; host.appendChild(p); }
+
+/* ---------------- canvas helpers ---------------- */
+function setupCanvas(cv){
+  const ctx = cv.getContext("2d");
+  const fit = () => { const r = cv.getBoundingClientRect(); const d = Math.min(devicePixelRatio,2); cv.width = Math.max(1, r.width*d); cv.height = Math.max(1, r.height*d); ctx.setTransform(d,0,0,d,0,0); return r; };
+  return {ctx, fit};
+}
+function axes(ctx, w, h, pad, xl, yl, xt, yt){
+  ctx.strokeStyle = tok("--line"); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, h-pad.b); ctx.lineTo(w-pad.r, h-pad.b); ctx.stroke();
+  ctx.fillStyle = tok("--muted"); ctx.font = `12px ${tok("--mono")}`;
+  ctx.textAlign = "center"; ctx.fillText(xl, (pad.l + w - pad.r)/2, h-8);
+  xt.forEach(([v,x]) => ctx.fillText(v, x, h-pad.b+16));
+  ctx.textAlign = "right"; yt.forEach(([v,y]) => ctx.fillText(v, pad.l-6, y+4));
+  ctx.save(); ctx.translate(14, (pad.t + h - pad.b)/2); ctx.rotate(-Math.PI/2); ctx.textAlign = "center"; ctx.fillText(yl, 0, 0); ctx.restore();
+}
+const redraws = {};
+onTheme(() => Object.values(redraws).forEach(f => f()));
+
+
+function live(cv, key, paint){
+  const {ctx, fit} = setupCanvas(cv);
+  const draw = () => { const r = fit(); if (!r.width) return; ctx.clearRect(0,0,r.width,r.height); paint(ctx, r.width, r.height); };
+  redraws[key] = draw; new ResizeObserver(draw).observe(cv); return draw;
+}
+const at = (cv, e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+
+/* ---------------- generic tabsets ---------------- */
+$$(".tabset").forEach(root => {
+  const bs = $$("[data-tab]", root), ps = $$("[data-pane]", root);
+  const go = id => { bs.forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === id))); ps.forEach(p => p.hidden = p.dataset.pane !== id); root.dataset.show = id; };
+  bs.forEach(b => b.onclick = () => go(b.dataset.tab)); go(bs[0].dataset.tab);
+});
+
+/* ---------------- quiz helper ---------------- */
+function quiz(host, O, Q, scoreEl){
+  let answered = 0, right = 0;
+  const upd = () => { if (scoreEl) scoreEl.textContent = answered < Q.length ? `${answered} of ${Q.length} answered · ${right} correct` : `Done: ${right} of ${Q.length} correct`; };
+  Q.forEach(([q, a, why]) => {
+    const d = document.createElement("div"); d.className = "q";
+    d.innerHTML = `<p>${q}</p><div class="opts">${O.map((o,i)=>`<button data-i="${i}">${o}</button>`).join("")}</div><p class="fb"></p>`;
+    $$("button", d).forEach(b => b.onclick = () => {
+      if (d.classList.contains("done")) return;
+      const i = +b.dataset.i; b.classList.add("picked"); d.classList.add("done", i===a ? "right" : "wrong");
+      answered++; if (i===a) right++;
+      $(".fb", d).innerHTML = `<b>${i===a ? "Correct." : "Not quite: " + O[a] + "."}</b> ${why}`; upd();
+    });
+    host.appendChild(d);
+  });
+  upd();
+}
+
+/* ---------------- segmented bars (plan, assessment, lab) ---------------- */
+function segBar(bar, detail, D){
+  const bs = $$(".seg", $(bar));
+  const go = i => { bs.forEach((b,k) => b.setAttribute("aria-pressed", String(k===i))); $(detail).innerHTML = D[i]; };
+  bs.forEach((b,i) => b.onclick = () => go(i)); go(0);
+}
+
+/* ================= LECTURE 7 MODULES ================= */
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pct = x => Math.round(x*100) + "%";
+const pct1 = x => (x*100).toFixed(1) + "%";
+
+/* ---------------- today's plan ---------------- */
+segBar("#planBar", "#planDetail", [
+  "<h3>Midterm · first 60 minutes</h3><p style='margin-top:6px'>Closed-book, covering Lectures 1–6. No notes or devices except a non-programmable calculator.</p>",
+  "<h3>Break · 25 minutes</h3><p style='margin-top:6px'>A longer break after the midterm.</p>",
+  "<h3>Classical core · about 50 minutes</h3><p style='margin-top:6px'>Market baskets, support and confidence, the Apriori algorithm with a step-by-step example, maximal and closed itemsets, and, briefly, high-utility itemsets.</p>",
+  "<h3>AI layer · about 15 minutes</h3><p style='margin-top:6px'>AI as a method and as a tool: item embeddings next to co-occurrence rules on the same baskets, when interpretable rules beat black-box models, and LLM-suggested rules recomputed on the data. No lab today: Lab 8 starts with Apriori on real retail invoices.</p>"
+]);
+
+/* ---------------- the toy dataset D (association1.pptx slide 7) ---------------- */
+const IT = "abcdef";
+const DS = ["abf","cde","abc","abef","bde","cd","ad","ab","ab","cdef","bcde","bd","a","b","bde","bcd","bd","abe","bcde","abce","bcde","bcd","e","a","abcd"];
+const toMask = (s, its=IT) => [...s].reduce((m,ch) => m | 1 << its.indexOf(ch), 0);
+const DM = DS.map(s => toMask(s)), N = DM.length;
+const pc = m => { let c = 0; while (m){ m &= m-1; c++; } return c; };
+const SUP = Array.from({length:64}, (_,m) => DM.reduce((s,t) => s + ((t & m) === m ? 1 : 0), 0));
+const items = (m, its=IT) => [...its].filter((_,i) => m >> i & 1);
+const nm = (m, its=IT) => "{" + items(m, its).join(", ") + "}";
+const key = (m, its=IT) => items(m, its).join("");
+const lex = its => (a,b) => pc(a) - pc(b) || (key(a,its) < key(b,its) ? -1 : 1);
+
+/* Apriori, as in the pseudo-code: count Ck, keep Lk, Apriori-gen = join + prune */
+function apriori(sup, nI, minsup, its=IT){
+  const passes = []; let C = [], pruned = [], k = 1, joins = 0;
+  for (let i=0;i<nI;i++) C.push(1<<i);
+  for (;;){
+    const cand = C.map(m => ({m, s:sup[m], f:sup[m] >= minsup}));
+    const L = cand.filter(c => c.f).map(c => c.m);
+    passes.push({k, cand, pruned, joins, L});
+    if (!L.length) break;
+    const Ls = new Set(L), next = new Set(), pr = new Map(); joins = 0;
+    for (let i=0;i<L.length;i++) for (let j=i+1;j<L.length;j++){
+      const Z = L[i] | L[j]; if (pc(Z) !== k+1) continue;
+      joins++; if (next.has(Z) || pr.has(Z)) continue;
+      let miss = 0; for (let b=0;b<nI;b++) if (Z >> b & 1){ const sub = Z & ~(1<<b); if (!Ls.has(sub)){ miss = sub; break; } }
+      if (miss) pr.set(Z, miss); else next.add(Z);
+    }
+    C = [...next].sort(lex(its)); pruned = [...pr].map(([m,miss]) => ({m, miss})).sort((a,b) => lex(its)(a.m,b.m)); k++;
+  }
+  return passes;
+}
+function closedMax(sup, nI, minsup){
+  const all = 1<<nI, res = {};
+  for (let m=1;m<all;m++){
+    if (sup[m] < minsup) continue;
+    let closed = true, maximal = true, why = 0;
+    for (let b=0;b<nI;b++){ if (m >> b & 1) continue; const s = m | 1<<b;
+      if (sup[s] === sup[m]){ closed = false; if (!why) why = s; }
+      if (sup[s] >= minsup) maximal = false; }
+    res[m] = {closed, maximal, why};
+  }
+  return res;
+}
+
+/* ---------------- itemset explorer (slides 6-8) ---------------- */
+(function defs(){
+  const tb = $("#dTable"), ib = $("#dItems"); let X = toMask("abe");
+  [...IT].forEach((ch,i) => { const b = document.createElement("button"); b.textContent = ch; b.onclick = () => { X ^= 1<<i; upd(); }; ib.appendChild(b); });
+  function upd(){
+    $$("button", ib).forEach((b,i) => b.className = X >> i & 1 ? "a" : "");
+    tb.innerHTML = DS.map((s,n) => `<div class="${X && (DM[n] & X) === X ? "hit" : ""}"><b>${n+1}</b> ${s}</div>`).join("");
+    $("#dX").textContent = X ? `X = ${nm(X)} · a ${pc(X)}-itemset` : "X = { } · pick items";
+    if (!X){ $("#dSup").textContent = $("#dTids").textContent = "–"; return; }
+    $("#dSup").textContent = SUP[X];
+    const t = DM.map((m,i) => (m & X) === X ? i+1 : 0).filter(Boolean);
+    $("#dTids").textContent = t.length ? t.join(", ") : "none";
+  }
+  upd();
+})();
+
+/* ---------------- support and confidence (slides 9-12) ---------------- */
+(function measures(){
+  const ib = $("#rItems"), stt = Array(6).fill(0); stt[5] = 1; stt[0] = 2; stt[1] = 2;
+  [...IT].forEach((ch,i) => { const b = document.createElement("button"); b.textContent = ch; b.onclick = () => { stt[i] = (stt[i]+1)%3; upd(); }; ib.appendChild(b); });
+  ["#rS","#rC"].forEach(s => $(s).oninput = upd);
+  function upd(){
+    const s = +$("#rS").value/100, c = +$("#rC").value/100; $("#rSV").textContent = pct(s); $("#rCV").textContent = pct(c);
+    $$("button", ib).forEach((b,i) => b.className = stt[i] === 1 ? "a" : stt[i] === 2 ? "c" : "");
+    let X = 0, Y = 0; stt.forEach((v,i) => { if (v === 1) X |= 1<<i; if (v === 2) Y |= 1<<i; });
+    $("#rRule").innerHTML = `X = <span style="color:var(--c3);font-weight:700">${X ? nm(X) : "{…}"}</span> ⇒ Y = <b style="color:var(--ink)">${Y ? nm(Y) : "{…}"}</b>`;
+    const v = $("#rVerdict");
+    if (!X || !Y){ $("#rSup").textContent = $("#rConf").textContent = "–"; v.className = "verdict meh"; v.textContent = "Pick at least one item for each side."; return; }
+    const sxy = SUP[X|Y], sx = SUP[X], sp = sxy/N, cf = sx ? sxy/sx : 0;
+    $("#rSup").textContent = `${sxy}/${N} = ${pct(sp)}`; $("#rConf").textContent = sx ? `${sxy}/${sx} = ${pct(cf)}` : "–";
+    const okS = sp >= s - 1e-9, okC = cf >= c - 1e-9;
+    v.className = "verdict " + (okS && okC ? "ok" : okS || okC ? "meh" : "leak");
+    v.innerHTML = okS && okC ? `<b>Valid rule.</b> Support ${pct(sp)} ≥ ${pct(s)} and confidence ${pct(cf)} ≥ ${pct(c)}.` :
+      okC ? `<b>The rule satisfies the confidence condition but not the support condition.</b> ${pct(cf)} ≥ ${pct(c)}, but ${pct(sp)} &lt; ${pct(s)}.` :
+      okS ? `<b>The rule satisfies the support condition but not the confidence condition.</b> ${pct(sp)} ≥ ${pct(s)}, but ${pct(cf)} &lt; ${pct(c)}.` :
+      `<b>Neither condition holds.</b> Support ${pct(sp)} &lt; ${pct(s)} and confidence ${pct(cf)} &lt; ${pct(c)}.`;
+  }
+  upd();
+})();
+
+/* ---------------- frequent itemsets at 20% (slide 14) ---------------- */
+const FREQ5 = []; for (let m=1;m<64;m++) if (SUP[m] >= 5) FREQ5.push(m);
+FREQ5.sort(lex(IT));
+(function twostep(){
+  $("#fCount").textContent = FREQ5.length;
+  const cols = 4, rows = Math.ceil(FREQ5.length/cols), cell = i => FREQ5[i] ? `<td>${nm(FREQ5[i])}</td><td>${SUP[FREQ5[i]]}</td>` : "<td></td><td></td>";
+  let h = `<thead><tr>${"<th>itemset</th><th>support</th>".repeat(cols)}</tr></thead><tbody>`;
+  for (let r=0;r<rows;r++){ h += "<tr>"; for (let c=0;c<cols;c++) h += cell(c*rows + r); h += "</tr>"; }
+  $("#fTable").innerHTML = h + "</tbody>";
+})();
+
+/* ---------------- rule generation (slides 15-18) ---------------- */
+function rulesOf(Z){ const out = []; for (let X = (Z-1) & Z; X > 0; X = (X-1) & Z) out.push({X, Y: Z & ~X, conf: SUP[Z]/SUP[X]}); return out.sort((a,b) => pc(a.X) - pc(b.X) || lex(IT)(a.X,b.X)); }
+(function rulegen(){
+  const big = FREQ5.filter(m => pc(m) > 1); let Z = toMask("cde");
+  const host = $("#gSets");
+  big.forEach(m => { const b = document.createElement("button"); b.textContent = nm(m); b.onclick = () => { Z = m; upd(); }; b.dataset.m = m; host.appendChild(b); });
+  $("#gC").oninput = upd;
+  function upd(){
+    const c = +$("#gC").value/100; $("#gCV").textContent = pct(c);
+    $$("button", host).forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.m === Z)));
+    const R = rulesOf(Z); let v = 0;
+    $("#gTable").innerHTML = "<thead><tr><th>rule</th><th>confidence</th></tr></thead><tbody>" + R.map(r => { const ok = r.conf >= c - 1e-9; if (ok) v++;
+      return `<tr class="${ok ? "on" : "off"}"><td>${nm(r.X)} ⇒ ${nm(r.Y)}</td><td>${SUP[Z]}/${SUP[r.X]} = ${pct(r.conf)}</td></tr>`; }).join("") + "</tbody>";
+    $("#gN").innerHTML = `${R.length} <span style="font-size:.6em;color:var(--muted)">= 2<sup>${pc(Z)}</sup> − 2</span>`; $("#gV").textContent = v; $("#gNk").textContent = `Rules from ${nm(Z)}`; $("#gVk").textContent = `Valid from ${nm(Z)}`;
+    const all = []; big.forEach(m => rulesOf(m).forEach(r => { if (r.conf >= c - 1e-9) all.push(r); }));
+    $("#gVA").textContent = all.length; $("#gAllNote").innerHTML = `After considering all the frequent itemsets, the set of valid rules at ρ<sub>c</sub> = ${pct(c)} (${all.length} rules; the ${v} from ${nm(Z)} are among them):`;
+    $("#gAll").innerHTML = all.map(r => `<span class="f">${nm(r.X)} ⇒ ${nm(r.Y)} · ${pct(r.conf)}</span>`).join("");
+  }
+  upd();
+})();
+
+/* ---------------- itemset lattice for five items (slide 20) ---------------- */
+(function lattice2d(){
+  const svg = $("#latSvg"), its = "abcde", n = 5, Wd = 780, top = 26, gap = 76, lab = m => m ? "{" + [...its].filter((_, i) => m >> i & 1).join(", ") + "}" : "null";
+  const lv = Array.from({length: n + 1}, () => []); for (let m = 0; m < 32; m++) lv[pc(m)].push(m);
+  const pos = {}; lv.forEach((L, k) => L.forEach((m, j) => { pos[m] = [96 + (j + .5)*(Wd - 106)/L.length, top + k*gap]; }));
+  let sel = null;
+  function draw(){
+    const isSub = m => sel !== null && (m & sel) === m, edges = [];
+    for (let m = 0; m < 32; m++) for (let i = 0; i < n; i++) if (!(m >> i & 1)){ const M = m | 1 << i, hot = sel !== null && isSub(m) && isSub(M);
+      edges.push(`<line x1="${pos[m][0].toFixed(1)}" y1="${pos[m][1] + 11}" x2="${pos[M][0].toFixed(1)}" y2="${pos[M][1] - 11}" class="${hot ? "hot" : ""}"/>`); }
+    const nodes = Object.keys(pos).map(Number).map(m => { const [x, y] = pos[m], w = m ? 10 + pc(m)*6 : 22;
+      return `<g class="nd${m === sel ? " sel" : isSub(m) ? " sub" : ""}" data-m="${m}"><ellipse cx="${x.toFixed(1)}" cy="${y}" rx="${w}" ry="12"/><text x="${x.toFixed(1)}" y="${y + 4}" text-anchor="middle">${m ? [...its].filter((_, i) => m >> i & 1).join("") : "null"}</text></g>`; });
+    const lvl = lv.map((L, k) => `<text class="lv" x="8" y="${top + k*gap + 4}" text-anchor="start">${k ? `level ${k}: ${L.length}` : "empty set"}</text>`);
+    svg.innerHTML = edges.join("") + nodes.join("") + lvl.join("");
+    $$(".nd", svg).forEach(g => g.onclick = () => { const m = +g.dataset.m; sel = sel === m || m === 0 ? null : m; draw(); });
+    const k = sel ? pc(sel) : 0;
+    $("#latNote").innerHTML = sel === null ? "Five items a–e: 2<sup>5</sup> − 1 = 31 non-empty itemsets in levels 1–5 (null is the empty set). Click an itemset to see all its subsets." :
+      `${lab(sel)} and its subsets: following the lines up from ${lab(sel)} reaches all 2<sup>${k}</sup> − 1 = ${2**k - 1} non-empty subsets. Any transaction that contains ${lab(sel)} contains every one of them.`;
+  }
+  draw();
+})();
+
+/* ---------------- 2^m - 1 (slides 19-20) ---------------- */
+(function explosion(){
+  const fmt = b => b.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const upd = () => { const m = +$("#xM").value; $("#xMV").textContent = m; $("#xN").textContent = fmt((1n << BigInt(m)) - 1n); };
+  $("#xM").oninput = upd; upd();
+  const big = ((1n << 10000n) - 1n).toString();
+  $("#xBig").innerHTML = `2<sup>10000</sup> − 1 ≈ ${big[0]}.${big.slice(1,3)} × 10<sup>${big.length-1}</sup>, a ${fmt(BigInt(big.length))}-digit number`;
+})();
+
+/* ---------------- Apriori property (slides 21-24) ---------------- */
+(function property(){
+  const Z = toMask("cde"), subs = []; for (let X = Z; X > 0; X = (X-1) & Z) subs.push(X); subs.sort(lex(IT));
+  $("#pSubs").innerHTML = "<thead><tr><th>itemset</th><th>support</th><th>itemset</th><th>support</th></tr></thead><tbody>" + [0,1,2,3].map(r => `<tr>${[r, r+4].map(i => subs[i] ? `<td>${nm(subs[i])}</td><td>${SUP[subs[i]]}</td>` : "<td></td><td></td>").join("")}</tr>`).join("") + "</tbody>";
+  const mi = []; for (let m=1;m<64;m++){ if (SUP[m] >= 5) continue; let ok = true; for (let b=0;b<6;b++) if (m >> b & 1){ const s = m & ~(1<<b); if (s && SUP[s] < 5) ok = false; } if (ok) mi.push(m); }
+  mi.sort(lex(IT)); let sel = mi[0];
+  const host = $("#pInf");
+  mi.forEach(m => { const b = document.createElement("button"); b.textContent = nm(m); b.dataset.m = m; b.onclick = () => { sel = m; upd(); }; host.appendChild(b); });
+  function upd(){
+    $$("button", host).forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.m === sel)));
+    let n = 0; for (let m=1;m<64;m++) if ((m & sel) === sel && m !== sel) n++;
+    let u = 0; for (let m=1;m<64;m++) if (mi.some(x => (m & x) === x)) u++;
+    $("#pOut").innerHTML = `sup(${nm(sel)}) = ${SUP[sel]} &lt; 5, so none of its ${n} proper supersets is frequent. Together these ${mi.length} itemsets rule out ${u} of the 63 itemsets without counting them.`;
+  }
+  upd();
+})();
+
+/* ---------------- 3D itemset lattice with Apriori passes (slide 25) ---------------- */
+(function lattice3d(){
+  const host = $("#heroScene"), cap = $("#heroCap"), slider = $("#heroSup");
+  let minsup = 5, passes = apriori(SUP, 6, minsup), shown = 0, picked = 0;
+  const st = new Array(64).fill("pending");
+  function compute(){
+    st.fill("pending"); st[0] = "empty";
+    let counted = 0, freq = 0;
+    passes.slice(0, shown).forEach(p => { p.cand.forEach(c => { st[c.m] = c.f ? "freq" : "inf"; counted++; if (c.f) freq++; }); p.pruned.forEach(q => st[q.m] = "pruned"); });
+    const done = shown >= passes.length, lastK = shown ? passes[shown-1].k : 0;
+    for (let m=1;m<64;m++) if (st[m] === "pending" && (done || pc(m) <= lastK)) st[m] = "pruned";
+    return {counted, freq, done};
+  }
+  function caption(info){
+    const p = passes[shown-1];
+    let t = shown === 0 ? `<b>Ready.</b> Minimum support count ${minsup} of ${N} transactions (${pct(minsup/N)}). Press Step to count the 1-itemsets.` :
+      info.done ? `<b>Done after ${passes.length} passes.</b> Apriori counted <b>${info.counted}</b> itemsets and found <b>${info.freq}</b> frequent ones. The other ${63-info.counted} were never counted.` :
+      `<b>Pass ${p.k}.</b> Counted ${p.cand.length} candidate ${p.k}-itemsets; ${p.L.length} are frequent${p.pruned.length ? `; ${p.pruned.length} candidates were pruned before counting` : ""}.`;
+    if (picked) t += `<br><span class="mono">${nm(picked)}</span>: support ${SUP[picked]}, ${SUP[picked] >= minsup ? "frequent" : "infrequent"}${st[picked] === "pruned" ? ", never counted by Apriori" : ""}.`;
+    cap.innerHTML = t;
+  }
+  let apply = () => caption(compute());
+  const setV = () => $("#heroSupV").textContent = `${minsup} (${pct(minsup/N)})`;
+  slider.oninput = () => { minsup = +slider.value; setV(); passes = apriori(SUP, 6, minsup); shown = passes.length; apply(); };
+  setV();
+  let runT = 0;
+  $("#heroStep").onclick = () => { clearTimeout(runT); if (shown >= passes.length) shown = 0; shown++; apply(); };
+  $("#heroRun").onclick = () => { clearTimeout(runT); shown = 0; const tick = () => { shown++; apply(); if (shown < passes.length) runT = setTimeout(tick, reduce ? 0 : 900); }; tick(); };
+  $("#heroReset").onclick = () => { clearTimeout(runT); shown = 0; picked = 0; apply(); };
+  if (!hasGL){ noGL(host); apply(); return; }
+
+  const renderer = makeRenderer(host), scene = new THREE.Scene();
+  const cam = new THREE.PerspectiveCamera(40, 4/3, .1, 100); cam.position.set(0, 1.6, 8.6);
+  const ctl = new THREE.OrbitControls(cam, renderer.domElement); ctl.enableDamping = true; ctl.enablePan = false; ctl.enableZoom = false; ctl.autoRotate = !reduce; ctl.autoRotateSpeed = .6;
+  scene.add(new THREE.AmbientLight(0xffffff, .7)); const dl = new THREE.DirectionalLight(0xffffff, .6); dl.position.set(3,6,5); scene.add(dl);
+  const RAD = [0, 1.4, 2.4, 2.8, 2.4, 1.4, 0], pos = [];
+  for (let k=0;k<=6;k++){
+    const ms = []; for (let m=0;m<64;m++) if (pc(m) === k) ms.push(m);
+    const ang = m => { let x = 0, y = 0; items(m).forEach(ch => { const a = IT.indexOf(ch)/6*Math.PI*2; x += Math.cos(a); y += Math.sin(a); }); return Math.hypot(x,y) < 1e-6 ? 10 + m/100 : Math.atan2(y,x); };
+    ms.sort((a,b) => ang(a) - ang(b) || a - b);
+    ms.forEach((m,i) => { const a = i/ms.length*Math.PI*2 + k*.2; pos[m] = new THREE.Vector3(Math.cos(a)*RAD[k], 2.6 - k*.87, Math.sin(a)*RAD[k]); });
+  }
+  const geo = new THREE.SphereGeometry(.13, 16, 12), nodes = [], sprites = [];
+  for (let m=0;m<64;m++){
+    const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({roughness:.45, metalness:.05, transparent:true}));
+    mesh.position.copy(pos[m]); mesh.userData.m = m; scene.add(mesh); nodes.push(mesh);
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({transparent:true, depthWrite:false})); sp.position.copy(pos[m]).add(new THREE.Vector3(0,.36,0)); sp.scale.set(.7,.41,1); scene.add(sp); sprites.push(sp);
+  }
+  function labelTex(m){
+    const c = document.createElement("canvas"); c.width = 192; c.height = 112; const g = c.getContext("2d");
+    g.textAlign = "center"; g.textBaseline = "middle";
+    g.font = `500 42px ${tok("--mono")}`; g.fillStyle = tok("--ink"); g.fillText(m ? key(m) : "∅", 96, 32);
+    g.font = `700 38px ${tok("--mono")}`; g.fillStyle = tok("--c3"); g.fillText(String(SUP[m]), 96, 82);
+    return new THREE.CanvasTexture(c);
+  }
+  function labels(){ sprites.forEach((s,m) => { if (s.material.map) s.material.map.dispose(); s.material.map = labelTex(m); s.material.needsUpdate = true; }); }
+  labels();
+  const ePos = [], eIdx = [];
+  for (let m=0;m<64;m++) for (let b=0;b<6;b++) if (!(m >> b & 1)){ const s = m | 1<<b; eIdx.push([m,s]); ePos.push(pos[m].x,pos[m].y,pos[m].z,pos[s].x,pos[s].y,pos[s].z); }
+  const eg = new THREE.BufferGeometry(); eg.setAttribute("position", new THREE.Float32BufferAttribute(ePos,3));
+  const eCol = new Float32Array(ePos.length); eg.setAttribute("color", new THREE.BufferAttribute(eCol,3));
+  scene.add(new THREE.LineSegments(eg, new THREE.LineBasicMaterial({vertexColors:true, transparent:true, opacity:.55})));
+  const tgt = nodes.map(() => 1);
+  function paint(){
+    const C = {freq:new THREE.Color(tok("--good")), inf:new THREE.Color(tok("--signal")), pruned:new THREE.Color(tok("--muted")), pending:new THREE.Color(tok("--line")), empty:new THREE.Color(tok("--muted"))};
+    const faint = new THREE.Color(tok("--line")), hot = new THREE.Color(tok("--c3"));
+    nodes.forEach((n,m) => { const s = st[m]; n.material.color.copy(C[s]); n.material.emissive.copy(s === "freq" ? C.freq : new THREE.Color(0)); n.material.emissiveIntensity = s === "freq" ? .3 : 0;
+      n.material.opacity = s === "pruned" ? .28 : s === "pending" ? .55 : 1; tgt[m] = s === "pruned" ? .6 : s === "pending" ? .75 : m === picked ? 1.45 : 1;
+      sprites[m].material.opacity = s === "pruned" ? .3 : 1; });
+    eIdx.forEach(([a,b],i) => { const c = st[a] !== "pruned" && st[b] === "freq" ? hot : faint; eCol.set([c.r,c.g,c.b,c.r,c.g,c.b], i*6); });
+    eg.attributes.color.needsUpdate = true;
+  }
+  apply = () => { caption(compute()); paint(); };
+  apply();
+  onTheme(() => { labels(); paint(); });
+  const ray = new THREE.Raycaster(), mv = new THREE.Vector2(); let down = null;
+  renderer.domElement.addEventListener("pointerdown", e => down = [e.clientX, e.clientY]);
+  renderer.domElement.addEventListener("pointerup", e => {
+    if (!down || Math.hypot(e.clientX-down[0], e.clientY-down[1]) > 5) return;
+    const r = renderer.domElement.getBoundingClientRect(); mv.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
+    ray.setFromCamera(mv, cam); const h = ray.intersectObjects(nodes); if (h.length && h[0].object.userData.m){ picked = h[0].object.userData.m; apply(); }
+  });
+  function size(){ const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return; renderer.setSize(w,h,false); cam.aspect = w/h; cam.updateProjectionMatrix(); }
+  new ResizeObserver(size).observe(host); size();
+  let on = true;
+  visible(host, v => { on = v; if (v) requestAnimationFrame(loop); });
+  function loop(){
+    if (!on) return;
+    nodes.forEach((n,m) => n.scale.setScalar(n.scale.x + (tgt[m]-n.scale.x)*.15));
+    ctl.update(); renderer.render(scene, cam); requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+
+/* ---------------- Apriori step-through (slides 28-41) ---------------- */
+(function stepper(){
+  let minsup = 5, passes, shown = 0, timer = 0;
+  const log = $("#sLog");
+  const chip = c => `<span class="${c.f ? "f" : "i"}">${nm(c.m)} ${c.s}</span>`;
+  function render(){
+    let counted = 0, freq = 0, pr = 0;
+    log.innerHTML = passes.slice(0, shown).map(p => {
+      counted += p.cand.length; freq += p.L.length; pr += p.pruned.length;
+      const gen = p.k === 1 ? `C<sub>1</sub> = every single item. Scan D and count.` :
+        `C<sub>${p.k}</sub> = apriori-gen(L<sub>${p.k-1}</sub>): ${p.joins} join${p.joins === 1 ? "" : "s"}, ${p.cand.length + p.pruned.length} distinct ${p.k}-itemset${p.cand.length + p.pruned.length === 1 ? "" : "s"}, ${p.pruned.length} pruned. Scan D and count.`;
+      const pruned = p.pruned.length ? `<div class="cset">${p.pruned.map(q => `<span class="p">${nm(q.m)}</span>`).join("")}<span style="border:none;background:none;color:var(--muted)">${p.pruned.map(q => `${key(q.m)}: ${nm(q.miss)} ∉ L<sub>${p.k-1}</sub>`).join(" · ")}</span></div>` : "";
+      return `<div class="pass"><h3>Pass ${p.k}</h3><p class="note">${gen}</p>${pruned}
+        <div class="cset">${p.cand.length ? p.cand.map(chip).join("") : `<span>C<sub>${p.k}</sub> = ∅</span>`}</div>
+        <p class="lk">L<sub>${p.k}</sub> = ${p.L.length ? "{ " + p.L.map(m => nm(m)).join(", ") + " }" : "∅ · Apriori terminates"}</p></div>`;
+    }).join("") || `<div class="pass"><p class="note">Press Step to run pass 1.</p></div>`;
+    $("#sCounted").textContent = counted; $("#sFreq").textContent = freq; $("#sPruned").textContent = pr;
+    const done = shown >= passes.length;
+    $("#sNote").innerHTML = done ? `Apriori has counted the supports of ${counted} itemsets; D has 6 items, so there are 2<sup>6</sup> − 1 = 63 possible non-empty itemsets. In practice, the reduction of itemset counting is much more drastic than the example shows.` : "";
+    log.scrollTop = log.scrollHeight;
+  }
+  function reset(){ clearTimeout(timer); passes = apriori(SUP, 6, minsup); shown = 0; render(); }
+  $("#sSup").oninput = e => { minsup = +e.target.value; $("#sSupV").textContent = `${minsup} (${pct(minsup/N)})`; const s = shown; passes = apriori(SUP, 6, minsup); shown = Math.min(s || 1, passes.length); render(); };
+  $("#sStep").onclick = () => { clearTimeout(timer); if (shown >= passes.length) shown = 0; shown++; render(); };
+  $("#sRun").onclick = () => { clearTimeout(timer); shown = 0; const tick = () => { shown++; render(); if (shown < passes.length) timer = setTimeout(tick, reduce ? 0 : 700); }; tick(); };
+  $("#sReset").onclick = reset;
+  reset(); shown = 2; render();
+})();
+
+/* ---------------- closed itemset example (slide 47) ---------------- */
+(function closedEx(){
+  const I = "ABCD", T = ["AB","BCD","ABCD","ABD","ABCD"], TM = T.map(s => toMask(s, I));
+  const sup = Array.from({length:16}, (_,m) => TM.reduce((s,t) => s + ((t & m) === m ? 1 : 0), 0));
+  const cm = closedMax(sup, 4, 1), all = []; for (let m=1;m<16;m++) all.push(m); all.sort(lex(I));
+  $("#clTdb").innerHTML = "<thead><tr><th>TID</th><th>Items</th></tr></thead><tbody>" + T.map((s,i) => `<tr><td>${i+1}</td><td>${nm(toMask(s,I), I)}</td></tr>`).join("") + "</tbody>";
+  const half = Math.ceil(all.length/2), cell = m => { if (!m) return "<td></td><td></td>"; const c = cm[m].closed ? ' class="hit"' : ""; return `<td${c}>${nm(m,I)}</td><td${c}>${sup[m]}</td>`; };
+  let h = "<thead><tr><th>Itemset</th><th>Sup.</th><th>Itemset</th><th>Sup.</th></tr></thead><tbody>";
+  for (let r=0;r<half;r++) h += `<tr>${cell(all[r])}${cell(all[r+half])}</tr>`;
+  $("#clSup").innerHTML = h + "</tbody>";
+  const cl = all.filter(m => cm[m].closed);
+  $("#clNote").innerHTML = `Highlighted: the ${cl.length} closed itemsets. {A} is not closed: its superset {A, B} also has support ${sup[toMask("AB",I)]}.`;
+})();
+
+/* ---------------- lattice highlighter, A-E (slides 48-49) ---------------- */
+const TI = "ABCDE", TDB = ["ABC","ABCD","BCE","ACDE","DE"], TM5 = TDB.map(s => toMask(s, TI));
+const TSUP = Array.from({length:32}, (_,m) => TM5.reduce((s,t) => s + ((t & m) === m ? 1 : 0), 0));
+const tids = m => TM5.map((t,i) => (t & m) === m ? i+1 : 0).filter(Boolean);
+(function latticeHi(){
+  $("#latTdb").innerHTML = "<thead><tr><th>TID</th>" + TDB.map((_,i) => `<th>${i+1}</th>`).join("") + "</tr></thead><tbody><tr><td>Items</td>" + TDB.map(s => `<td>${s}</td>`).join("") + "</tr></tbody>";
+  const cv = $("#cvLat"), {ctx, fit} = setupCanvas(cv);
+  let minsup = 2, sel = toMask("AC", TI), W = 0, H = 0, P = [], bw = 0, bh = 0;
+  const lvl = []; for (let k=0;k<=5;k++) lvl.push([]); for (let m=0;m<32;m++) lvl[pc(m)].push(m); lvl.forEach(l => l.sort(lex(TI)));
+  function layout(){
+    const pad = 8; bh = Math.min(40, (H - 2*pad)/6 - 10); bw = Math.min(64, (W - 2*pad)/10 - 6);
+    lvl.forEach((l,k) => l.forEach((m,i) => P[m] = {x: pad + (i+.5)*(W-2*pad)/l.length, y: pad + bh/2 + k*((H - 2*pad - bh)/5)}));
+  }
+  function draw(){
+    const r = fit(); W = r.width; H = r.height; if (!W) return; ctx.clearRect(0,0,W,H); layout();
+    const cm = closedMax(TSUP, 5, minsup);
+    ctx.strokeStyle = tok("--line"); ctx.lineWidth = 1;
+    for (let m=0;m<32;m++) for (let b=0;b<5;b++) if (!(m >> b & 1)){ const s = m | 1<<b; ctx.beginPath(); ctx.moveTo(P[m].x, P[m].y + bh/2); ctx.lineTo(P[s].x, P[s].y - bh/2); ctx.stroke(); }
+    const small = W < 560, f = small ? 10 : 12;
+    for (let m=0;m<32;m++){
+      const {x,y} = P[m], s = TSUP[m], c = cm[m], x0 = x - bw/2, y0 = y - bh/2;
+      rr(ctx, x0, y0, bw, bh, 6);
+      let fill = tok("--surface"), stroke = tok("--line"), txt = tok("--muted"), lw = 1, dash = [];
+      if (m && s === 0) dash = [3,3];
+      if (c){ if (c.maximal){ fill = tok("--k1"); stroke = fill; txt = "#fff"; } else if (c.closed){ fill = tok("--k2"); stroke = fill; txt = "#fff"; } else { stroke = tok("--ink"); lw = 2; txt = tok("--ink"); } }
+      ctx.fillStyle = fill; ctx.fill(); ctx.setLineDash(dash); ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); ctx.setLineDash([]);
+      if (m === sel){ ctx.strokeStyle = tok("--ink"); ctx.lineWidth = 2.5; rr(ctx, x0-3, y0-3, bw+6, bh+6, 8); ctx.stroke(); }
+      ctx.fillStyle = txt; ctx.textAlign = "center"; ctx.font = `600 ${f}px ${tok("--mono")}`;
+      ctx.fillText(m ? key(m, TI) : "null", x, y - (small ? 1 : 3));
+      ctx.font = `${f-1}px ${tok("--mono")}`; ctx.fillText(m ? (small ? String(s) : tids(m).join("") || "–") : "", x, y + f - (small ? 1 : 2));
+    }
+    const v = Object.values(cm);
+    $("#latF").textContent = v.length; $("#latC").textContent = v.filter(r => r.closed).length; $("#latM").textContent = v.filter(r => r.maximal).length;
+    info(cm);
+  }
+  function info(cm){
+    if (!sel){ $("#latInfo").textContent = "Click a node."; return; }
+    const s = TSUP[sel], c = cm[sel];
+    const sups = []; for (let b=0;b<5;b++) if (!(sel >> b & 1)){ const t = sel | 1<<b; sups.push(`${key(t,TI)}:${TSUP[t]}`); }
+    let t = `<b>${key(sel,TI)}</b>: support ${s}${s ? ` (TIDs ${tids(sel).join(", ")})` : ""}. Immediate supersets: ${sups.join(", ") || "none"}. `;
+    if (!c) t += `<b class="nay">Infrequent</b> at minimum support ${minsup}.`;
+    else t += c.maximal ? `<b>Closed and maximal.</b>` : c.closed ? `<b>Closed but not maximal:</b> a superset is frequent, but none has support ${s}.` : `<b>Frequent, not closed:</b> ${key(c.why,TI)} has the same support.`;
+    $("#latInfo").innerHTML = t;
+  }
+  $("#latSup").oninput = e => { minsup = +e.target.value; $("#latSupV").textContent = minsup; draw(); };
+  cv.addEventListener("click", e => { const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    for (let m=1;m<32;m++) if (Math.abs(x - P[m].x) <= bw/2+3 && Math.abs(y - P[m].y) <= bh/2+3){ sel = m; draw(); return; } });
+  redraws.lat = draw; new ResizeObserver(draw).observe(cv);
+  const cmD = Object.values(closedMax(SUP, 6, 5)), cmT = Object.values(closedMax(TSUP, 5, 2));
+  const both = f => `D: ${cmD.filter(f).length} · A–E: ${cmT.filter(f).length}`;
+  $("#nF").textContent = both(() => true); $("#nC").textContent = both(r => r.closed); $("#nM").textContent = both(r => r.maximal);
+})();
+function rr(ctx, x, y, w, h, r){ ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); }
+
+/* ---------------- high-utility itemsets (slides 52-54) ---------------- */
+(function utility(){
+  const Q = [[5,0,0,0,3,1],[1,2,3,1,0,9],[2,0,1,1,2,2],[0,4,2,8,5,1],[2,1,0,0,0,1]], Pf = [3,1,2,8,5,2];
+  let X = toMask("ae");
+  const inT = (m, t) => items(m).every(ch => Q[t][IT.indexOf(ch)] > 0);
+  const uT = (m, t) => inT(m, t) ? items(m).reduce((s,ch) => s + Q[t][IT.indexOf(ch)]*Pf[IT.indexOf(ch)], 0) : 0;
+  const u = m => Q.reduce((s,_,t) => s + uT(m,t), 0);
+  const ib = $("#uItems");
+  [...IT].forEach((ch,i) => { const b = document.createElement("button"); b.textContent = ch; b.onclick = () => { X ^= 1<<i; upd(); }; ib.appendChild(b); });
+  const tb = $("#uTable");
+  tb.innerHTML = `<thead><tr><th>Tid</th>${[...IT].map(c => `<th>${c}</th>`).join("")}<th>σ(X, T)</th></tr></thead><tbody>${Q.map((r,t) => `<tr><td>${t+1}</td>${r.map((q,i) => `<td data-c="${t},${i}">${q}</td>`).join("")}<td data-u="${t}"></td></tr>`).join("")}
+    <tr><td class="nt">p(a)</td>${Pf.map((p,i) => `<td><input type="number" min="0" max="99" value="${p}" data-p="${i}" aria-label="unit profit of ${IT[i]}"></td>`).join("")}<td></td></tr></tbody>`;
+  $$("input[data-p]", tb).forEach(inp => inp.oninput = () => { Pf[+inp.dataset.p] = Math.max(0, +inp.value || 0); upd(); });
+  $("#uMin").oninput = upd;
+  function upd(){
+    $$("button", ib).forEach((b,i) => b.className = X >> i & 1 ? "a" : "");
+    Q.forEach((r,t) => { const hit = X && inT(X, t);
+      r.forEach((q,i) => { $(`td[data-c="${t},${i}"]`, tb).className = (X >> i & 1) && hit ? "hit" : q ? "" : "zero"; });
+      $(`td[data-u="${t}"]`, tb).textContent = X ? uT(X,t) : "–"; });
+    if (!X){ $("#uU").textContent = $("#uS").textContent = "–"; $("#uCalc").textContent = ""; }
+    else {
+      $("#uU").textContent = u(X); $("#uS").textContent = Q.filter((_,t) => inT(X,t)).length;
+      const parts = Q.map((r,t) => inT(X,t) ? "(" + items(X).map(ch => `${r[IT.indexOf(ch)]}×${Pf[IT.indexOf(ch)]}`).join(" + ") + ")" : "").filter(Boolean);
+      $("#uCalc").textContent = parts.length ? `π(${nm(X)}, D) = ${parts.join(" + ")} = ${u(X)}` : `No transaction contains ${nm(X)}, so π = 0.`;
+    }
+    const mu = +$("#uMin").value; $("#uMinV").textContent = mu;
+    const all = []; for (let m=1;m<64;m++) all.push([m,u(m)]);
+    const hi = all.filter(([,v]) => v >= mu).sort((a,b) => b[1]-a[1]);
+    $("#uHigh").innerHTML = `<b>${hi.length}</b> of 63 itemsets have π ≥ ${mu}.` + (hi.length ? ` Top: ${hi.slice(0,3).map(([m,v]) => `<span class="mono">${nm(m)}</span> ${v}`).join(", ")}.` : "");
+    let ce = null;
+    for (const [m] of hi.slice().sort((a,b) => pc(a[0]) - pc(b[0]) || b[1] - a[1])){ for (let b=0;b<6;b++) if (m >> b & 1){ const s = m & ~(1<<b); if (s && u(s) < mu){ ce = [s, m]; break; } } if (ce) break; }
+    $("#uWarn").innerHTML = ce ? `<b>No Apriori property here.</b> π(${nm(ce[0])}) = ${u(ce[0])} is below ${mu}, yet its superset ${nm(ce[1])} has π = ${u(ce[1])}. Adding an item can raise utility, so Apriori-style pruning would miss high-utility itemsets.` :
+      `At this threshold no high-utility itemset has a low-utility subset. Move the slider: utility is not anti-monotone, so that can change.`;
+  }
+  upd();
+})();
+
+/* ---------------- quiz: a new café example ---------------- */
+function quizV(host, Q, scoreEl){
+  let answered = 0, right = 0;
+  const upd = () => scoreEl.textContent = answered < Q.length ? `${answered} of ${Q.length} answered · ${right} correct` : `Done: ${right} of ${Q.length} correct`;
+  Q.forEach(([q, O, a, why]) => {
+    const d = document.createElement("div"); d.className = "q";
+    d.innerHTML = `<p>${q}</p><div class="opts">${O.map((o,i) => `<button data-i="${i}">${o}</button>`).join("")}</div><p class="fb"></p>`;
+    $$("button", d).forEach(b => b.onclick = () => {
+      if (d.classList.contains("done")) return;
+      const i = +b.dataset.i; b.classList.add("picked"); d.classList.add("done", i === a ? "right" : "wrong");
+      answered++; if (i === a) right++;
+      $(".fb", d).innerHTML = `<b>${i === a ? "Correct." : "Not quite: " + O[a] + "."}</b> ${why}`; upd();
+    });
+    host.appendChild(d);
+  });
+  upd();
+}
+quizV($("#quizBox"), [
+  ["What is the support of {latte, croissant}?", ["4/10 = 40%","4/6 = 67%","6/10 = 60%"], 0, "Orders 1, 4, 7 and 9 contain both: 4 of 10 orders."],
+  ["What is the confidence of {croissant} ⇒ {latte}?", ["4/10 = 40%","4/6 = 67%","6/6 = 100%"], 1, "sup({latte, croissant}) / sup({croissant}) = 4/6. Divide by the support of the left side."],
+  ["Minimum support count 3. sup({latte, muffin}) = 2. Do you count {latte, croissant, muffin}?", ["Yes","No, it is pruned"], 1, "It has an infrequent subset, so apriori-gen never puts it into C<sub>3</sub>."],
+  ["How many candidate rules does the 3-itemset {latte, croissant, muffin} generate?", ["3","6","8"], 1, "2<sup>3</sup> − 2 = 6."],
+  ["Minimum support count 3. Is {latte} closed, maximal, both or neither?", ["Closed only","Maximal only","Both","Neither"], 0, "sup({latte}) = 6 and no superset has support 6, so it is closed. {latte, croissant} (support 4) is frequent, so {latte} is not maximal."],
+  ["Unit profits: latte 10, croissant 6. {latte, croissant} sold (2, 1), (1, 2), (1, 1) and (1, 1) in orders 1, 4, 7, 9. What is its utility?", ["80","64","16"], 0, "(20 + 6) + (10 + 12) + (10 + 6) + (10 + 6) = 80."],
+], $("#quizScore"));
+
+/* ================= AI LAYER ================= */
+/* ---------------- synthetic baskets, generated in the browser (seed 17) ---------------- */
+const RI = ["bread","butter","milk","cereal","coffee","tea","chips","salsa","cola","lemonade","beer","diapers","wipes","pasta","sauce"];
+const TRIP = [[.34,[["bread",.8],["butter",.6],["milk",.7],["cereal",.5]],[["coffee","tea"],.75,.6]],
+  [.26,[["chips",.85],["salsa",.6],["beer",.45]],[["cola","lemonade"],.85,.55]],
+  [.15,[["diapers",1],["wipes",.7],["milk",.4],["beer",.35]],null],
+  [.25,[["pasta",.9],["sauce",.75],["bread",.3]],null]];
+const NB = 500;
+const BASK = (function(){ const R = rng(17), B = [];
+  const pick = () => { let u = R(), i = 0; for (; i < TRIP.length-1; i++){ u -= TRIP[i][0]; if (u < 0) break; } return i; };
+  for (let n=0;n<NB;n++){ const s = new Set(), ms = [pick()]; if (R() < .3){ const m2 = pick(); if (m2 !== ms[0]) ms.push(m2); }
+    ms.forEach(m => { const [, its, alt] = TRIP[m]; its.forEach(([it,q]) => { if (R() < q) s.add(it); });
+      if (alt && R() < alt[1]){ const k = R() < alt[2] ? 0 : 1; s.add(alt[0][k]); if (R() < .03) s.add(alt[0][1-k]); } });
+    if (!s.size) s.add(TRIP[ms[0]][1][0][0]); B.push(s); }
+  return B; })();
+const bsup = list => BASK.filter(b => list.every(x => b.has(x))).length;
+
+/* ---------------- embeddings vs rules ---------------- */
+function jacobi(A0){ const n = A0.length, A = A0.map(r => r.slice()), V = A.map((r,i) => r.map((_,j) => +(i===j)));
+  for (let sw=0; sw<60; sw++){ let off = 0; for (let p=0;p<n;p++) for (let q=p+1;q<n;q++) off += A[p][q]**2; if (off < 1e-14) break;
+    for (let p=0;p<n;p++) for (let q=p+1;q<n;q++){ if (Math.abs(A[p][q]) < 1e-14) continue;
+      const th = (A[q][q]-A[p][p])/(2*A[p][q]), t = (th >= 0 ? 1 : -1)/(Math.abs(th)+Math.sqrt(th*th+1)), c = 1/Math.sqrt(t*t+1), s = t*c;
+      for (let k=0;k<n;k++){ const a = A[k][p], b = A[k][q]; A[k][p] = c*a - s*b; A[k][q] = s*a + c*b; }
+      for (let k=0;k<n;k++){ const a = A[p][k], b = A[q][k]; A[p][k] = c*a - s*b; A[q][k] = s*a + c*b; }
+      for (let k=0;k<n;k++){ const a = V[k][p], b = V[k][q]; V[k][p] = c*a - s*b; V[k][q] = s*a + c*b; } } }
+  return {vals: A.map((r,i) => r[i]), V}; }
+(function embed(){
+  const n = RI.length, ix = Object.fromEntries(RI.map((x,i) => [x,i]));
+  const C = RI.map(() => new Array(n).fill(0)), cnt = new Array(n).fill(0);
+  BASK.forEach(b => { const ii = [...b].map(x => ix[x]); ii.forEach(i => { cnt[i]++; ii.forEach(j => { if (i !== j) C[i][j]++; }); }); });
+  const rs = C.map(r => r.reduce((a,b) => a+b, 0)), tot = rs.reduce((a,b) => a+b, 0);
+  const E = C.map((r,i) => r.map((v,j) => v ? Math.max(0, Math.log(v*tot/(rs[i]*rs[j]))) : 0));
+  const cos = (a,b) => { let s = 0, x = 0, y = 0; for (let k=0;k<a.length;k++){ s += a[k]*b[k]; x += a[k]**2; y += b[k]**2; } return x && y ? s/Math.sqrt(x*y) : 0; };
+  const S = E.map(a => E.map(b => cos(a,b)));
+  const lift = (i,j) => C[i][j]*NB/(cnt[i]*cnt[j]);
+  const D2 = S.map(r => r.map(v => (1-v)**2)), rm = D2.map(r => r.reduce((a,b) => a+b,0)/n), gm = rm.reduce((a,b) => a+b,0)/n;
+  const Bm = D2.map((r,i) => r.map((v,j) => -.5*(v - rm[i] - rm[j] + gm)));
+  const {vals, V} = jacobi(Bm), ord = vals.map((_,i) => i).sort((a,b) => vals[b]-vals[a]);
+  const XY = RI.map((_,i) => [0,1].map(d => V[i][ord[d]]*Math.sqrt(Math.max(0, vals[ord[d]]))));
+  const Rj = rng(5); XY.forEach(p => { p[0] += (Rj()-.5)*.05; p[1] += (Rj()-.5)*.05; });
+  const Dt = S.map(r => r.map(v => Math.max(.1, 1-v)));
+  for (let it=0; it<300; it++) for (let i=0;i<n;i++){ let nx = 0, ny = 0, ws = 0;
+    for (let j=0;j<n;j++){ if (i === j) continue; const w = 1/Dt[i][j]**2, dx = XY[i][0]-XY[j][0], dy = XY[i][1]-XY[j][1], dd = Math.hypot(dx,dy) || 1e-6;
+      nx += w*(XY[j][0] + Dt[i][j]*dx/dd); ny += w*(XY[j][1] + Dt[i][j]*dy/dd); ws += w; }
+    XY[i][0] = nx/ws; XY[i][1] = ny/ws; }
+  const ex = [0,1].map(d => [Math.min(...XY.map(p => p[d])), Math.max(...XY.map(p => p[d]))]);
+  let sel = ix.cola, W = 0, H = 0; const cv = $("#cvEmb"), {ctx, fit} = setupCanvas(cv), pad = 46;
+  const PX = i => pad + (XY[i][0]-ex[0][0])/(ex[0][1]-ex[0][0])*(W-2*pad), PY = i => pad + (XY[i][1]-ex[1][0])/(ex[1][1]-ex[1][0])*(H-2*pad);
+  const host = $("#eItems");
+  RI.forEach((x,i) => { const b = document.createElement("button"); b.textContent = x; b.dataset.i = i; b.onclick = () => { sel = i; upd(); }; host.appendChild(b); });
+  const nn = i => RI.map((x,j) => [j, S[i][j]]).filter(([j]) => j !== i).sort((a,b) => b[1]-a[1]).slice(0,3);
+  const rules = i => RI.map((x,j) => [j, C[i][j]/cnt[i]]).filter(([j]) => j !== i).sort((a,b) => b[1]-a[1]).slice(0,3);
+  function draw(){
+    const r = fit(); W = r.width; H = r.height; if (!W) return; ctx.clearRect(0,0,W,H);
+    const near = nn(sel).map(([j]) => j), rl = rules(sel).map(([j]) => j);
+    ctx.lineWidth = 2;
+    near.forEach(j => { ctx.strokeStyle = tok("--c5"); ctx.setLineDash([5,4]); ctx.beginPath(); ctx.moveTo(PX(sel), PY(sel)); ctx.lineTo(PX(j), PY(j)); ctx.stroke(); });
+    ctx.setLineDash([]);
+    rl.forEach(j => { ctx.strokeStyle = tok("--c1"); ctx.globalAlpha = .7; ctx.beginPath(); ctx.moveTo(PX(sel), PY(sel)); ctx.lineTo(PX(j), PY(j)); ctx.stroke(); ctx.globalAlpha = 1; });
+    ctx.font = `12px ${tok("--mono")}`; ctx.textAlign = "center";
+    const rad = i => 3 + Math.sqrt(cnt[i])*.45;
+    const boxes = RI.map((x,i) => [PX(i)-rad(i), PY(i)-rad(i), PX(i)+rad(i), PY(i)+rad(i)]), lab = [], pos = [];
+    const hit = b => b[0] < 2 || b[2] > W-2 || b[1] < 2 || b[3] > H-22 || boxes.concat(lab).some(o => b[0] < o[2] && b[2] > o[0] && b[1] < o[3] && b[3] > o[1]);
+    RI.map((x,i) => i).sort((a,b) => cnt[b]-cnt[a]).forEach(i => {
+      const rr0 = rad(i), w = ctx.measureText(RI[i]).width, x = PX(i), y = PY(i);
+      const opts = [[x, y-rr0-5], [x, y+rr0+13], [x+rr0+4+w/2, y+4], [x-rr0-4-w/2, y+4], [x, y-rr0-18], [x, y+rr0+26]];
+      let pick = opts[0]; for (const o of opts){ const b = [o[0]-w/2, o[1]-10, o[0]+w/2, o[1]+2]; if (!hit(b)){ pick = o; break; } }
+      lab.push([pick[0]-w/2, pick[1]-10, pick[0]+w/2, pick[1]+2]); pos[i] = pick;
+    });
+    RI.forEach((x,i) => {
+      ctx.beginPath(); ctx.arc(PX(i), PY(i), rad(i), 0, 7);
+      ctx.fillStyle = i === sel ? tok("--c4") : near.includes(i) ? tok("--c5") : rl.includes(i) ? tok("--c1") : tok("--muted");
+      ctx.globalAlpha = i === sel || near.includes(i) || rl.includes(i) ? 1 : .45; ctx.fill(); ctx.globalAlpha = 1;
+      ctx.fillStyle = tok("--ink"); ctx.fillText(x, pos[i][0], pos[i][1]);
+    });
+    ctx.textAlign = "left"; ctx.fillStyle = tok("--muted"); ctx.fillText("dashed: nearest vectors · solid: top rules", 10, H - 10);
+  }
+  function upd(){
+    $$("button", host).forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.i === sel)));
+    $("#eTitle").textContent = `${RI[sel]} · in ${cnt[sel]} of ${NB} baskets`;
+    $("#eNN").innerHTML = nn(sel).map(([j,c]) => `<div><span>${RI[j]} <span class="note">· together ${C[sel][j]}×</span></span><span>${c.toFixed(2)}</span></div>`).join("");
+    $("#eRules").innerHTML = rules(sel).map(([j,cf]) => `<div><span>⇒ ${RI[j]}</span><span>${pct(cf)} · ${lift(sel,j).toFixed(2)}</span></div>`).join("");
+    const [j0] = nn(sel)[0], l0 = lift(sel, j0), r0 = rules(sel)[0][0];
+    const e = $("#eNote");
+    if (l0 < 1){ e.className = "verdict meh small"; e.innerHTML = `<b>Substitutes.</b> ${RI[sel]} and ${RI[j0]} are the closest vectors, but they are bought together only ${C[sel][j0]} times (lift ${l0.toFixed(2)} &lt; 1). They appear in the same kind of trip, in place of each other. The top rule points to ${RI[r0]}, a complement.`; }
+    else if (r0 === j0){ e.className = "verdict ok small"; e.innerHTML = `<b>Both agree.</b> ${RI[j0]} is the nearest vector and the top rule (lift ${l0.toFixed(2)}). Complements bought together also share contexts.`; }
+    else { e.className = "verdict ok small"; e.innerHTML = `The nearest vector is ${RI[j0]} (lift ${l0.toFixed(2)}); the top rule points to ${RI[r0]}. Try cola, lemonade, coffee or tea.`; }
+    draw();
+  }
+  redraws.emb = draw; new ResizeObserver(draw).observe(cv); upd();
+})();
+
+/* ---------------- LLM-suggested rules, recomputed ---------------- */
+(function llm(){
+  const P = [[["diapers"],["beer"],65],[["pasta"],["sauce"],80],[["cereal"],["milk"],85],[["salsa"],["chips"],85],[["cola"],["lemonade"],40],
+    [["coffee"],["tea"],35],[["bread"],["jam"],50],[["wine"],["cheese"],60],[["butter"],["bread"],75],[["beer"],["chips"],55]];
+  let showN = false;
+  const known = new Set(RI);
+  function upd(){
+    const s = +$("#lS").value/100, c = +$("#lC").value/100; $("#lSV").textContent = pct(s); $("#lCV").textContent = pct(c);
+    let ok = 0, wrong = 0, fail = 0, absent = 0;
+    const rows = P.map(([X,Y,cl],i) => {
+      const rule = `{${X.join(", ")}} ⇒ {${Y.join(", ")}}`;
+      if (!showN) return `<tr><td>${i+1}</td><td>${rule}</td><td class="claim">${cl}%</td><td></td><td></td><td></td><td class="vd">not checked</td></tr>`;
+      const miss = X.concat(Y).filter(x => !known.has(x));
+      if (miss.length){ absent++; return `<tr class="bad"><td>${i+1}</td><td>${rule}</td><td class="claim">${cl}%</td><td>–</td><td>–</td><td>–</td><td class="vd">not in data: ${miss.join(", ")}</td></tr>`; }
+      const sx = bsup(X), sy = bsup(Y), sxy = bsup(X.concat(Y)), sp = sxy/NB, cf = sx ? sxy/sx : 0, lf = sxy*NB/(sx*sy);
+      let cls, vd;
+      if (sp < s - 1e-9 || cf < c - 1e-9){ fail++; cls = "bad"; vd = (sp < s - 1e-9 ? "support" : "confidence") + " too low" + (lf < 1 ? "; lift < 1" : ""); }
+      else if (Math.abs(cf*100 - cl) > 10){ wrong++; cls = "warn"; vd = `stated ${cl}% is wrong`; }
+      else { ok++; cls = "ok"; vd = "holds"; }
+      return `<tr class="${cls}"><td>${i+1}</td><td>${rule}</td><td class="claim">${cl}%</td><td>${pct1(sp)}</td><td>${pct(cf)}</td><td>${lf.toFixed(2)}</td><td class="vd">${vd}</td></tr>`;
+    });
+    $("#lT").innerHTML = `<thead><tr><th>#</th><th>LLM rule</th><th>stated conf.</th><th>support</th><th>confidence</th><th>lift</th><th>verdict</th></tr></thead><tbody>${rows.join("")}</tbody>`;
+    $("#lStats").innerHTML = showN ? `<div class="stat"><div class="k">Hold</div><div class="v" style="color:var(--good)">${ok + wrong} of 10</div></div><div class="stat"><div class="k">Wrong number</div><div class="v" style="color:var(--warn)">${wrong}</div></div><div class="stat"><div class="k">Fail thresholds</div><div class="v" style="color:var(--signal)">${fail}</div></div><div class="stat"><div class="k">Not in the data</div><div class="v" style="color:var(--signal)">${absent}</div></div>` : "";
+  }
+  ["#lS","#lC"].forEach(x => $(x).oninput = upd);
+  $("#lGo").onclick = () => { showN = true; upd(); }; $("#lHide").onclick = () => { showN = false; upd(); };
+  upd();
+})();
+
+/* ---------------- presentation mode: one board per screen ---------------- */
+(function present(){
+  const root = document.documentElement, mainEl = $("main");
+  const slides = $$("main > section.board, main > .part-break");
+  if (!slides.length) return;
+  const ico = {
+    play:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>',
+    prev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+    next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>',
+    fs:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+    fsx:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>',
+    close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+  };
+  const mk = (tag, cls, html, label) => { const e = document.createElement(tag); e.className = cls; if (html) e.innerHTML = html; if (label){ e.setAttribute("aria-label", label); e.title = label; } return e; };
+  const startBtn = mk("button", "present-btn", ico.play + "<span>Present</span>", "Present: one board at a time, full screen (P)");
+  const prog = mk("div", "deck-ui deck-progress");
+  const sidePrev = mk("button", "deck-ui deck-side prev", ico.prev, "Previous board (←)");
+  const sideNext = mk("button", "deck-ui deck-side next", ico.next, "Next board (→)");
+  const bar = mk("div", "deck-ui deck-bar"); bar.setAttribute("role", "toolbar"); bar.setAttribute("aria-label", "Presentation controls");
+  const bPrev = mk("button", "", ico.prev, "Previous board (←)"), bNext = mk("button", "", ico.next, "Next board (→)");
+  const count = mk("span", "deck-count"); count.setAttribute("aria-live", "polite");
+  const bFs = mk("button", "", ico.fs, "Full screen (F)"), bExit = mk("button", "", ico.close, "End presentation (Esc)");
+  bar.append(bPrev, count, bNext, bFs, bExit);
+  document.body.append(startBtn, prog, sidePrev, sideNext, bar);
+  const spacer = mk("div", "deck-ui deck-spacer"); mainEl.appendChild(spacer);
+  const keysHint = $(".rail .keys");
+  if (keysHint) keysHint.innerHTML = 'Press <kbd>P</kbd> to present one board at a time, then <kbd>←</kbd> <kbd>→</kbd>. <kbd>F</kbd> toggles full screen.';
+
+  let idx = 0, on = false, fsByUs = false;
+  const label = el => el.dataset.nav || (el.querySelector("h2") ? el.querySelector("h2").textContent : "");
+  const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+  function enterFs(){ const f = root.requestFullscreen || root.webkitRequestFullscreen; if (!f || fsEl()) return; try { const p = f.call(root); fsByUs = true; if (p && p.catch) p.catch(() => { fsByUs = false; }); } catch(e){ fsByUs = false; } }
+  function exitFs(){ const f = document.exitFullscreen || document.webkitExitFullscreen; if (f && fsEl()){ try { const p = f.call(document); if (p && p.catch) p.catch(() => {}); } catch(e){} } }
+  function fsIcon(){ const isFs = !!fsEl(); bFs.innerHTML = isFs ? ico.fsx : ico.fs; bFs.title = isFs ? "Exit full screen (F)" : "Full screen (F)"; bFs.setAttribute("aria-label", bFs.title); }
+
+  function fit(){
+    if (!on) return;
+    const el = slides[idx], vw = innerWidth, vh = innerHeight;
+    const narrow = vw < 700, pad = narrow ? 18 : 84, barH = 70, topPad = 22;
+    const W = Math.min(1180, vw - 2*pad);
+    root.style.setProperty("--deck-w", W + "px");
+    root.style.setProperty("--deck-s", 1);
+    const h = el.offsetHeight;
+    // phones: keep full size and scroll; larger screens: scale the board to fit the screen
+    let s = narrow ? 1 : Math.max(0.6, Math.min(1.6, (vw - 2*pad) / W, (vh - barH - topPad) / h));
+    const top = Math.max(topPad, (vh - barH - h*s) / 2 + 6);
+    root.style.setProperty("--deck-s", s.toFixed(4));
+    root.style.setProperty("--deck-top", top + "px");
+    spacer.style.top = (top + h*s + barH + 10) + "px";
+    // canvases size themselves from their on-screen box, so nudge them to redraw at the new scale
+    $$("canvas.cv, .cv", el).forEach(c => { c.style.width = "calc(100% - 1px)"; requestAnimationFrame(() => { c.style.width = ""; }); });
+  }
+  function show(i){
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((el, k) => el.classList.toggle("is-current", k === idx));
+    mainEl.scrollTop = 0;
+    count.textContent = `${idx + 1} / ${slides.length} · ${label(slides[idx])}`;
+    prog.style.width = ((idx + 1) / slides.length * 100) + "%";
+    bPrev.disabled = sidePrev.disabled = idx === 0;
+    bNext.disabled = sideNext.disabled = idx === slides.length - 1;
+    const b = boards.indexOf(slides[idx]); if (b >= 0) current = b;
+    requestAnimationFrame(fit);
+  }
+  function start(){
+    if (on) return;
+    on = true; root.classList.add("presenting");
+    let i = slides.indexOf(boards[current]); if (i < 0) i = 0;
+    enterFs(); show(i);
+  }
+  function stop(){
+    if (!on) return;
+    on = false; root.classList.remove("presenting");
+    slides.forEach(el => el.classList.remove("is-current"));
+    if (fsByUs) exitFs(); fsByUs = false;
+    const el = slides[idx];
+    requestAnimationFrame(() => el.scrollIntoView({block: "start"}));
+  }
+  startBtn.onclick = start;
+  bPrev.onclick = sidePrev.onclick = () => show(idx - 1);
+  bNext.onclick = sideNext.onclick = () => show(idx + 1);
+  bExit.onclick = stop;
+  bFs.onclick = () => { if (fsEl()) { fsByUs = false; exitFs(); } else enterFs(); };
+  const onFs = () => { fsIcon(); if (on && !fsEl() && fsByUs){ fsByUs = false; stop(); } else requestAnimationFrame(fit); };
+  document.addEventListener("fullscreenchange", onFs); document.addEventListener("webkitfullscreenchange", onFs);
+  addEventListener("resize", () => requestAnimationFrame(fit));
+  new ResizeObserver(() => { if (on) requestAnimationFrame(fit); }).observe(mainEl);
+  slides.forEach(el => new ResizeObserver(() => { if (on && el.classList.contains("is-current")) fit(); }).observe(el));
+
+  // keys: capture phase so the scrolling navigation never sees them while presenting
+  addEventListener("keydown", e => {
+    const t = e.target, typing = t.closest && t.closest("input,textarea,select,[contenteditable]");
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!on){
+      if (!typing && (e.key === "p" || e.key === "P")){ e.preventDefault(); start(); }
+      return;
+    }
+    if (typing) return;
+    const onBtn = t.closest && t.closest("button,a,summary");
+    let handled = true;
+    if (e.key === "ArrowRight" || e.key === "PageDown" || (e.key === " " && !onBtn) || (e.key === "Enter" && !onBtn)) show(idx + 1);
+    else if (e.key === "ArrowLeft" || e.key === "PageUp" || e.key === "Backspace") show(idx - 1);
+    else if (e.key === "Home") show(0);
+    else if (e.key === "End") show(slides.length - 1);
+    else if (e.key === "Escape") stop();
+    else if (e.key === "f" || e.key === "F") bFs.onclick();
+    else if (e.key === "p" || e.key === "P") stop();
+    else handled = false;
+    if (handled){ e.preventDefault(); e.stopImmediatePropagation(); e.stopPropagation(); }
+  }, true);
+
+  // swipe on touch screens, but not on demos that use dragging
+  let sx = 0, sy = 0, swipe = false;
+  mainEl.addEventListener("touchstart", e => { if (!on || e.touches.length !== 1) return; swipe = !e.target.closest("canvas,.scene,input,select,button,svg,.tbl-wrap"); sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, {passive: true});
+  mainEl.addEventListener("touchend", e => { if (!on || !swipe) return; const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy; if (Math.abs(dx) > 60 && Math.abs(dy) < 50) show(idx + (dx < 0 ? 1 : -1)); }, {passive: true});
+})();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+Online Retail II: all transactions of a UK-based online retailer (non-store) between 01/12/2009 and 09/12/2011.
+The company mainly sells unique all-occasion gift-ware; many of its customers are wholesalers.
+Source: Chen, D. (2012). Online Retail II. UCI Machine Learning Repository, id 502.
+https://doi.org/10.24432/C5CG6D · Licence: CC BY 4.0.
+invoices_uk_2011.csv: sheet 'Year 2010-2011', United Kingdom, invoices dated 2011-06-01 to 2011-11-30.
+Removed: cancellations (invoice number starting with C), lines with quantity or price <= 0, lines with no
+description, and non-product codes (POST, DOT, M, C2, BANK CHARGES, gift vouchers, ...; kept: 5-digit stock codes
+with an optional letter). Each stock code keeps its most common description. Only the 100 products
+bought on the most invoices are kept (to keep the file small); invoices with none of them drop out.
+Result: 53,628 lines (one per invoice and product), 7,900 invoices, 100 products.
+rules_top200.csv: Apriori at support >= 0.75% and confidence >= 5% on these invoices
+gives 120,064 rules, 10 of them with lift < 1. The file keeps the 192 rules with the highest
+support and the 8 rules with the lowest lift (all below 0.95; negative associations), numbered R001-R200 by lift
+(highest first). Support and confidence are fractions (0.030886 means 3.09%).
+llm_prompt.txt: the message given to the LLM (the same 200 rules).
+llm_summary.txt: the answer of Qwen/Qwen2.5-1.5B-Instruct (Apache 2.0) to llm_prompt.txt (CPU, greedy decoding),
+EDITED FOR THE LAB: the model chose the themes, the wording and most of the citations, but wrote no numbers in them;
+we added the numbers in the requested format, completed the cut-off ending, corrected one rule ID, and planted some
+errors of the kinds named in Lecture 8. The list of edits is in the instructor's answer key.
