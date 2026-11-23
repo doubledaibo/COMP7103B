@@ -1,0 +1,45 @@
+{"ad": 6, "title": "Restaurant Supervisor", "company": "Copperleaf Property Ltd", "salary": 24000, "district": "Mong Kok", "experience": 2, "contract": "full-time"}
+{"ad": 7, "title": "Accounting Clerk", "company": "Granite Bay Data Ltd", "salary": 15500, "district": "Sai Kung", "experience": 3, "contract": "full-time"}
+{"ad": 8, "title": "Project Engineer", "company": "Lantau Bay Trading Ltd", "salary": 33000, "district": "Sai Kung", "experience": 1, "contract": "full-time"}
+{"ad": 9, "title": "HR Officer", "company": "Granite Bay Data Ltd", "salary": null, "district": "Kwun Tong", "experience": null, "contract": "full-time"}
+{"ad": 10, "title": "Delivery Driver", "company": "Harbourline Logistics Ltd", "salary": 21000, "district": "Wong Tai Sin", "experience": null, "contract": "full-time"}
+{"ad": 11, "title": "Project Engineer", "company": "Sampan Travel Ltd", "salary": null, "district": "Tung Chung", "experience": 3, "contract": "fixed-term"}
+{"ad": 12, "title": "Customer Service Officer", "company": "Jade Lantern Catering Ltd", "salary": 21500, "district": "Wong Tai Sin", "experience": null, "contract": "full-time"}
+{"ad": 13, "title": "Graphic Designer", "company": "Harbourline Logistics Ltd", "salary": 21000, "district": "Sheung Shui", "experience": null, "contract": "permanent"}
+{"ad": 14, "title": "Property Officer", "company": "Orchid Hill Clinics Ltd", "salary": 23000, "district": "Tai Po", "experience": 1, "contract": "permanent"}
+{"ad": 15, "title": "Data Analyst", "company": "Ferrypoint Retail Ltd", "salary": 348000, "district": "remote", "experience": 4, "contract": "full-time"}
+{"ad": 16, "title": "Tour Coordinator", "company": "Ferrypoint Retail Ltd", "salary": 50000, "district": "Wan Chai", "experience": 1, "contract": "full-time"}
+{"ad": 17, "title": "Business Intelligence Developer", "company": "Jade Lantern Catering Ltd", "salary": 50000, "district": "Tsuen Wan", "experience": 4, "contract": "contract"}
+{"ad": 18, "title": "Lab Technician", "company": "Sampan Travel Ltd", "salary": 19000, "district": "Sheung Shui", "experience": 5, "contract": "full-time"}
+{"ad": 19, "title": "Senior Machine Learning Engineer", "company": "Pearl River Packaging Ltd", "salary": 77500, "district": "Wong Tai Sin", "experience": 8, "contract": "12-month contract"}
+{"ad": 20, "title": "Tour Coordinator", "company": "Granite Bay Data Ltd", "salary": 3000, "district": "Kowloon Bay", "experience": 1, "contract": "full-time"}
+{"ad": 21, "title": "Graphic Designer", "company": "Lantau Bay Trading Ltd", "salary": 95000, "district": null, "experience": 2, "contract": "full-time"}
+{"ad": 22, "title": "Business Intelligence Developer", "company": "Peak Digital Ltd", "salary": 41000, "district": null, "experience": 1, "contract": "full-time"}
+{"ad": 23, "title": "Business Intelligence Developer", "company": "Victoria Print Works Ltd", "salary": 41000, "district": "Tsim Sha Tsui", "experience": 3, "contract": null}
+{"ad": 24, "title": "Delivery Driver", "company": "Copperleaf Property Ltd", "salary": 240000, "district": "Fo Tan", "experience": 2, "contract": "full-time"}
+{"ad": 25, "title": "Procurement Officer", "company": "Ferrypoint Retail Ltd", "salary": 29000, "district": "Central", "experience": 1, "contract": "fixed-term"}
+{"ad": 26, "title": "Warehouse Assistant", "company": "Tidemark Engineering Ltd", "salary": 20000, "district": "Central and Western", "experience": 3, "contract": "full-time"}
+{"ad": 27, "title": "Accounting Clerk", "company": "Tidemark Engineering Ltd", "salary": 20000, "district": "Wong Tai Sin", "experience": 2, "contract": "full-time"}
+{"ad": 28, "title": "Data Analyst", "company": "Harbourline Logistics Ltd", "salary": 25000, "district": "Central and Western", "experience": 1, "contract": "fixed-term"}
+{"ad": 29, "title": "Restaurant Supervisor", "company": "Kowloon Fresh Foods Ltd", "salary": 20000, "district": "Causeway Bay", "experience": 2, "contract": "permanent"}
+{"ad": 30, "title": "Junior Web Developer", "company": "Tidemark Engineering Ltd", "salary": 19000, "district": "Sham Shui Po", "experience": 2, "contract": "part-time"}
+{"ad": 31, "title": "Graphic Designer", "company": "Granite Bay Data Ltd", "salary": null, "district": "Central and Western", "experience": 1, "contract": "full-time"}
+{"ad": 32, "title": "Business Intelligence Developer", "company": "Granite Bay Data Ltd", "salary": 49000, "district": "Yuen Long", "experience": 4, "contract": "full-time"}
+{"ad": 33, "title": "HR Officer", "company": "Lion Rock Software Ltd", "salary": null, "district": "Kwai Tsing", "experience": null, "contract": "full-time"}
+{"ad": 34, "title": "Customer Service Officer", "company": "Lion Rock Software Ltd", "salary": 20000, "district": "Wong Tai Sin", "experience": null, "contract": "12-month contract"}
+{"ad": 35, "title": "Insurance Claims Officer", "company": "Sampan Travel Ltd", "salary": null, "district": "Causeway Bay", "experience": 2, "contract": "permanent, full-time"}
+{"ad": 36, "title": "Accounting Clerk", "company": "Sampan Travel Ltd", "salary": 216000, "district": "Central and Western", "experience": 3, "contract": "part-time"}
+{"ad": 37, "title": "Marketing Executive", "company": "Kowloon Fresh Foods Ltd", "salary": 24000, "district": "Central", "experience": null, "contract": "part-time"}
+{"ad": 38, "title": "Insurance Claims Officer", "company": "Granite Bay Data Ltd", "salary": null, "district": "Wong Tai Sin", "experience": 3, "contract": "full-time"}
+{"ad": 39, "title": "Senior Machine Learning Engineer", "company": "Bluegate Insurance Services Ltd", "salary": 67000, "district": "Tung Chung", "experience": 8, "contract": "contract"}
+{"ad": 40, "title": "Warehouse Assistant", "company": "Sampan Travel Ltd", "salary": 15000, "district": "not specified", "experience": 5, "contract": "part-time"}
+{"ad": 41, "title": "Procurement Officer", "company": "Jade Lantern Catering Ltd", "salary": 95000, "district": "Sha Tin", "experience": 3, "contract": "full-time"}
+{"ad": 42, "title": "Retail Sales Associate", "company": "Pearl River Packaging Ltd", "salary": 14000, "district": "Wong Tai Sin", "experience": null, "contract": "full-time"}
+{"ad": 43, "title": "Project Engineer", "company": "Tidemark Engineering Ltd", "salary": 41000, "district": "Yuen Long", "experience": 3, "contract": "full-time"}
+{"ad": 44, "title": "Teaching Assistant", "company": "Ferrypoint Retail Ltd", "salary": 15000, "district": "Tsuen Wan", "experience": 1, "contract": "one year"}
+{"ad": 45, "title": "IT Support Officer", "company": "Jade Lantern Catering Ltd", "salary": 22000, "district": "North Point", "experience": 2, "contract": "full-time"}
+{"ad": 46, "title": "Insurance Claims Officer", "company": "Victoria Print Works Ltd", "salary": 21500, "district": "Wan Chai", "experience": 4, "contract": "full-time"}
+{"ad": 47, "title": "Procurement Officer", "company": "Kowloon Fresh Foods Ltd", "salary": null, "district": "Sheung Shui", "experience": 2, "contract": "permanent, full-time"}
+{"ad": 48, "title": "Customer Service Officer", "company": "Jade Lantern Catering Ltd", "salary": 17000, "district": "Tuen Mun", "experience": 1, "contract": "permanent, full-time"}
+{"ad": 49, "title": "Property Officer", "company": "Sampan Travel Ltd", "salary": 25000, "district": null, "experience": 2, "contract": "full-time"}
+{"ad": 50, "title": "Junior Web Developer", "company": "Jade Lantern Catering Ltd", "salary": 22000, "district": "Tuen Mun", "experience": 1, "contract": "part-time"}

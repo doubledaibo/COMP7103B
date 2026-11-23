@@ -1,0 +1,34 @@
+Extract these fields from each job ad below. Return JSON only.
+{"title": string, "company": string,
+ "salary": integer, HK$ per month (the lower end if a range is given), or null,
+ "district": one of Hong Kong's 18 districts, or null,
+ "experience": integer, minimum years, or null,
+ "contract": "full-time" | "part-time" | "contract" | null}
+Use null when the ad does not state a value.
+The 18 districts: Central and Western, Wan Chai, Eastern, Southern, Yau Tsim Mong, Sham Shui Po, Kowloon City, Wong Tai Sin, Kwun Tong, Kwai Tsing, Tsuen Wan, Tuen Mun, Yuen Long, North, Tai Po, Sha Tin, Sai Kung, Islands.
+Write one JSON object per ad, one per line, in the same order, and add "ad": the ad's number.
+
+Ad 1:
+Position: Data Analyst
+Company: Harbourline Logistics Ltd
+Location: Kowloon City
+Salary: HK$31,000 a month
+3 years of experience in SQL and Python.
+Full time, Monday to Friday.
+
+Ad 2:
+Peak Digital Ltd is hiring an IT Support Officer for our Sheung Wan office. HK$19k to 24k a month. 2+ years' experience in IT support. Contract, 12 months.
+
+Ad 3:
+Position: Accounting Clerk
+Company: Kowloon Fresh Foods Ltd
+Location: Yuen Long
+Salary: Annual package HK$192,000
+Requirements: At least 2 years in accounts payable.
+Full-time.
+
+Ad 4:
+Teaching Assistant at Little Egret Education Ltd, Kowloon Bay. HK$80 per hour. No experience needed: we will train you. Part-time (3 days a week).
+
+Ad 5:
+Join Jade Lantern Catering Ltd as our new Restaurant Supervisor! Based in Kwai Chung. Attractive salary for the right person. Five years of experience in catering preferred. Full-time. Apply with your CV today.

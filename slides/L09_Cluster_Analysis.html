@@ -1031,7 +1031,7 @@ table.lt{min-width:0;width:100%;font-size:.86rem}
     <ul class="clean" style="margin:0"><li><b>SSE:</b> sum of squared distances of each point to its cluster centroid.</li><li><b>Cohesion:</b> average intra-cluster distance.</li><li><b>Separation:</b> average inter-cluster distance.</li></ul>
     <div>
       <p style="color:var(--ink);margin:0"><b>Silhouette coefficient:</b> combines cohesion and separation, for an individual point i.</p>
-      <p style="color:var(--ink);margin:6px 0 0"><b>a</b> = average distance of i to the points in its cluster. &nbsp; <b>b</b> = min (average distance of i to points in another cluster).</p>
+      <p style="color:var(--ink);margin:6px 0 0"><b>a</b> = average distance of i to the points in its cluster. &nbsp; <b>b</b> = the smallest, over the other clusters C, of the average distance of i to the points in C.</p>
       <p style="color:var(--ink);margin:6px 0 0"><math><mi>s</mi><mo>=</mo><mn>1</mn><mo>−</mo><mi>a</mi><mo>/</mo><mi>b</mi></math> if a &lt; b &nbsp; (or <math><mi>s</mi><mo>=</mo><mi>b</mi><mo>/</mo><mi>a</mi><mo>−</mo><mn>1</mn></math> if a ≥ b, not the usual case). Typically between 0 and 1; the closer to 1, the better.</p>
     </div>
   </div></div>

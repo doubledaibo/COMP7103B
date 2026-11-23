@@ -1,0 +1,49 @@
+```json
+[
+    {
+        "ad": 1,
+        "title": "Data Analyst",
+        "company": "Harbourline Logistics Ltd",
+        "salary": 31000,
+        "district": "Kowloon City",
+        "experience": 3,
+        "contract": "full-time"
+    },
+    {
+        "ad": 2,
+        "title": "IT Support Officer",
+        "company": "Peak Digital Ltd",
+        "salary": 19000,
+        "district": "Sheung Wan",
+        "experience": 2,
+        "contract": "contract"
+    },
+    {
+        "ad": 3,
+        "title": "Accounting Clerk",
+        "company": "Kowloon Fresh Foods Ltd",
+        "salary": "Annual package HK$192,000",
+        "district": "Yuen Long",
+        "experience": null,
+        "contract": "full-time"
+    },
+    {
+        "ad": 4,
+        "title": "Teaching Assistant",
+        "company": "Little Egret Education Ltd",
+        "salary": 80,
+        "district": "Kowloon Bay",
+        "experience": null,
+        "contract": "part-time"
+    },
+    {
+        "ad": 5,
+        "title": "Restaurant Supervisor",
+        "company": "Jade Lantern Catering Ltd",
+        "salary": "Attractive salary",
+        "district": "Kwai Chung",
+        "experience": 5,
+        "contract": "full-time"
+    }
+]
+```

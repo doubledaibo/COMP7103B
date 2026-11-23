@@ -1,0 +1,51 @@
+ad_id,title,company,salary,district,experience,contract
+1,Data Analyst,Harbourline Logistics Ltd,31000,Kowloon City,3,full-time
+2,IT Support Officer,Peak Digital Ltd,19000,Central and Western,2,contract
+3,Accounting Clerk,Kowloon Fresh Foods Ltd,16000,Yuen Long,2,full-time
+4,Teaching Assistant,Little Egret Education Ltd,,Kwun Tong,0,part-time
+5,Restaurant Supervisor,Jade Lantern Catering Ltd,,Kwai Tsing,5,full-time
+6,Restaurant Supervisor,Copperleaf Property Ltd,24000,Yau Tsim Mong,2,contract
+7,Accounting Clerk,Granite Bay Data Ltd,15500,Sai Kung,3,full-time
+8,Project Engineer,Lantau Bay Trading Ltd,33000,Sai Kung,1,full-time
+9,HR Officer,Granite Bay Data Ltd,,Kwun Tong,,full-time
+10,Delivery Driver,Harbourline Logistics Ltd,21000,Wong Tai Sin,,
+11,Project Engineer,Sampan Travel Ltd,,Islands,3,contract
+12,Customer Service Officer,Jade Lantern Catering Ltd,21500,Wong Tai Sin,,full-time
+13,Graphic Designer,Harbourline Logistics Ltd,21000,North,,
+14,Property Officer,Orchid Hill Clinics Ltd,23000,Tai Po,1,full-time
+15,Data Analyst,Ferrypoint Retail Ltd,29000,,4,full-time
+16,Tour Coordinator,Ferrypoint Retail Ltd,,Wan Chai,1,full-time
+17,Business Intelligence Developer,Jade Lantern Catering Ltd,50000,Tsuen Wan,4,contract
+18,Lab Technician,Sampan Travel Ltd,19000,North,5,full-time
+19,Senior Machine Learning Engineer,Pearl River Packaging Ltd,77500,Wong Tai Sin,8,contract
+20,Tour Coordinator,Granite Bay Data Ltd,19000,Kwun Tong,1,full-time
+21,Graphic Designer,Lantau Bay Trading Ltd,,,2,contract
+22,Business Intelligence Developer,Peak Digital Ltd,41000,,1,full-time
+23,Business Intelligence Developer,Victoria Print Works Ltd,41000,Yau Tsim Mong,3,
+24,Delivery Driver,Copperleaf Property Ltd,20000,Sha Tin,2,full-time
+25,Procurement Officer,Ferrypoint Retail Ltd,29000,Central and Western,1,contract
+26,Warehouse Assistant,Tidemark Engineering Ltd,,,3,contract
+27,Accounting Clerk,Tidemark Engineering Ltd,20000,Wong Tai Sin,2,full-time
+28,Data Analyst,Harbourline Logistics Ltd,25000,Central and Western,1,contract
+29,Restaurant Supervisor,Kowloon Fresh Foods Ltd,,Wan Chai,2,full-time
+30,Junior Web Developer,Tidemark Engineering Ltd,19000,Sham Shui Po,2,part-time
+31,Graphic Designer,Granite Bay Data Ltd,,Wan Chai,1,full-time
+32,Business Intelligence Developer,Granite Bay Data Ltd,49000,Yuen Long,4,full-time
+33,HR Officer,Lion Rock Software Ltd,,Kwai Tsing,0,full-time
+34,Customer Service Officer,Lion Rock Software Ltd,20000,Wong Tai Sin,0,contract
+35,Insurance Claims Officer,Sampan Travel Ltd,,Wan Chai,2,full-time
+36,Accounting Clerk,Sampan Travel Ltd,18000,Kwun Tong,3,part-time
+37,Marketing Executive,Kowloon Fresh Foods Ltd,24000,Central and Western,,
+38,Insurance Claims Officer,Granite Bay Data Ltd,,Wong Tai Sin,3,full-time
+39,Senior Machine Learning Engineer,Bluegate Insurance Services Ltd,67000,Islands,8,contract
+40,Warehouse Assistant,Sampan Travel Ltd,15000,,5,part-time
+41,Procurement Officer,Jade Lantern Catering Ltd,31000,Sha Tin,3,
+42,Retail Sales Associate,Pearl River Packaging Ltd,14000,Wong Tai Sin,,full-time
+43,Project Engineer,Tidemark Engineering Ltd,41000,Yuen Long,3,full-time
+44,Teaching Assistant,Ferrypoint Retail Ltd,15000,Tsuen Wan,1,contract
+45,IT Support Officer,Jade Lantern Catering Ltd,22000,Eastern,2,full-time
+46,Insurance Claims Officer,Victoria Print Works Ltd,21500,Wan Chai,4,full-time
+47,Procurement Officer,Kowloon Fresh Foods Ltd,27000,North,2,full-time
+48,Customer Service Officer,Jade Lantern Catering Ltd,17000,Tuen Mun,1,full-time
+49,Property Officer,Sampan Travel Ltd,25000,,2,full-time
+50,Junior Web Developer,Jade Lantern Catering Ltd,22000,Tuen Mun,1,part-time

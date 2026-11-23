@@ -1,0 +1,22 @@
+Lab 10 data. Everything here is synthetic, written for this lab by make_data.py (seed 7103); no real
+companies, people or job ads. Licence: CC BY 4.0 (COMP7103B, HKU).
+
+job_ads.csv (50 ads) and gold.csv: written from templates with varied wording (structured "Position:" ads, prose
+ads, pipe-separated ads; salary per month, as a range, per annum, per hour, negotiable or missing; experience in
+digits, words, ranges or "no experience needed"; districts named directly or by a place inside them; a few ads
+have an "About us" paragraph, and ads 23 and 41 contain an instruction to AI tools). Company names are invented.
+The gold table follows the schema of Lecture 10: title, company, salary (integer, HK$ per month, the lower end of
+a range; null for hourly pay or when not stated), district (one of the 18 districts), experience (integer,
+minimum years; "no experience needed" = 0), contract (full-time / part-time / contract). Empty cell = not stated.
+
+llm_prompt.txt: the schema prompt with ads 1-5. llm_fallback.txt: the reply of Qwen/Qwen2.5-1.5B-Instruct
+(Apache 2.0) to exactly that prompt, CPU, greedy decoding. llm_output_45.jsonl: the same model, the same prompt
+with ads 6-50 in batches of five; one line per ad: each {...} object of the model's reply, matched to its ad by
+the "ad" number the model wrote (or else by its position). The model output is not edited; the raw replies are
+kept in the instructor folder (llm_raw.txt).
+
+corpus.csv (210 records): a made-up public library ("HVPL"): 60 help-guide chunks (membership, loans, fees,
+rooms, digital services) and 150 catalogue records (title, invented author, year, format, call number, subject,
+one-line summary), shuffled. queries.csv: 10 queries with the doc ids judged relevant by the author.
+doc_emb.npy (210 x 384) and query_emb.npy (10 x 384): sentence embeddings from
+sentence-transformers/all-MiniLM-L6-v2 (Apache 2.0), normalised to length 1, float32, rows in file order.
