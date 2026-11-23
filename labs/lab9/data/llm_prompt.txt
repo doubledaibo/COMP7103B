@@ -1,0 +1,82 @@
+Below are 6 groups of news headlines from 2014. A clustering method put each group together.
+For each group, write a short name (2 to 5 words) that describes what the headlines in the group are about.
+
+Group A:
+- Alfa Romeo Readies Tiguan Sized Crossover For 2016
+- Madonna to return to film directing with Ade: A Love Story
+- Hamilton actor nominated for Tony Award
+- Golden Gate Capital Agrees to Buy Red Lobster
+- Aliens do Exists: US Astronomers and Astrobiologists
+- Kennedy Closures: Details and detours you need to know
+- NYC mayor to sing 'I Love L.A.' with Jimmy Kimmel to settle Stanley Cup bet
+- One Injured When Construction Beams Fall on 405 Freeway
+- Graco to recall infant car seats
+- More Soybean and Less Corn Acres
+
+Group B:
+- Roy Choi Dons Google Glass For Ultimate St. Patrick's Day Feast
+- Google Project Tango Taken Apart By iFixit
+- Google+ boss Vic Gundotra is leaving Google after 8 years with company
+- Marketing Exec Ivy Ross Is The New Head Of Google Glass
+- Google Glass gets new designer frames and shades
+- Google Courts Businesses With Android For Work Initiative
+- Google I/O 2014: All you need to know about Android TV and Android Auto
+- The BBC Doesn't Want to Be Forgotten by Google
+- Google drops bid to 'forget' news links
+- Trying to re-list stories Google has forgotten could make things worse
+
+Group C:
+- Chemists discover secret to dark chocolate's health benefits
+- Pilots' mental health a concern amid mystery
+- Health Complications Related To Diabetes Falling
+- Ministry of Public Health to distribute 3.4m doses of influenza vaccine
+- KSBY Investigates:Solutions to improving mental health care: Part 3
+- Acadia Drops $660M On UK Inpatient Care Provider
+- Baptist Health hospitals top Kentucky rankings by U.S. News & World Report
+- Surgeon General calls skin cancer "a major health problem"
+- As NJ mosquito-borne illnesses spread, health officials say be on guard
+- Flesh-Eating Bacteria Found in Florida Ocean, Health Officials Issue Warning
+
+Group D:
+- Russell Crowe meets Pope Francis: 'I like this guy'
+- Kim Kardashian Buys EVERY COPY of Vogue at LA Newsstand!
+- Why Katie Couric Wants You to Get 'Fed Up,' Take a Sugar Challenge
+- Leonardo DiCaprio and Spike Jonze visit Frieze Art Fair in Randall's Island
+- Kevin Costner, other stars celebrate 25th anniversary of 'Field of Dreams' in Iowa
+- Catching Up With Jack Reynor and Nicola Peltz on Transformers: Age of Extinction
+- Knife-Wielding Man Who Threatened Michael Strahan Arrested at 'GMA' Studio
+- 'Deliver' a horror tale, tragedy Bana, Munn wasted on just another exorcism movie
+- Woman drops $30000 to look like Kim Kardashian
+- Most adorable meltdown ever! Sadie doesn't want her baby brother to grow up
+
+Group E:
+- The shock of breast cancer in men
+- Cyramza for stomach cancer approved in US
+- 2nd annual Restaurants for Relay helps fight cancer
+- UK's NICE rejects use of Roche's Kadcyla for breast cancer on NHS
+- The Pentagon's Mind-Controlled Robotic Arm Just Got FDA Approval
+- Cervical Cancer Rates Higher Than Thought, Especially in Women Over 65
+- FDA gives a thumbs up to Entyvio
+- Sitting down linked to higher risk of cancer
+- Surgeon General's 'Call to Action' To Prevent Skin Cancer
+- FDA approves Striverdi Respimat to treat chronic obstructive pulmonary disease
+
+Group F:
+- Google drastically slashes its Drive paid plans
+- Microsoft warns Windows XP users the end is nigh as cyber apocalypse awaits
+- Steve Jobs promised 'holy war' on Google
+- A Boston hospital uses Google glass in the emergency room
+- Twitter Is Quietly Building A $100 Million Business In Big Data
+- Google Project Tango Taken Apart By iFixit
+- Google+ boss Vic Gundotra is leaving Google after 8 years with company
+- Why Apple and Google Ended Their Thermonuclear Rift
+- Protests Disrupt Google I/O Keynote: Who Were They, And Why Were They There?
+- 70000 people want to be forgotten by Google
+
+Answer with exactly 6 lines, one per group, in this form:
+Group A: <name>
+Group B: <name>
+Group C: <name>
+Group D: <name>
+Group E: <name>
+Group F: <name>

@@ -1,0 +1,17 @@
+News Aggregator: titles of news pages collected by an online aggregator, 10 March to 10 August 2014.
+Source: Gasparetti, F. (2016). News Aggregator. UCI Machine Learning Repository, id 359.
+https://doi.org/10.24432/C5F61C · Licence: CC BY 4.0 (as listed by UCI).
+Downloaded from https://archive.ics.uci.edu/static/public/359/news+aggregator.zip, file newsCorpora.csv (422,937 headlines in 7,231 stories).
+Sample (make_data.py, seed 7103): headlines were made plain ASCII (curly quotes to straight quotes) and kept only if they
+have 6-16 words, are not truncated ('...'), carry no ' - ' or ' | ' site suffix, no '(VIDEO)' tag and no note to editors,
+and contain a common English word; exact duplicates were dropped (7,162 stories keep at least one headline).
+Then 250 stories were drawn at random in each of the 4 categories (business, science & technology, entertainment, health)
+and one random headline from each story: 1,000 headlines from 1,000 different stories. Wire prefixes such as 'UPDATE 2-'
+were removed. id is the dataset's ID; category is the dataset's label (used only for the check after the fact).
+emb.npy: sentence-transformers/all-MiniLM-L6-v2 (Apache 2.0), normalised embeddings, 1,000 x 384, float32.
+umap5.npy: umap-learn 0.5.12, UMAP(n_neighbors=15, n_components=5, min_dist=0.0, metric='cosine', random_state=7103) of emb.npy.
+umap2.npy: a separate run, UMAP(n_neighbors=15, n_components=2, min_dist=0.1, metric='cosine', random_state=7103),
+for the 2-D picture only. UMAP output differs slightly across machines and library versions, so the coordinates are shipped.
+llm_prompt.txt: 10 random headlines from each of 6 clusters (3 per pipeline, chosen by the rule in the notebook).
+llm_fallback.txt: the answer of Qwen/Qwen2.5-1.5B-Instruct (Apache 2.0) to exactly llm_prompt.txt, CPU, bf16, greedy decoding,
+unedited (make_llm_fallback.py).
