@@ -1,0 +1,6 @@
+Synthetic card transactions, made for COMP7103 Lab 12 (make_data.py, seed 7103). No real cardholders or transactions.
+2,000 rows: txn_id, amount_hkd (amount in HK$), distance_km (distance from the cardholder's home, km),
+is_fraud (1 = confirmed fraud, 0 = not). 20 rows are fraud.
+Normal transactions come from two groups: everyday local purchases (about HK$120, about 3 km from home; dense)
+and travel or large purchases (about HK$2,500, about 700 km away; sparse). Amounts and distances are log-normal.
+The 20 frauds were placed to include several kinds of unusual transaction. Licence: CC0 (free to use).
