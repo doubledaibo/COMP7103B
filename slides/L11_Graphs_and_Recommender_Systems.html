@@ -1,0 +1,1677 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Graphs and Recommender Systems</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&family=Unbounded:wght@600;700;800&display=swap">
+<style>
+/* Layout: a lecture rail on the left, one long column of numbered "boards" on the right; each board is one slide's idea, made interactive. */
+:root{
+  --bg:#F3F8F9; --surface:#FFFFFF; --surface-2:#E3F0F3; --ink:#0E2228; --muted:#4D666E; --line:#CBDDE2;
+  --accent:#04617B; --accent-2:#1489B0; --good:#0B8466; --signal:#BF2A2F; --warn:#B26A00;
+  --c1:#04617B; --c2:#1489B0; --c3:#0B8466; --c4:#BF2A2F; --c5:#7A5BB5;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#09161B; --surface:#0F2129; --surface-2:#153039; --ink:#E2F0F3; --muted:#92ADB5; --line:#244049;
+  --accent:#43C3DB; --accent-2:#8AD9EA; --good:#3FD69B; --signal:#FF6F6A; --warn:#F2B04A;
+  --c1:#43C3DB; --c2:#8AD9EA; --c3:#3FD69B; --c4:#FF6F6A; --c5:#B79BFF; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#09161B; --surface:#0F2129; --surface-2:#153039; --ink:#E2F0F3; --muted:#92ADB5; --line:#244049;
+  --accent:#43C3DB; --accent-2:#8AD9EA; --good:#3FD69B; --signal:#FF6F6A; --warn:#F2B04A;
+  --c1:#43C3DB; --c2:#8AD9EA; --c3:#3FD69B; --c4:#FF6F6A; --c5:#B79BFF; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;margin:0}
+.page{display:grid;grid-template-columns:210px minmax(0,1fr);gap:48px;max-width:1260px;margin:0 auto;padding-inline:24px;padding-block:28px 80px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.02;font-weight:700}
+h2{font-size:clamp(1.6rem,3vw,2.15rem);line-height:1.1;font-weight:700}
+h3{font-size:1.15rem;font-weight:600;line-height:1.25}
+p{margin:0}
+.lead{font-size:1.12rem;color:var(--muted);max-width:62ch}
+.mono{font-family:var(--mono)}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+
+/* rail */
+.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;max-height:calc(100vh - 48px);overflow:auto;font-size:.88rem}
+.rail .course{font-family:var(--mono);font-size:.75rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.rail .ltitle{font-family:var(--display);font-weight:700;font-size:1.05rem;line-height:1.2;margin:4px 0 18px}
+.rail ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.rail .part{font-family:var(--mono);font-size:.7rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin:14px 0 4px}
+.rail a{display:block;color:var(--muted);text-decoration:none;padding:4px 10px;border-radius:6px;border-left:2px solid transparent}
+.rail a:hover{color:var(--ink);background:var(--surface-2)}
+.rail a.on{color:var(--ink);background:var(--surface-2);font-weight:600}
+.rail .keys{margin-top:18px;color:var(--muted);font-size:.78rem}
+kbd{font-family:var(--mono);font-size:.75rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--surface)}
+
+main{min-width:0;display:grid;gap:88px}
+section.board{scroll-margin-top:24px;display:grid;gap:22px}
+.part-break{padding:26px 0 0;border-top:1px solid var(--line);display:grid;gap:6px}
+.part-break .n{font-family:var(--display);font-size:clamp(3rem,7vw,5rem);line-height:.9;color:var(--accent);font-weight:700}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:28px;align-items:center}
+.hero .meta{display:grid;gap:16px}
+.stage-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;cursor:pointer;font-size:.92rem}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"],.chip[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.scene{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:var(--r);background:radial-gradient(120% 90% at 30% 20%,var(--surface) 0%,var(--surface-2) 100%);overflow:hidden;touch-action:none}
+.scene canvas{display:block;width:100%!important;height:100%!important}
+.scene .hint{position:absolute;right:12px;bottom:10px;font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.scene .legend{position:absolute;left:12px;top:10px;font-family:var(--mono);font-size:.72rem;color:var(--muted);display:grid;gap:2px}
+.caption{min-height:4.8em;border-left:3px solid var(--accent);padding-left:14px}
+.caption b{font-weight:600}
+
+/* generic */
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:grid;gap:8px;align-content:start;min-width:0}
+.card .tag{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase}
+.card p{color:var(--muted)}
+.card.bad{background:color-mix(in srgb,var(--signal) 7%,var(--surface));border-color:color-mix(in srgb,var(--signal) 30%,var(--line))}
+.card.good{background:color-mix(in srgb,var(--good) 8%,var(--surface));border-color:color-mix(in srgb,var(--good) 30%,var(--line))}
+ul.clean{margin:0;padding-left:1.1em;display:grid;gap:6px}
+.note{font-size:.85rem;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;min-width:0}
+
+/* roadmap */
+.phases{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.phase{display:grid;gap:6px;align-content:start}
+.phase .pn{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-bottom:4px;border-bottom:2px solid var(--pc)}
+.wk{display:flex;gap:10px;align-items:baseline;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:.88rem;line-height:1.3}
+.wk .num{font-family:var(--mono);font-size:.8rem;color:var(--pc);font-weight:500;min-width:1.4em}
+.wk:hover{border-color:var(--pc)}
+.wk[aria-pressed="true"]{background:var(--surface-2);border-color:var(--pc);font-weight:600}
+.wkdetail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.wkdetail h4{margin:0 0 4px;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+/* assessment */
+.bars{display:grid;gap:14px}
+.barrow{display:grid;grid-template-columns:5.5em minmax(0,1fr);gap:12px;align-items:center}
+.barrow .lbl{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.bar{display:flex;height:54px;border-radius:8px;overflow:hidden;background:var(--surface-2)}
+.seg{display:flex;flex-direction:column;justify-content:center;padding:0 10px;color:#fff;font-size:.82rem;line-height:1.15;white-space:nowrap;overflow:hidden;transition:flex-basis .6s ease}
+.seg b{font-family:var(--mono);font-size:.95rem}
+.seg.ai{background:var(--c1)} .seg.ai2{background:var(--c3)} .seg.ex{background:#5B6F76}
+.legend-row{display:flex;gap:18px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* quiz */
+.quiz{display:grid;gap:12px}
+.q{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.q .opts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.q .opts button{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:6px 10px;font-size:.82rem;cursor:pointer}
+.q .opts button:hover{border-color:var(--accent)}
+.q .fb{grid-column:1/-1;font-size:.88rem;display:none}
+.q.done .fb{display:block}
+.q.right{border-color:var(--good)} .q.wrong{border-color:var(--signal)}
+.q.right .fb b{color:var(--good)} .q.wrong .fb b{color:var(--signal)}
+.q button.picked{background:var(--surface-2);font-weight:600}
+.score{font-family:var(--mono);font-size:.9rem;color:var(--muted)}
+
+/* playground */
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.play{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;align-items:start}
+.cv{width:100%;aspect-ratio:3/2;max-width:100%;display:block;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);touch-action:none;cursor:crosshair}
+.side{display:grid;gap:14px;min-width:0}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.stat .k{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stat .v{font-family:var(--mono);font-size:1.35rem;font-variant-numeric:tabular-nums}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--bg);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:.9rem;font-weight:500}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:hover{filter:brightness(1.08)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.items{display:flex;gap:6px;flex-wrap:wrap}
+.items button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:.85rem;cursor:pointer}
+.items button.a{background:var(--c1);border-color:var(--c1);color:var(--bg)}
+.items button.c{background:var(--c4);border-color:var(--c4);color:var(--bg)}
+.tx{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;font-family:var(--mono);font-size:.8rem}
+.tx div{border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--surface);color:var(--muted)}
+.tx div.hitA{border-color:var(--c1);color:var(--ink)}
+.tx div.hit{border-color:var(--c4);background:color-mix(in srgb,var(--c4) 10%,var(--surface));color:var(--ink)}
+.tx-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+
+/* kdd */
+.stage-panel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.stage-panel h4{margin:0 0 6px;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stage-panel .fail{color:var(--signal)}
+.scene.wide{aspect-ratio:16/7}
+
+/* stepper */
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.steps button{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 12px;cursor:pointer;display:grid;gap:2px}
+.steps button .s{font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.steps button[aria-selected="true"]{border-color:var(--accent);background:var(--surface-2)}
+.exflow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+
+/* case */
+.case{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.agent{font-family:var(--mono);font-size:.92rem;background:var(--surface-2);border-radius:8px;padding:14px 16px;line-height:1.5}
+.feat{display:grid;gap:8px}
+.feat label{display:flex;gap:10px;align-items:center;cursor:pointer;font-family:var(--mono);font-size:.88rem}
+.feat input{accent-color:var(--accent);width:18px;height:18px}
+.meter{height:12px;border-radius:6px;background:var(--surface-2);position:relative;overflow:hidden}
+.meter i{position:absolute;inset:0 auto 0 0;background:var(--accent);transition:width .5s ease}
+.meter .base{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.verdict{border-radius:8px;padding:12px 14px;font-size:.92rem}
+.verdict.leak{background:color-mix(in srgb,var(--signal) 12%,var(--surface));color:var(--ink);border:1px solid var(--signal)}
+.verdict.meh{background:color-mix(in srgb,var(--warn) 12%,var(--surface));border:1px solid var(--warn)}
+.verdict.ok{background:color-mix(in srgb,var(--good) 10%,var(--surface));border:1px solid var(--good)}
+
+/* table */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:.92rem;background:var(--surface)}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface-2)}
+td:first-child{font-weight:600}
+tr:last-child td{border-bottom:none}
+
+/* checklist */
+.checks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.check{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--good);margin-top:3px}
+.check:has(input:checked){border-color:var(--good);background:color-mix(in srgb,var(--good) 7%,var(--surface))}
+.check b{display:block;margin-bottom:2px}
+.check span{color:var(--muted);font-size:.92rem}
+.progress{font-family:var(--mono);font-size:.9rem;color:var(--muted)}
+
+.lab{counter-reset:s;display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.lab li{display:grid;grid-template-columns:2.4em minmax(0,1fr);gap:12px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.lab li::before{counter-increment:s;content:counter(s);font-family:var(--display);font-weight:700;font-size:1.5rem;color:var(--accent)}
+.lab li.key::before{color:var(--signal)}
+.next{background:var(--accent);color:var(--bg);border-radius:var(--r);padding:20px 22px;display:grid;gap:4px}
+.next .eyebrow{color:var(--bg);opacity:.8}
+
+@media (max-width:980px){
+  .page{grid-template-columns:minmax(0,1fr);gap:24px;padding-inline:16px}
+  .rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);max-height:none;padding-block:8px;border-bottom:1px solid var(--line);margin-inline:-16px;padding-inline:16px}
+  .rail .course,.rail .ltitle,.rail .part,.rail .keys{display:none}
+  .rail ol{display:flex;overflow-x:auto;gap:4px;scrollbar-width:none}
+  .rail a{white-space:nowrap}
+  .hero,.play,.case,.tx-wrap{grid-template-columns:minmax(0,1fr)}
+  .phases{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid4,.checks{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stage-panel,.wkdetail,.exflow{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:620px){
+  .grid3,.grid2,.grid4,.checks,.phases,.steps{grid-template-columns:minmax(0,1fr)}
+  .q{grid-template-columns:minmax(0,1fr)} .q .opts{justify-content:flex-start}
+  .scene.wide{aspect-ratio:4/3}
+  main{gap:64px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---- chapter 1 ---- */
+main a{color:var(--accent)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.lab-s{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);min-width:4.6em}
+.chip.sm{padding:4px 11px;font-size:.84rem}
+table.sm{min-width:0;font-size:.86rem}
+table.sm th,table.sm td{padding:7px 10px}
+table.sm td:first-child{font-weight:400}
+table.num td{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+table.num th{text-align:right}
+table.num td:first-child,table.num th:first-child{text-align:left}
+table .hl{background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
+table tr.tot td{font-weight:600;background:var(--surface-2)}
+.formula{background:var(--surface-2);border-radius:8px;padding:12px 16px;overflow-x:auto;font-size:1.05rem}
+.formula math{font-size:1.1em}
+.quote{border-left:3px solid var(--accent);padding-left:14px;font-size:1.05rem}
+.ill{width:100%;height:100%;display:block}
+.ill text{font-family:var(--mono);font-size:11px;fill:var(--muted);text-anchor:middle}
+.ill .ln{stroke:var(--muted);stroke-width:1.6;fill:none}
+.ill .ink{stroke:var(--ink);stroke-width:1.4;fill:var(--surface)}
+.ill .f1{fill:var(--c1)} .ill .f2{fill:var(--c2)} .ill .f3{fill:var(--c3)} .ill .f4{fill:var(--c4)} .ill .fw{fill:var(--warn)} .ill .fs{fill:var(--surface-2)}
+.ill .k{transition:opacity .4s}
+.ill .k.dim{opacity:.28}
+.ill .k.cur .ln{stroke:var(--accent);stroke-width:2.6}
+.ill .k.cur text{fill:var(--ink);font-weight:600}
+.ill .lane{font-size:10px;letter-spacing:.08em;text-anchor:start;fill:var(--accent)}
+.ill .mk{fill:var(--muted)}
+.ladder{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;align-items:end}
+.ladder div{border-radius:8px;padding:8px 10px;color:var(--bg);font-size:.86rem;line-height:1.25;font-weight:500}
+.axisrow{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.74rem;color:var(--muted);border-top:2px solid var(--line);padding-top:4px;margin-top:6px}
+.bar button.seg{border:0;cursor:pointer;text-align:left;font:inherit;color:var(--bg)}
+.mob{display:none}
+.bar button.seg[aria-pressed="true"]{box-shadow:inset 0 -5px 0 rgba(0,0,0,.35)}
+.tl{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:6px}
+.tl button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:0 0 8px;cursor:pointer;display:grid;gap:4px;overflow:hidden;font-size:.82rem}
+.tl button i{display:block;height:6px;background:var(--pc)}
+.tl button b{font-family:var(--mono);font-size:.95rem;color:var(--pc)}
+.tl button[aria-pressed="true"]{border-color:var(--pc);background:var(--surface-2)}
+.tl button .t{color:var(--muted);font-size:.72rem;line-height:1.2;padding:0 4px}
+.wkdetail h4,.flowtxt h4{margin:0 0 4px;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.steps.s5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.steps.s7{grid-template-columns:repeat(7,minmax(0,1fr))}
+.pane{display:grid;gap:14px}
+.strike{text-decoration:line-through;opacity:.5}
+.tok{display:inline-block;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 11px;font-family:var(--mono);font-size:.82rem;margin:2px}
+.tok.on{border-color:var(--accent);background:var(--accent);color:var(--bg)}
+.arrow{font-family:var(--mono);color:var(--accent);padding:0 6px}
+#clsBoard[data-show="ind"] .ci,#clsBoard[data-show="cls"] .cc{background:color-mix(in srgb,var(--accent) 16%,var(--surface))}
+#clsBoard[data-show="train"] #tTrain,#clsBoard[data-show="test"] #tTest{outline:3px solid var(--accent);outline-offset:-1px}
+.cc{color:var(--signal);font-weight:600}
+.lbl3{position:absolute;left:0;top:0;font-family:var(--mono);font-size:.72rem;color:var(--muted);pointer-events:none;white-space:nowrap;transform:translate(-50%,-50%)}
+.lbl3.t{color:var(--accent);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase}
+.flowwrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.flow{width:100%;min-width:560px;height:auto;display:block}
+.flow text{font-family:var(--mono);font-size:12px;fill:var(--muted);text-anchor:middle}
+.flow .nd rect,.flow .nd circle,.flow .nd path{fill:var(--surface);stroke:var(--accent-2);stroke-width:1.5;transition:fill .3s}
+.flow .nd text{fill:var(--ink)}
+.flow .nd.hi rect,.flow .nd.hi circle,.flow .nd.hi path{fill:color-mix(in srgb,var(--warn) 35%,var(--surface));stroke:var(--warn)}
+.flow .ed path{fill:none;stroke:var(--muted);stroke-width:1.6}
+.flow .ed.hi path{stroke:var(--warn);stroke-width:3.2}
+.flow .ed.hi text{fill:var(--signal);font-weight:600}
+.flow .rf path{stroke:var(--accent-2);stroke-width:1;opacity:.45;fill:none}
+.flow .rf.hi path{opacity:1;stroke-width:2;stroke:var(--signal)}
+.flow .mk{fill:var(--muted)}
+.flowtxt{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:980px){.ladder{grid-template-columns:minmax(0,1fr)} .ladder div{margin:0!important} .axisrow{display:none} .mob{display:block} .tl{grid-template-columns:repeat(6,minmax(0,1fr))} .steps.s7{grid-template-columns:repeat(4,minmax(0,1fr))} .flowtxt{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){.steps.s5,.steps.s7{grid-template-columns:repeat(3,minmax(0,1fr))} .steps.s5 button,.steps.s7 button{padding:8px} .tl{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* ---------- presentation mode: one board per screen, like slides ---------- */
+.present-btn{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 14px);z-index:20;display:inline-flex;gap:8px;align-items:center;border:1px solid var(--accent);background:var(--accent);color:var(--bg);border-radius:999px;padding:8px 16px 8px 13px;font:500 .9rem var(--body);cursor:pointer;box-shadow:0 2px 12px color-mix(in srgb,var(--ink) 18%,transparent)}
+.present-btn:hover{filter:brightness(1.08)}
+.present-btn svg,.deck-bar svg{width:18px;height:18px;display:block}
+html:not(.presenting) .deck-ui{display:none!important}
+html.presenting .present-btn{display:none}
+html.presenting,html.presenting body{height:100%;overflow:hidden}
+html.presenting .rail{display:none}
+html.presenting .page{display:block;max-width:none;padding:0;margin:0}
+html.presenting main{position:fixed;inset:0;display:block;background:var(--bg);overflow-x:hidden;overflow-y:auto;z-index:10;padding:0}
+html.presenting main > section.board,html.presenting main > .part-break{display:none}
+html.presenting main > section.board.is-current,html.presenting main > .part-break.is-current{display:grid;position:absolute;left:50%;top:var(--deck-top,24px);width:var(--deck-w,1180px);margin:0;transform-origin:top center;transform:translateX(-50%) scale(var(--deck-s,1))}
+html.presenting main > .part-break.is-current{border-top:none;padding:0;gap:14px}
+html.presenting main > .part-break.is-current .n{font-size:8rem}
+html.presenting main > .part-break.is-current h2{font-size:3.4rem}
+.deck-bar{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);z-index:30;display:flex;gap:2px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;box-shadow:0 2px 14px color-mix(in srgb,var(--ink) 14%,transparent);opacity:.45;transition:opacity .2s}
+.deck-bar:hover,.deck-bar:focus-within{opacity:1}
+.deck-bar button{border:none;background:transparent;color:var(--ink);border-radius:999px;width:38px;height:38px;display:grid;place-items:center;cursor:pointer}
+.deck-bar button:hover{background:var(--surface-2)}
+.deck-bar button:disabled{opacity:.3;cursor:default;background:transparent}
+.deck-count{font-family:var(--mono);font-size:.8rem;color:var(--muted);padding:0 10px;white-space:nowrap;max-width:46vw;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.deck-side{position:fixed;top:0;bottom:0;width:64px;z-index:25;border:none;background:transparent;cursor:pointer;color:var(--muted);display:grid;place-items:center;opacity:0;transition:opacity .2s}
+.deck-side svg{width:34px;height:34px}
+.deck-side.prev{left:0}
+.deck-side.next{right:0}
+.deck-side:hover,.deck-side:focus-visible{opacity:1}
+.deck-side:disabled{display:none}
+.deck-spacer{position:absolute;left:0;width:1px;height:1px;pointer-events:none}
+.deck-progress{position:fixed;left:0;top:0;height:3px;background:var(--accent);z-index:30;transition:width .3s ease}
+@media (max-width:700px){.deck-side{display:none!important}.present-btn{padding:7px 12px}}
+@media (prefers-reduced-motion:reduce){.deck-progress,.deck-bar,.deck-side{transition:none}}
+
+/* ================= "sticker pop" theme layer (chapter 1) =================
+   Layout stays the same. Bold ink outlines, hard offset shadows, sticker labels,
+   marker-pen headings and a dotted notebook background. */
+:root{
+  --bg:#F3EFFF; --surface:#FFFFFF; --surface-2:#ECE5FF; --ink:#17132B; --muted:#585074; --line:#D6CCF5;
+  --accent:#6A35FF; --accent-2:#E8307F; --good:#0E9A6E; --signal:#E5372B; --warn:#FFB703;
+  --c1:#6A35FF; --c2:#E8307F; --c3:#0C946C; --c4:#E8590C; --c5:#1883CC;
+  --edge:#17132B; --shadow:#17132B; --dot:#CFC4F2; --marker:#FFD54A; --sticker:#FFD54A; --sticker-ink:#17132B;
+  --display:"Unbounded", "Arial Black", "Segoe UI", system-ui, sans-serif;
+  --body:"Rubik", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"Space Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:16px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#110D22; --surface:#1C1736; --surface-2:#28214D; --ink:#F4F0FF; --muted:#B3A8DB; --line:#3A3166;
+  --accent:#A68BFF; --accent-2:#FF6AAE; --good:#33E0A1; --signal:#FF6B63; --warn:#FFC93D;
+  --c1:#A68BFF; --c2:#FF6AAE; --c3:#33E0A1; --c4:#FF9F55; --c5:#55C8FF;
+  --edge:#7B67D6; --shadow:#05030C; --dot:#2A2350; --marker:#7A4FE0; --sticker:#FFC93D; --sticker-ink:#17132B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#110D22; --surface:#1C1736; --surface-2:#28214D; --ink:#F4F0FF; --muted:#B3A8DB; --line:#3A3166;
+  --accent:#A68BFF; --accent-2:#FF6AAE; --good:#33E0A1; --signal:#FF6B63; --warn:#FFC93D;
+  --c1:#A68BFF; --c2:#FF6AAE; --c3:#33E0A1; --c4:#FF9F55; --c5:#55C8FF;
+  --edge:#7B67D6; --shadow:#05030C; --dot:#2A2350; --marker:#7A4FE0; --sticker:#FFC93D; --sticker-ink:#17132B; color-scheme:dark}
+
+body{background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.3px,transparent 1.5px);background-size:22px 22px;font-size:17.5px}
+h1{font-size:clamp(2rem,4.4vw,3.1rem);font-weight:800;letter-spacing:-.02em;line-height:1.08}
+h2{font-size:clamp(1.35rem,2.6vw,1.85rem);font-weight:700;letter-spacing:-.015em;line-height:1.2;
+   text-decoration:underline;text-decoration-color:var(--marker);text-decoration-thickness:.32em;text-underline-offset:-.12em;text-decoration-skip-ink:none}
+h3{font-family:var(--body);font-weight:600;font-size:1.12rem}
+.lead{color:var(--muted)}
+
+/* sticker labels */
+.eyebrow{display:inline-block;justify-self:start;width:fit-content;background:var(--sticker);color:var(--sticker-ink);border:2px solid var(--edge);border-radius:8px;padding:3px 10px 2px;font-weight:700;font-size:.72rem;letter-spacing:.06em;transform:rotate(-1.5deg);box-shadow:2px 2px 0 var(--shadow)}
+section.board:nth-of-type(even) .eyebrow{transform:rotate(1.2deg)}
+.card .tag{font-weight:700}
+
+/* hero squiggle */
+.hero h1::after,.hero-title h1::after{content:"";display:block;width:150px;height:16px;margin-top:12px;background:var(--accent-2);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 16'%3E%3Cpath d='M3 10c12-10 22 8 34 0s22-10 34 0 22 8 34 0 22-10 34 0' fill='none' stroke='black' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 16'%3E%3Cpath d='M3 10c12-10 22 8 34 0s22-10 34 0 22 8 34 0 22-10 34 0' fill='none' stroke='black' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
+
+/* chunky outlined surfaces */
+.card,.panel,.stat,.q,.check,.lab li,.tbl-wrap,.flowwrap,.tl button,.wk,.steps button{border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow)}
+.card,.panel{border-radius:var(--r)}
+.card.bad{border-color:var(--signal);box-shadow:4px 4px 0 var(--signal)}
+.card.good{border-color:var(--good);box-shadow:4px 4px 0 var(--good)}
+.stat{border-radius:12px}
+.stat .v{font-weight:700}
+.scene,.cv{border:2px solid var(--edge);box-shadow:6px 6px 0 var(--accent-2);border-radius:var(--r)}
+.scene{background:radial-gradient(120% 90% at 30% 20%,var(--surface) 0%,var(--surface-2) 100%)}
+.formula{border:2px dashed var(--accent);background:var(--surface)}
+.quote{border-left:5px solid var(--accent-2)}
+.caption{border-left:5px solid var(--accent-2)}
+table{background:var(--surface)}
+th{background:var(--accent);color:#FFFFFF;font-weight:700}
+.tbl-wrap{border-radius:12px}
+.tok{border:2px solid var(--edge)}
+.tok.on{background:var(--accent-2);border-color:var(--edge);color:#FFFFFF}
+
+/* buttons that feel pressable */
+.chip,.btn,.items button,.q .opts button{border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);font-weight:500;transition:transform .12s ease,box-shadow .12s ease,background .15s}
+.chip:hover,.btn:hover,.items button:hover,.q .opts button:hover{transform:translate(-1px,-1px) rotate(-1deg);box-shadow:4px 4px 0 var(--shadow);filter:none}
+.chip:active,.btn:active,.items button:active,.q .opts button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--shadow)}
+.chip[aria-pressed="true"],.chip[aria-selected="true"]{background:var(--accent-2);border-color:var(--edge);color:#FFFFFF}
+.btn{background:var(--accent);color:#FFFFFF;border-color:var(--edge)}
+.btn.ghost{background:var(--surface);color:var(--ink)}
+.steps button[aria-selected="true"],.wk[aria-pressed="true"],.tl button[aria-pressed="true"]{background:var(--marker);border-color:var(--edge);color:var(--sticker-ink)}
+.steps button[aria-selected="true"] .s,.tl button[aria-pressed="true"] .t{color:var(--sticker-ink)}
+.q.right{border-color:var(--good);box-shadow:4px 4px 0 var(--good)}
+.q.wrong{border-color:var(--signal);box-shadow:4px 4px 0 var(--signal)}
+.check:has(input:checked){box-shadow:4px 4px 0 var(--good)}
+
+/* bars and ladder */
+.bar{border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow);border-radius:12px}
+.ladder div{border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);border-radius:10px;color:#FFFFFF;font-weight:600}
+
+/* part dividers: outlined giant numbers */
+.part-break{border-top:3px dashed var(--edge)}
+.part-break .n{color:var(--surface);-webkit-text-stroke:3px var(--edge);text-shadow:7px 7px 0 var(--accent-2);font-weight:800;font-size:clamp(3.4rem,8vw,6rem)}
+.part-break:nth-of-type(2n) .n{text-shadow:7px 7px 0 var(--c3)}
+
+/* rail */
+.rail .ltitle{font-weight:800;font-size:1rem}
+.rail a{border-radius:999px;border:2px solid transparent;padding:4px 12px}
+.rail a:hover{background:var(--surface);border-color:var(--edge)}
+.rail a.on{background:var(--accent);color:#FFFFFF;border-color:var(--edge);box-shadow:2px 2px 0 var(--shadow)}
+.rail .part{color:var(--accent-2);font-weight:700}
+
+/* next block */
+.next{border:2px solid var(--edge);box-shadow:6px 6px 0 var(--accent-2);background:var(--accent);color:#FFFFFF}
+.next .eyebrow{color:var(--sticker-ink)}
+
+/* presentation controls */
+.present-btn{background:var(--accent-2);color:#FFFFFF;border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);font-weight:600}
+.present-btn:hover{transform:translate(-1px,-1px) rotate(-2deg)}
+.deck-bar{border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);opacity:.6}
+.deck-progress{height:5px;background:var(--accent-2)}
+html.presenting main > .part-break.is-current .n{font-size:9rem;-webkit-text-stroke:4px var(--edge);text-shadow:10px 10px 0 var(--accent-2)}
+html.presenting main > .part-break.is-current h2{font-size:3rem}
+
+@media (prefers-reduced-motion:reduce){.chip:hover,.btn:hover,.items button:hover,.q .opts button:hover,.present-btn:hover{transform:none}}
+html.presenting main{background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.3px,transparent 1.5px);background-size:22px 22px}
+
+.steps button{min-width:0}
+.steps button b{overflow-wrap:anywhere;hyphens:auto}
+@media (max-width:620px){.steps button b{font-size:.8rem!important}}
+
+/* ===== green palette variant: overrides the sticker-pop colours only ===== */
+:root{--bg:#EDF8F0; --surface:#FFFFFF; --surface-2:#DFF2E5; --ink:#10241A; --muted:#4C6656; --line:#C6E6CF; --accent:#0B8A4F; --accent-2:#8BD100; --good:#0B8A4F; --signal:#E5372B; --warn:#FFB703; --c1:#0B8A4F; --c2:#5FA800; --c3:#0F8C8C; --c4:#E8590C; --c5:#6A35FF; --edge:#10241A; --shadow:#10241A; --dot:#BCE0C6; --marker:#FFD54A; --sticker:#FFD54A; --sticker-ink:#10241A; --on-accent:#FFFFFF; --on-accent-2:#10241A;}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0A1912; --surface:#12271C; --surface-2:#1A3727; --ink:#ECFBF1; --muted:#9DC4AB; --line:#2A4D38; --accent:#3EDB8A; --accent-2:#B6F23C; --good:#3EDB8A; --signal:#FF6B63; --warn:#FFC93D; --c1:#3EDB8A; --c2:#B6F23C; --c3:#3FD4D4; --c4:#FF9F55; --c5:#A68BFF; --edge:#3E9E6A; --shadow:#020805; --dot:#173323; --marker:#2E8F55; --sticker:#FFC93D; --sticker-ink:#10241A; --on-accent:#0A1912; --on-accent-2:#0A1912; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0A1912; --surface:#12271C; --surface-2:#1A3727; --ink:#ECFBF1; --muted:#9DC4AB; --line:#2A4D38; --accent:#3EDB8A; --accent-2:#B6F23C; --good:#3EDB8A; --signal:#FF6B63; --warn:#FFC93D; --c1:#3EDB8A; --c2:#B6F23C; --c3:#3FD4D4; --c4:#FF9F55; --c5:#A68BFF; --edge:#3E9E6A; --shadow:#020805; --dot:#173323; --marker:#2E8F55; --sticker:#FFC93D; --sticker-ink:#10241A; --on-accent:#0A1912; --on-accent-2:#0A1912; color-scheme:dark}
+/* class colours (purple filled / grey hollow); green/red are kept for correct/wrong only */
+:root{--k1:#6A35FF;--k2:#7A8A80}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--k1:#B79BFF;--k2:#8FA597}}
+:root[data-theme="dark"]{--k1:#B79BFF;--k2:#8FA597}
+.btn,.rail a.on,div.next,div.next h3,div.next p,th{color:var(--on-accent)}
+.chip[aria-pressed="true"],.chip[aria-selected="true"],.tok.on,.present-btn{color:var(--on-accent-2)}
+</style>
+<style>
+/* ===== Lecture 1 additions: block schedule, AI checks, lab audit form (green tokens only) ===== */
+.blk{display:grid;grid-template-columns:4.6em repeat(5,minmax(0,1fr));gap:8px;align-items:stretch}
+.blk .dh{font-family:var(--mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;font-weight:700}
+.blk .wl{font-family:var(--mono);font-size:.78rem;font-weight:700;color:var(--accent);display:grid;align-content:center}
+.blk .cell{min-width:0;display:grid}
+.blk .lec{display:grid;gap:3px;align-content:start;text-align:left;border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);background:var(--surface);border-radius:12px;padding:8px 10px;cursor:pointer;font-size:.8rem;line-height:1.25;min-height:92px;transition:transform .12s ease,box-shadow .12s ease}
+.blk .lec:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--shadow)}
+.blk .lec b{font-family:var(--mono);font-size:.95rem;color:var(--accent)}
+.blk .lec .t{color:var(--ink)}
+.blk .lec .d{display:none;font-family:var(--mono);font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.blk .lec[aria-pressed="true"]{background:var(--marker);color:var(--sticker-ink)}
+.blk .lec[aria-pressed="true"] b,.blk .lec[aria-pressed="true"] .t,.blk .lec[aria-pressed="true"] .d{color:var(--sticker-ink)}
+.blk .ev{justify-self:start;font-family:var(--mono);font-size:.64rem;font-weight:700;letter-spacing:.03em;background:var(--sticker);color:var(--sticker-ink);border:1.5px solid var(--edge);border-radius:6px;padding:1px 6px;margin-top:2px}
+.blk .free{display:grid;place-items:center;text-align:center;border:2px dashed var(--line);border-radius:12px;padding:8px;font-size:.78rem;color:var(--muted);min-height:92px;background:color-mix(in srgb,var(--surface) 55%,transparent)}
+.blk .free .d{display:none}
+.aichk{font-size:.92rem;color:var(--ink)!important;border-top:2px dashed var(--line);padding-top:8px;margin-top:2px}
+.aichk b{display:block;font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--c3)}
+.labgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+.labgrid .claims{grid-template-columns:repeat(2,minmax(0,1fr))}
+html.presenting .labgrid{grid-template-columns:minmax(0,.8fr) minmax(0,1.5fr)}
+html.presenting .labgrid .claims{grid-template-columns:minmax(0,1fr)}
+.claims{display:grid;gap:8px;margin-top:8px}
+.claims button{display:grid;gap:2px;text-align:left;font:inherit;font-family:var(--body);font-size:.86rem;line-height:1.35;color:var(--ink);background:var(--surface);border:2px solid var(--edge);border-radius:10px;padding:7px 10px;cursor:pointer;box-shadow:2px 2px 0 var(--shadow)}
+.claims button:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--shadow)}
+.claims button[disabled]{opacity:.45;cursor:default;transform:none;box-shadow:none}
+#community .btn[disabled]{opacity:.4;cursor:default;transform:none;box-shadow:none}
+#prT th,#prT td,#mfT th,#mfT td{padding-top:3px;padding-bottom:3px}
+.claims .hint{display:none;font-size:.78rem;color:var(--c3);font-family:var(--mono)}
+.claims.showhints .hint{display:block}
+table.audit{min-width:620px;font-size:.88rem}
+table.audit td{padding:8px;vertical-align:top}
+table.audit td:first-child{font-family:var(--mono);color:var(--muted);width:2.2em;padding-top:14px}
+table.audit textarea,table.audit select{width:100%;font:inherit;font-size:.86rem;color:var(--ink);background:var(--bg);border:2px solid var(--edge);border-radius:8px;padding:6px 8px;resize:vertical}
+table.audit textarea{min-height:3.6em}
+table.audit select{cursor:pointer;min-width:8.5em}
+table.audit td.claim{font-size:.95rem;line-height:1.45;color:var(--ink);padding-top:12px}
+table.audit .step{font-family:var(--mono);font-size:.72rem;color:var(--muted);white-space:nowrap}
+table.audit .vchips{display:flex;flex-wrap:nowrap;gap:6px;width:max-content;padding-right:4px}
+table.audit .vchips .chip{white-space:nowrap}
+table.audit .vchips .chip{font-size:.8rem;padding:4px 10px}
+table.audit tr[data-v="unk"] td{background:color-mix(in srgb,var(--c5) 12%,var(--surface))}
+table.audit tr[data-v="ok"] td{background:color-mix(in srgb,var(--good) 12%,var(--surface))}
+table.audit tr[data-v="part"] td{background:color-mix(in srgb,var(--warn) 16%,var(--surface))}
+table.audit tr[data-v="wrong"] td{background:color-mix(in srgb,var(--signal) 12%,var(--surface))}
+.pf{display:inline-flex;gap:6px;align-items:center;font-size:.88rem;cursor:pointer}
+.pf input{width:18px;height:18px;accent-color:var(--accent)}
+@media (max-width:980px){html.presenting .labgrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){.labgrid .claims{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){
+  .blk{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .blk .dh,.blk .corner{display:none}
+  .blk .wl{grid-column:1/-1;margin-top:6px}
+  .blk .lec .d,.blk .free .d{display:block}
+  .blk .lec,.blk .free{min-height:0}
+}
+/* fix: classification table headers stay readable when a column is highlighted (inherited from Ch1) */
+#clsBoard th.ci,#clsBoard th.cc{color:var(--on-accent)}
+#clsBoard[data-show="ind"] th.ci,#clsBoard[data-show="cls"] th.cc{color:var(--ink)}
+/* segmented bars: truncate labels in narrow segments */
+.bar button.seg span{overflow:hidden;text-overflow:ellipsis}
+/* "new this year" additions and replaced lines */
+.add{border:2px dashed var(--c3);border-radius:var(--r);padding:14px 16px;display:grid;gap:10px;background:color-mix(in srgb,var(--c3) 5%,transparent)}
+.add .addt{font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--c3)}
+.panel .add{margin-top:14px}
+.was del{color:var(--muted);text-decoration-thickness:1.5px}
+.repl{display:inline-block;font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.03em;color:var(--sticker-ink);background:var(--sticker);border:1.5px solid var(--edge);border-radius:6px;padding:0 6px;margin-top:2px}
+
+/* hero: data -> pattern -> knowledge (2D) */
+#aiHeroScene canvas{cursor:crosshair}
+#aiHeroScene .hint{top:8px;bottom:auto}
+.hero-rule{position:absolute;display:grid;gap:3px;background:var(--surface);border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow);border-radius:12px;padding:10px 14px;font-size:.95rem;line-height:1.35}
+.hero-rule .k{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.hero-rule b{color:var(--accent)}
+.hero-rule .n{font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+.hero-tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-family:var(--mono);font-size:.74rem;padding:4px 8px;border-radius:6px;white-space:nowrap}
+
+.hero-title .instructor{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin:0}
+.hero-title .instructor .k{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.hero-title .instructor .name{font-weight:600;font-size:1.05rem;color:var(--ink);border:2px var(--muted);border-radius:8px;padding:2px 10px}
+
+.title-board{padding-block:10vh 8vh}
+.hero-title{display:grid;justify-items:center;text-align:center;gap:20px;max-width:920px;margin:0 auto}
+.hero-title .eyebrow{justify-self:center}
+.hero-title h1{font-size:clamp(2.4rem,6.2vw,4.6rem)}
+.hero-title h1::after{margin-left:auto;margin-right:auto}
+.hero-title .lead{max-width:52ch}
+.hero-title .instructor{justify-content:center;margin-top:6px}
+
+/* ================= Lecture 2 components ================= */
+.qlist{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.dq{display:grid;gap:6px;align-content:start;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:2px solid var(--edge);border-radius:12px;padding:12px;cursor:pointer;box-shadow:3px 3px 0 var(--shadow)}
+.dq .n{font-family:var(--display);font-weight:800;font-size:1.6rem;color:var(--accent)}
+.dq b{font-size:.98rem;line-height:1.3}
+.dq .when{font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;color:var(--good)}
+.dq.later{background:var(--surface-2)}
+.dq.later .when{color:var(--muted)}
+.dq[aria-pressed="true"]{background:var(--marker);color:var(--sticker-ink)}
+.dq[aria-pressed="true"] .n,.dq[aria-pressed="true"] .when{color:var(--sticker-ink)}
+.qgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.sel{font:inherit;font-size:.9rem;border:2px solid var(--edge);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 10px;max-width:100%}
+.txt{font:inherit;font-size:.95rem;width:100%;border:2px solid var(--edge);background:var(--surface);color:var(--ink);border-radius:8px;padding:8px 10px}
+.lbl3.lq{color:var(--c4);font-weight:700;font-size:.82rem;z-index:3}
+.lbl3.ln{color:var(--c1);font-weight:600;z-index:2}
+ol.nn{margin:6px 0;padding-left:1.4em;font-family:var(--mono);font-size:.85rem;display:grid;gap:1px}
+table.pick th,table.pick td,table.pick tr{cursor:pointer}
+table tr.sub td{color:var(--muted);font-size:.8rem}
+.vecrow{display:grid;grid-template-columns:5.6em repeat(var(--n,10),minmax(0,1fr));gap:4px;align-items:center}
+.vecrow .nm{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.vecrow .hd{font-family:var(--mono);font-size:.66rem;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bit,.vecrow input{min-width:0;width:100%;font-family:var(--mono);font-size:.95rem;text-align:center;border:2px solid var(--edge);background:var(--surface);color:var(--ink);border-radius:6px;padding:6px 0;cursor:pointer}
+.vecrow input{cursor:text;-moz-appearance:textfield;appearance:textfield}
+.vecrow input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.bit.on{background:var(--accent);color:#FFFFFF}
+.bit.zz{background:var(--surface-2);color:var(--muted)}
+.mcell{font-family:var(--mono);font-size:.66rem;text-align:center;border-radius:4px;padding:3px 0}
+.m11{background:color-mix(in srgb,var(--good) 28%,var(--surface))}
+.m00{background:var(--surface-2);color:var(--muted)}
+.m10,.m01{background:color-mix(in srgb,var(--signal) 20%,var(--surface))}
+.bag{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-family:var(--mono);font-size:.95rem}
+.bag span{border:2px solid var(--edge);background:var(--surface);border-radius:999px;padding:3px 10px}
+.bag span.br{border:none;background:none;padding:0;font-size:1.4rem;color:var(--muted)}
+.bag span b{color:var(--accent)}
+.words{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;min-height:4.6em}
+.wd{display:grid;gap:4px;justify-items:center}
+.wd b{font-size:1.5rem;font-weight:600;border-bottom:3px solid transparent;padding:0 2px}
+.wd.ch b{color:var(--c4);border-color:var(--c4)}
+.wd i{font-style:normal;font-family:var(--mono);font-size:.7rem;color:var(--muted);max-width:9em;text-align:center}
+.seq{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-family:var(--mono);font-size:.85rem;margin:6px 0}
+.seq span{border:2px solid var(--c1);border-radius:6px;padding:3px 8px}
+svg.traj{width:100%;height:auto;display:block}
+#tmSvg,#weSvg,#prMini{width:100%;height:auto;display:block;overflow:hidden}
+#coWork,#prWork,#euWork,#mWork{overflow-wrap:anywhere}
+#weSvg{max-width:360px;justify-self:center}
+.fig{margin:0;display:grid;gap:6px;justify-items:center}
+.fig img{width:100%;height:auto;max-height:52vh;object-fit:contain;background:#FFFFFF;border:2px solid var(--edge);border-radius:12px;box-shadow:4px 4px 0 var(--shadow)}
+.fig figcaption{font-weight:600;font-size:.95rem}
+.mats{display:grid;grid-template-columns:minmax(0,.7fr) repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+svg.venn{width:min(320px,100%);height:auto;justify-self:center;display:block}
+.pair{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:1rem}
+.pair .mono{background:var(--surface);border:2px solid var(--edge);border-radius:8px;padding:6px 10px}
+.pair .vs{font-family:var(--mono);color:var(--muted)}
+.ladder5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.ladder5 button{display:grid;gap:2px;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:2px solid var(--edge);border-radius:10px;padding:10px 12px;cursor:pointer;box-shadow:3px 3px 0 var(--shadow);min-width:0}
+.ladder5 button .s{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.ladder5 button b{overflow-wrap:anywhere}
+.ladder5 button[aria-selected="true"]{background:var(--marker);color:var(--sticker-ink)}
+.strip-row{display:grid;grid-template-columns:6.5em minmax(0,1fr);gap:4px 10px;align-items:center}
+.strip-row .note{grid-column:2}
+canvas.strip{width:100%;height:46px;display:block;border-radius:6px}
+.res{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.res li{display:grid;grid-template-columns:minmax(0,1fr) 3.4em;gap:8px;align-items:center;border:2px solid var(--edge);background:var(--surface);border-radius:8px;padding:7px 10px;font-size:.9rem;position:relative;overflow:hidden}
+.res li i{position:absolute;left:0;bottom:0;height:4px;background:var(--accent)}
+.res li .sc{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.res li.zero{color:var(--muted)}
+.hitrow{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:start;cursor:pointer}
+.hitrow input{width:17px;height:17px;margin-top:2px;accent-color:var(--good)}
+.stepper{display:inline-flex;align-items:center;gap:8px}
+.stepper button{width:28px;height:28px;border:2px solid var(--edge);border-radius:8px;background:var(--surface);color:var(--ink);font:600 1rem var(--body);cursor:pointer;box-shadow:2px 2px 0 var(--shadow)}
+.stepper b{min-width:1.2em;text-align:center}
+#cvBias{aspect-ratio:4/3}
+table th.hl{background:var(--marker);color:var(--sticker-ink)}
+#topSl input{width:100%}
+#topSl>div{min-width:0}
+#dense .side{min-width:0}
+#dense .sel{width:100%;min-width:0}
+.prmini{display:grid;gap:4px;justify-items:center;align-content:start}
+#prMini{max-width:320px}
+#spScene .lbl3{font-size:.64rem;opacity:.65}
+#spScene .lbl3.lq,#spScene .lbl3.ln{opacity:1}
+.tfgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px;align-items:start}
+#cvLr{aspect-ratio:3/2}
+.lab li .mono{font-family:var(--mono)}
+@media (max-width:900px){
+  .qlist{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ladder5{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:620px){
+  .qlist,.qgrid,.mats{grid-template-columns:minmax(0,1fr)}
+  .vecrow{grid-template-columns:3.6em repeat(var(--n,10),minmax(0,1fr));gap:2px}
+  .bit,.vecrow input{font-size:.78rem;padding:5px 0;border-width:1px}
+  .wd b{font-size:1.15rem}
+  .strip-row{grid-template-columns:minmax(0,1fr)}
+  .strip-row .note{grid-column:1}
+  .stats[style]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .tfgrid{grid-template-columns:minmax(0,1fr)}
+}
+/* ================= Lecture 11 ================= */
+#lrCtl .card{padding:10px 14px}
+#llmStats .v{font-size:.95rem;line-height:1.5}
+#mfEx,#ucWork,#icWork{overflow-wrap:anywhere}
+#recQ .q{grid-template-columns:minmax(0,1fr)!important;display:grid;gap:8px}
+#recQ .q .opts{justify-content:flex-start}
+</style>
+
+<div class="page">
+<nav class="rail" aria-label="Lecture sections">
+  <div class="course">COMP7103 Data Mining</div>
+  <div class="ltitle">Lecture 11 · Graphs and recommender systems</div>
+  <ol id="toc"></ol>
+  <p class="keys">Press <kbd>←</kbd> <kbd>→</kbd> to step through boards while lecturing.</p>
+</nav>
+
+<main>
+<!-- ============ OPENING ============ -->
+<!-- source: title board in the style of Lecture 1 -->
+<section class="board title-board" id="opening" data-part="Opening" data-nav="Title">
+  <div class="hero-title">
+    <span class="eyebrow">COMP7103B Data Mining · Lecture 11</span>
+    <h1>Graphs and <br/> Recommender Systems</h1>
+    <p class="lead">Which nodes matter, which belong together, <br/> and what a user is likely to want next.</p>
+    <p class="instructor"><span class="name">Prof. Bo Dai</span></p>
+    <p class="instructor"><span class="name">School of Computing and Data Science, The University of Hong Kong</span></p>
+  </div>
+</section>
+
+<!-- source: new (session format, same as Lectures 1-10) -->
+<section class="board" id="plan" data-part="Opening" data-nav="Today's plan">
+  <span class="eyebrow">One 2.5-hour session</span>
+  <h2>Today's Plan</h2>
+  <p class="lead">Every lecture in the block has the same shape. Click a part of the bar.</p>
+  <div class="bar" id="planBar">
+    <button class="seg" style="flex-basis:43.3%;background:var(--c1)" aria-pressed="true"><b>~65 min</b><span>Classical core</span></button>
+    <button class="seg" style="flex-basis:20%;background:var(--c3)" aria-pressed="false"><b>~30 min</b><span>AI layer</span></button>
+    <button class="seg" style="flex-basis:6.7%;background:var(--muted);padding:0 5px" aria-pressed="false"><b>10</b><span>Break</span></button>
+    <button class="seg" style="flex-basis:30%;background:var(--c4)" aria-pressed="false"><b>~45 min</b><span>Lab</span></button>
+  </div>
+  <div class="panel" id="planDetail"></div>
+  <div class="grid3">
+    <a class="card" href="#graphs" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c1)">Part 1</span><h3>Graph mining</h3><p>Degree, paths, PageRank and personalized PageRank; communities.</p></a>
+    <a class="card" href="#recwhat" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c2)">Part 2</span><h3>Recommender systems</h3><p>What a recommender does, the user–item matrix, collaborative filtering, personalized PageRank on a user–film graph, matrix factorisation.</p></a>
+    <a class="card" href="#evalrec" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c3)">Part 3</span><h3>Evaluating recommenders</h3><p>Time-based splits, precision@k, recall@k, coverage, cold start.</p></a>
+    <a class="card" href="#node2vec" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c5)">Part 4 · AI layer</span><h3>Embeddings and LLMs</h3><p>Graph embeddings, text embeddings for cold start, LLM recommenders.</p></a>
+    <a class="card" href="#labbrief" style="text-decoration:none;color:inherit"><span class="tag" style="color:var(--c4)">Part 5 · Lab</span><h3>Recommend movies two ways</h3><p>Item-based CF vs an embedding recommender, scored offline.</p></a>
+  </div>
+</section>
+
+<!-- ============ PART 1 ============ -->
+<div class="part-break"><span class="n">01</span><span class="eyebrow">Part 1</span><h2>Graph Mining</h2></div>
+
+<!-- source: data.pptx slide 17 (graph data), new (degree, paths) -->
+<section class="board" id="graphs" data-part="Part 1 · Graph mining" data-nav="Degree and paths">
+  <span class="eyebrow">Graph data · click two papers</span>
+  <h2>Graphs: Degree and Paths</h2>
+  <p class="lead">Examples of graph data: the Web, social networks, citation networks, knowledge graphs, user-item interactions. Here, a small citation graph: an arrow from A to B means "paper A cites paper B".</p>
+  <div class="play">
+    <canvas class="cv" id="cvG" aria-label="A citation graph of nine papers"></canvas>
+    <div class="side">
+      <div class="card"><span class="tag" style="color:var(--c1)">Degree</span><p><b>In-degree</b>: how many papers cite it. <b>Out-degree</b>: how many papers it cites.</p></div>
+      <div class="stats" id="gStats"></div>
+      <div class="card"><span class="tag" style="color:var(--c3)">Path</span><p id="gPath">Click a second paper to see the shortest path of citations between them.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: data.pptx slides 17-19 (PageRank, PPR), recap of Lecture 2 -->
+<section class="board" id="pagerank" data-part="Part 1 · Graph mining" data-nav="PageRank and PPR">
+  <span class="eyebrow">Recap from Lecture 2 · switch the mode</span>
+  <h2>PageRank and Personalized PageRank</h2>
+  <p class="lead">How to identify "important" nodes? <b>PageRank</b> (PR): a node is important if important nodes link to it. How to measure the "similarity" (or "relatedness") of nodes? <b>Personalized PageRank</b> (PPR): v is related to a start node s if many short paths of links lead from s to v.</p>
+  <div class="grid2" style="align-items:stretch">
+    <div class="formula" style="margin:0"><span class="cvl" style="margin:0">PageRank</span><math display="block"><mrow><mi>PR</mi><mo stretchy="false">(</mo><msub><mi>p</mi><mi>i</mi></msub><mo stretchy="false">)</mo><mo>=</mo><mfrac><mrow><mn>1</mn><mo>−</mo><mi>d</mi></mrow><mi>N</mi></mfrac><mo>+</mo><mi>d</mi><mo>×</mo><munder><mo>∑</mo><mrow><msub><mi>p</mi><mi>j</mi></msub><mo>∈</mo><mi>M</mi><mo stretchy="false">(</mo><msub><mi>p</mi><mi>i</mi></msub><mo stretchy="false">)</mo></mrow></munder><mfrac><mrow><mi>PR</mi><mo stretchy="false">(</mo><msub><mi>p</mi><mi>j</mi></msub><mo stretchy="false">)</mo></mrow><mrow><mi>L</mi><mo stretchy="false">(</mo><msub><mi>p</mi><mi>j</mi></msub><mo stretchy="false">)</mo></mrow></mfrac></mrow></math></div>
+    <div class="formula" style="margin:0"><span class="cvl" style="margin:0">Personalized PageRank from a start paper s</span><math display="block"><mrow><msub><mi>PPR</mi><mi>s</mi></msub><mo stretchy="false">(</mo><msub><mi>p</mi><mi>i</mi></msub><mo stretchy="false">)</mo><mo>=</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>d</mi><mo stretchy="false">)</mo><mo>×</mo><mrow><mo>{</mo><mtable><mtr><mtd><mn>1</mn></mtd><mtd><mtext>&#8195;if&#8194;</mtext><msub><mi>p</mi><mi>i</mi></msub><mo>=</mo><mi>s</mi></mtd></mtr><mtr><mtd><mn>0</mn></mtd><mtd><mtext>&#8195;otherwise</mtext></mtd></mtr></mtable></mrow><mo>+</mo><mi>d</mi><mo>×</mo><munder><mo>∑</mo><mrow><msub><mi>p</mi><mi>j</mi></msub><mo>∈</mo><mi>M</mi><mo stretchy="false">(</mo><msub><mi>p</mi><mi>i</mi></msub><mo stretchy="false">)</mo></mrow></munder><mfrac><mrow><msub><mi>PPR</mi><mi>s</mi></msub><mo stretchy="false">(</mo><msub><mi>p</mi><mi>j</mi></msub><mo stretchy="false">)</mo></mrow><mrow><mi>L</mi><mo stretchy="false">(</mo><msub><mi>p</mi><mi>j</mi></msub><mo stretchy="false">)</mo></mrow></mfrac></mrow></math></div>
+  </div>
+  <p class="note" style="margin:0"><i>N</i> = total number of papers; <i>d</i> = damping factor (usually around 0.85): the probability of following a citation rather than jumping to a random paper; <i>M</i>(<i>p<sub>i</sub></i>) = papers citing <i>p<sub>i</sub></i>; <i>L</i>(<i>p<sub>j</sub></i>) = number of papers <i>p<sub>j</sub></i> cites. A paper's score depends on the scores of the papers citing it, divided by their number of outgoing links; repeat until the scores stabilize (converge). <b>PPR</b> changes only the random jump: the reader always jumps back to the start paper s (here P9). So PPR<sub>s</sub>(v) = how often a reader who keeps returning to s visits v: high for papers reachable from s by many short citation paths, 0 for papers s cannot reach (P6, P8).</p>
+  <div class="play">
+    <canvas class="cv" id="cvPR" style="aspect-ratio:16/9" aria-label="The citation graph with nodes sized by PageRank"></canvas>
+    <div class="side">
+      <div class="row" style="flex-wrap:wrap;align-items:center"><span role="group" aria-label="Mode" style="display:flex;gap:8px"><button class="chip" data-pm="pr" aria-pressed="true">PageRank</button><button class="chip" data-pm="ppr" aria-pressed="false">PPR from P9</button></span><label for="prD" class="note" style="margin:0 0 0 6px">d = <b id="prDv">0.85</b></label><input type="range" id="prD" min="0.5" max="0.95" step="0.05" value="0.85" style="flex:1;min-width:90px"></div>
+      <div class="tbl-wrap"><table class="sm num" id="prT"></table></div>
+      <p class="note" id="prNote"></p>
+    </div>
+  </div>
+</section>
+
+<!-- source: new (spec: community detection, cut to 5 min) -->
+<section class="board" id="community" data-part="Part 1 · Graph mining" data-nav="Communities">
+  <span class="eyebrow">Community detection · step through</span>
+  <h2>Communities: Modularity and Label Propagation</h2>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">Modularity</span><p>A community has more edges inside it than expected by chance. Modularity Q compares the edges inside communities with what random wiring of the same degrees would give:</p><math display="block"><mrow><mi>Q</mi><mo>=</mo><mfrac><mn>1</mn><mrow><mn>2</mn><mi>m</mi></mrow></mfrac><munder><mo>∑</mo><mrow><mi>i</mi><mo>,</mo><mi>j</mi></mrow></munder><mrow><mo>[</mo><msub><mi>A</mi><mi>ij</mi></msub><mo>−</mo><mfrac><mrow><msub><mi>k</mi><mi>i</mi></msub><msub><mi>k</mi><mi>j</mi></msub></mrow><mrow><mn>2</mn><mi>m</mi></mrow></mfrac><mo>]</mo></mrow><mi>δ</mi><mo stretchy="false">(</mo><msub><mi>c</mi><mi>i</mi></msub><mo>,</mo><msub><mi>c</mi><mi>j</mi></msub><mo stretchy="false">)</mo></mrow></math><p style="font-size:.88rem">A<sub>ij</sub> = 1 if nodes i and j are linked, else 0; k<sub>i</sub> = degree of i; m = number of edges; k<sub>i</sub>k<sub>j</sub>/2m = expected number of edges between i and j under random wiring; δ(c<sub>i</sub>, c<sub>j</sub>) = 1 if i and j are in the same community, else 0. Q ranges up to 1; above about 0.3 suggests real community structure.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Label propagation</span><p>Start with every node in its own community. Repeatedly, each node takes the label that most of its neighbours have. Stop when no label changes.</p><p style="margin-top:6px"><b>Label propagation finds the communities; Q scores them</b>, the way SSE scores a clustering (Lecture 9). Higher Q = better partition.</p></div>
+  </div>
+  <div class="play">
+    <canvas class="cv" id="cvLP" aria-label="A friendship graph coloured by community label"></canvas>
+    <div class="side">
+      <div class="btnrow"><button class="btn" id="lpStep">Next node</button><button class="btn ghost" id="lpRound">Finish the round</button><button class="btn ghost" id="lpRun">Run to the end</button><button class="btn ghost" id="lpReset">Reset</button></div>
+      <div class="stats"><div class="stat"><div class="k">round</div><div class="v" id="lpIt">1</div></div><div class="stat"><div class="k">communities</div><div class="v" id="lpC">–</div></div><div class="stat"><div class="k">modularity Q</div><div class="v" id="lpQ">–</div></div><div class="stat"><div class="k" id="lpChK">changed in round 1</div><div class="v" id="lpCh">–</div></div></div>
+      <div class="verdict small" id="lpLog"></div>
+      <p class="note">Each node shows its label under it (L1 = the label that started at node 1). Hollow: a label no other node has yet. In each round the nodes are visited in a random order; ties between labels are broken at random.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PART 2 ============ -->
+<div class="part-break"><span class="n">02</span><span class="eyebrow">Part 2</span><h2>Recommender Systems</h2></div>
+
+<!-- source: new (instructor request 2026-10-29: introduce recommender systems before the user-item matrix); query recommendation from introduction.pptx slide 41 -->
+<section class="board" id="recwhat" data-part="Part 2 · Recommender systems" data-nav="What is a recommender system?">
+  <span class="eyebrow">Recommender systems · the idea</span>
+  <h2>What Is a Recommender System?</h2>
+  <p class="lead">A <b>recommender system</b> suggests items a user is likely to want, out of far more items than anyone could look through: films, products, songs, news, people. It learns from past behaviour: what this user, and users like them, have rated, bought or watched.</p>
+  <div class="grid4">
+    <div class="card"><span class="tag" style="color:var(--c5)">Streaming</span><p>“Because you watched …”: the next film or series.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c5)">Online shop</span><p>“Customers who bought this also bought …”.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c5)">Social network</span><p>“People you may know”: personalized PageRank from Part 1 is one way to find them.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c5)">Search</span><p>Query recommendation (Lecture 1): related queries for a vague search.</p></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c3)">Collaborative filtering · this part</span><p>Use other users' behaviour: people who liked what you liked also liked X. User-based, item-based, matrix factorisation.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c4)">Content-based · Part 4</span><p>Use what the items are: genre, description, text embeddings. Works for a new item that nobody has rated yet.</p></div>
+  </div>
+  <p class="note">As a data-mining task: predict the empty cells of the user–item matrix (next board), then recommend each user the top k items they have not seen.</p>
+</section>
+
+<!-- source: new (spec: user-item matrix, sparsity, feedback types) -->
+<section class="board" id="uimatrix" data-part="Part 2 · Recommender systems" data-nav="The user-item matrix">
+  <span class="eyebrow">Recommender systems</span>
+  <h2>The User–Item Matrix</h2>
+  <p class="lead">Rows are users, columns are items, and each cell is a user's feedback on an item. In real systems most cells are empty, often more than 99%, because each user rates only a tiny share of the items: that is <b>sparsity</b>. Recommending means filling in the empty cells.</p>
+  <div class="play">
+    <div class="tbl-wrap"><table class="sm num" id="uiT"></table></div>
+    <div class="side">
+      <div class="stats" id="uiStats"></div>
+      <div class="card"><span class="tag" style="color:var(--c1)">Explicit feedback</span><p>Users say what they think: star ratings, likes. Clear, but rare.</p></div>
+      <div class="card"><span class="tag" style="color:var(--c3)">Implicit feedback</span><p>Behaviour we observe: views, clicks, purchases, watch time. Plentiful, but a missing cell does not mean "dislike".</p></div>
+    </div>
+  </div>
+  <p class="note">Six users rating eight films, 1 to 5 stars (· = not rated). An example made up for this lecture, kept small so you can follow it by hand: only 40% of its cells are empty.</p>
+</section>
+
+<!-- source: new (spec: user-based CF by hand) -->
+<section class="board" id="usercf" data-part="Part 2 · Recommender systems" data-nav="User-based CF">
+  <span class="eyebrow">Collaborative filtering · pick a user and a film</span>
+  <h2>User-Based Collaborative Filtering</h2>
+  <p class="lead">Find users who rated like this user, then predict the missing rating from theirs.</p>
+  <div class="grid2" style="align-items:stretch">
+    <div class="formula" style="margin:0"><span class="cvl" style="margin:0">Prediction</span><math display="block"><mrow><msub><mover><mi>r</mi><mo>^</mo></mover><mrow><mi>u</mi><mo>,</mo><mi>i</mi></mrow></msub><mo>=</mo><mfrac><mrow><munder><mo>∑</mo><mrow><mi>v</mi><mo>∈</mo><msub><mi>N</mi><mi>k</mi></msub><mo stretchy="false">(</mo><mi>u</mi><mo>,</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></munder><mi>sim</mi><mo stretchy="false">(</mo><mi>u</mi><mo>,</mo><mi>v</mi><mo stretchy="false">)</mo><msub><mi>r</mi><mrow><mi>v</mi><mo>,</mo><mi>i</mi></mrow></msub></mrow><mrow><munder><mo>∑</mo><mrow><mi>v</mi><mo>∈</mo><msub><mi>N</mi><mi>k</mi></msub><mo stretchy="false">(</mo><mi>u</mi><mo>,</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></munder><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>sim</mi><mo stretchy="false">(</mo><mi>u</mi><mo>,</mo><mi>v</mi><mo stretchy="false">)</mo><mo stretchy="false" lspace="0" rspace="0">|</mo></mrow></mfrac></mrow></math><p class="note" style="margin:0">N<sub>k</sub>(u, i) = the k users most similar to u who rated i, with sim &gt; 0.</p></div>
+    <div class="formula" style="margin:0"><span class="cvl" style="margin:0">Cosine similarity</span><math display="block"><mrow><msub><mi>sim</mi><mi>cos</mi></msub><mo stretchy="false">(</mo><mi>u</mi><mo>,</mo><mi>v</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mrow><munder><mo>∑</mo><mi>i</mi></munder><msub><mi>r</mi><mrow><mi>u</mi><mo>,</mo><mi>i</mi></mrow></msub><msub><mi>r</mi><mrow><mi>v</mi><mo>,</mo><mi>i</mi></mrow></msub></mrow><mrow><msqrt><mrow><munder><mo>∑</mo><mi>i</mi></munder><msubsup><mi>r</mi><mrow><mi>u</mi><mo>,</mo><mi>i</mi></mrow><mn>2</mn></msubsup></mrow></msqrt><msqrt><mrow><munder><mo>∑</mo><mi>i</mi></munder><msubsup><mi>r</mi><mrow><mi>v</mi><mo>,</mo><mi>i</mi></mrow><mn>2</mn></msubsup></mrow></msqrt></mrow></mfrac></mrow></math><p class="note" style="margin:0">Sums over all films; a missing rating counts as 0.</p></div>
+    <div class="formula" style="margin:0;grid-column:1/-1"><span class="cvl" style="margin:0">Pearson correlation</span><math display="block"><mrow><msub><mi>sim</mi><mi>Pearson</mi></msub><mo stretchy="false">(</mo><mi>u</mi><mo>,</mo><mi>v</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mrow><munder><mo>∑</mo><mrow><mi>i</mi><mo>∈</mo><msub><mi>I</mi><mrow><mi>u</mi><mi>v</mi></mrow></msub></mrow></munder><mo stretchy="false">(</mo><msub><mi>r</mi><mrow><mi>u</mi><mo>,</mo><mi>i</mi></mrow></msub><mo>−</mo><msub><mover><mi>r</mi><mo>¯</mo></mover><mi>u</mi></msub><mo stretchy="false">)</mo><mo stretchy="false">(</mo><msub><mi>r</mi><mrow><mi>v</mi><mo>,</mo><mi>i</mi></mrow></msub><mo>−</mo><msub><mover><mi>r</mi><mo>¯</mo></mover><mi>v</mi></msub><mo stretchy="false">)</mo></mrow><mrow><msqrt><mrow><munder><mo>∑</mo><mrow><mi>i</mi><mo>∈</mo><msub><mi>I</mi><mrow><mi>u</mi><mi>v</mi></mrow></msub></mrow></munder><msup><mrow><mo stretchy="false">(</mo><msub><mi>r</mi><mrow><mi>u</mi><mo>,</mo><mi>i</mi></mrow></msub><mo>−</mo><msub><mover><mi>r</mi><mo>¯</mo></mover><mi>u</mi></msub><mo stretchy="false">)</mo></mrow><mn>2</mn></msup></mrow></msqrt><msqrt><mrow><munder><mo>∑</mo><mrow><mi>i</mi><mo>∈</mo><msub><mi>I</mi><mrow><mi>u</mi><mi>v</mi></mrow></msub></mrow></munder><msup><mrow><mo stretchy="false">(</mo><msub><mi>r</mi><mrow><mi>v</mi><mo>,</mo><mi>i</mi></mrow></msub><mo>−</mo><msub><mover><mi>r</mi><mo>¯</mo></mover><mi>v</mi></msub><mo stretchy="false">)</mo></mrow><mn>2</mn></msup></mrow></msqrt></mrow></mfrac></mrow></math><p class="note" style="margin:0">I<sub>uv</sub> = films both rated; r̄<sub>u</sub> = u's mean rating over I<sub>uv</sub>.</p></div>
+  </div>
+  <div class="play">
+    <div class="side">
+      <div class="row"><span class="lab-s">User</span><select class="sel" id="ucU" aria-label="User"></select><span class="lab-s">Film</span><select class="sel" id="ucI" aria-label="Film"></select><span class="lab-s">k</span><select class="sel" id="ucK" aria-label="k"><option>1</option><option selected>2</option><option>3</option></select></div>
+      <div class="row" role="group" aria-label="Similarity"><span class="lab-s">Similarity</span><button class="chip" data-sm="cos" aria-pressed="true">cosine (missing = 0)</button><button class="chip" data-sm="pear" aria-pressed="false">Pearson (co-rated films)</button></div>
+      <div class="tbl-wrap"><table class="sm num" id="ucT"></table></div>
+    </div>
+    <div class="side">
+      <div class="verdict ok small mono" id="ucWork"></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: new (spec: item-based CF by hand) -->
+<section class="board" id="itemcf" data-part="Part 2 · Recommender systems" data-nav="Item-based CF">
+  <span class="eyebrow">Collaborative filtering · pick a user and a film</span>
+  <h2>Item-Based Collaborative Filtering</h2>
+  <p class="lead">Find films rated like this film, then predict from the user's own ratings of them.</p>
+  <div class="grid2" style="align-items:stretch">
+    <div class="formula" style="margin:0"><span class="cvl" style="margin:0">Prediction</span><math display="block"><mrow><msub><mover><mi>r</mi><mo>^</mo></mover><mrow><mi>u</mi><mo>,</mo><mi>i</mi></mrow></msub><mo>=</mo><mfrac><mrow><munder><mo>∑</mo><mrow><mi>j</mi><mo>∈</mo><mrow><msub><mi>N</mi><mi>k</mi></msub><mrow><mo stretchy="false">(</mo><mi>i</mi><mo>;</mo><mi>u</mi><mo stretchy="false">)</mo></mrow></mrow></mrow></munder><mrow><mi>sim</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo stretchy="false">)</mo></mrow></mrow><msub><mi>r</mi><mrow><mi>u</mi><mo>,</mo><mi>j</mi></mrow></msub></mrow><mrow><munder><mo>∑</mo><mrow><mi>j</mi><mo>∈</mo><mrow><msub><mi>N</mi><mi>k</mi></msub><mrow><mo stretchy="false">(</mo><mi>i</mi><mo>;</mo><mi>u</mi><mo stretchy="false">)</mo></mrow></mrow></mrow></munder><mrow><mo stretchy="false" lspace="0" rspace="0">|</mo><mrow><mi>sim</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false" lspace="0" rspace="0">|</mo></mrow></mrow></mfrac></mrow></math><p class="note" style="margin:0">N<sub>k</sub>(i; u) = the k films most similar to i that u rated, with sim &gt; 0.</p></div>
+    <div class="formula" style="margin:0"><span class="cvl" style="margin:0">Cosine similarity between film columns</span><math display="block"><mrow><mrow><mi>sim</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mfrac><mrow><munder><mo>∑</mo><mi>u</mi></munder><msub><mi>r</mi><mrow><mi>u</mi><mo>,</mo><mi>i</mi></mrow></msub><msub><mi>r</mi><mrow><mi>u</mi><mo>,</mo><mi>j</mi></mrow></msub></mrow><mrow><msqrt><mrow><munder><mo>∑</mo><mi>u</mi></munder><msubsup><mi>r</mi><mrow><mi>u</mi><mo>,</mo><mi>i</mi></mrow><mn>2</mn></msubsup></mrow></msqrt><msqrt><mrow><munder><mo>∑</mo><mi>u</mi></munder><msubsup><mi>r</mi><mrow><mi>u</mi><mo>,</mo><mi>j</mi></mrow><mn>2</mn></msubsup></mrow></msqrt></mrow></mfrac></mrow></math><p class="note" style="margin:0">Sums over all users; a missing rating counts as 0.</p></div>
+  </div>
+  <div class="play">
+    <div class="side">
+      <div class="row"><span class="lab-s">User</span><select class="sel" id="icU" aria-label="User"></select><span class="lab-s">Film</span><select class="sel" id="icI" aria-label="Film"></select><span class="lab-s">k</span><select class="sel" id="icK" aria-label="k"><option>1</option><option selected>2</option><option>3</option></select></div>
+      <div class="tbl-wrap"><table class="sm num" id="icT"></table></div>
+    </div>
+    <div class="side">
+      <div class="verdict ok small mono" id="icWork"></div>
+      <div class="card"><span class="tag" style="color:var(--c3)">Why item-based?</span><p>Item similarities change slowly and can be computed in advance, and there are usually far fewer items than users.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: new (instructor request 2026-10-29: give PPR a job in Part 2); random walk with restart on the user-film graph, ratings from the user-item matrix board -->
+<section class="board" id="pprrec" data-part="Part 2 · Recommender systems" data-nav="Recommending with PPR">
+  <span class="eyebrow">Personalized PageRank from Part 1 · pick a user</span>
+  <h2>Recommending with Personalized PageRank</h2>
+  <p class="lead">Turn the ratings into a graph: users on one side, films on the other, and an edge where a user liked a film (rated it 3★ or more; 1★ and 2★ give no edge). With implicit feedback (clicks, views, purchases), each interaction is an edge directly. Then run PPR from the user with the Part 1 formula: the walk goes user → a film they liked → another user who liked it → that user's films, picking one of the L edges at random each step, and keeps jumping back to the start. Recommend the unseen films with the highest PPR.</p>
+  <div class="play">
+    <div><p class="note" style="margin:0 0 6px">Edge: liked (3★ or more) · node size: PPR · orange: the start user · yellow ring: PPR's pick · dashed: other unseen films</p>
+    <canvas class="cv" id="cvPRR" style="aspect-ratio:16/10" aria-label="User-film graph with node size by personalized PageRank"></canvas></div>
+    <div class="side">
+      <div class="tabs" id="prrU"></div>
+      <div class="tbl-wrap"><table class="sm num" id="prrT"></table></div>
+      <p class="caption" id="prrCap"></p>
+    </div>
+  </div>
+</section>
+
+<!-- source: new (spec: matrix factorisation, intuition plus a small numeric example) -->
+<section class="board" id="mf" data-part="Part 2 · Recommender systems" data-nav="Matrix factorisation">
+  <span class="eyebrow">Matrix factorisation · train it</span>
+  <h2>Matrix Factorisation</h2>
+  <p class="lead">Give every user a vector p<sub>u</sub> and every film a vector q<sub>i</sub> of k latent factors, predict a rating as their dot product, and learn the vectors from the known ratings.</p>
+  <div class="grid2" style="align-items:stretch">
+    <div class="formula" style="margin:0"><span class="cvl" style="margin:0">Prediction</span><math display="block"><mrow><msub><mover><mi>r</mi><mo>^</mo></mover><mrow><mi>u</mi><mo>,</mo><mi>i</mi></mrow></msub><mo>=</mo><mrow><msup><msub><mi>p</mi><mi>u</mi></msub><mi>⊤</mi></msup><msub><mi>q</mi><mi>i</mi></msub></mrow><mo>=</mo><munderover><mo>∑</mo><mrow><mi>f</mi><mo>=</mo><mn>1</mn></mrow><mi>k</mi></munderover><msub><mi>p</mi><mrow><mi>u</mi><mo>,</mo><mi>f</mi></mrow></msub><msub><mi>q</mi><mrow><mi>i</mi><mo>,</mo><mi>f</mi></mrow></msub></mrow></math><p class="note" style="margin:0">p<sub>u</sub>, q<sub>i</sub> ∈ ℝ<sup>k</sup>: the latent vectors of user u and film i.</p></div>
+    <div class="formula" style="margin:0"><span class="cvl" style="margin:0">Training objective</span><math display="block"><mrow><munder><mi>min</mi><mrow><mi>P</mi><mo>,</mo><mi>Q</mi></mrow></munder><munder><mo>∑</mo><mrow><mrow><mo stretchy="false">(</mo><mi>u</mi><mo>,</mo><mi>i</mi><mo stretchy="false">)</mo></mrow><mo>∈</mo><mi>𝒦</mi></mrow></munder><msup><mrow><mo stretchy="false">(</mo><msub><mi>r</mi><mrow><mi>u</mi><mo>,</mo><mi>i</mi></mrow></msub><mo>−</mo><mrow><msup><msub><mi>p</mi><mi>u</mi></msub><mi>⊤</mi></msup><msub><mi>q</mi><mi>i</mi></msub></mrow><mo stretchy="false">)</mo></mrow><mn>2</mn></msup><mo>+</mo><mi>λ</mi><mrow><mo stretchy="false">(</mo><msup><mrow><mo stretchy="false" lspace="0" rspace="0">‖</mo><msub><mi>p</mi><mi>u</mi></msub><mo stretchy="false" lspace="0" rspace="0">‖</mo></mrow><mn>2</mn></msup><mo>+</mo><msup><mrow><mo stretchy="false" lspace="0" rspace="0">‖</mo><msub><mi>q</mi><mi>i</mi></msub><mo stretchy="false" lspace="0" rspace="0">‖</mo></mrow><mn>2</mn></msup><mo stretchy="false">)</mo></mrow></mrow></math><p class="note" style="margin:0">𝒦 = the known ratings; λ = regularisation weight, which keeps the vectors small.</p></div>
+    <div class="formula" style="margin:0;grid-column:1/-1"><span class="cvl" style="margin:0">Stochastic gradient descent, for each known rating</span><math display="block"><mrow><msub><mi>e</mi><mrow><mi>u</mi><mo>,</mo><mi>i</mi></mrow></msub><mo>=</mo><msub><mi>r</mi><mrow><mi>u</mi><mo>,</mo><mi>i</mi></mrow></msub><mo>−</mo><mrow><msup><msub><mi>p</mi><mi>u</mi></msub><mi>⊤</mi></msup><msub><mi>q</mi><mi>i</mi></msub></mrow><mo>;</mo><mspace width="1em"/><msub><mi>p</mi><mi>u</mi></msub><mo>←</mo><msub><mi>p</mi><mi>u</mi></msub><mo>+</mo><mi>η</mi><mrow><mo stretchy="false">(</mo><msub><mi>e</mi><mrow><mi>u</mi><mo>,</mo><mi>i</mi></mrow></msub><msub><mi>q</mi><mi>i</mi></msub><mo>−</mo><mi>λ</mi><msub><mi>p</mi><mi>u</mi></msub><mo stretchy="false">)</mo></mrow><mo>;</mo><mspace width="1em"/><msub><mi>q</mi><mi>i</mi></msub><mo>←</mo><msub><mi>q</mi><mi>i</mi></msub><mo>+</mo><mi>η</mi><mrow><mo stretchy="false">(</mo><msub><mi>e</mi><mrow><mi>u</mi><mo>,</mo><mi>i</mi></mrow></msub><msub><mi>p</mi><mi>u</mi></msub><mo>−</mo><mi>λ</mi><msub><mi>q</mi><mi>i</mi></msub><mo stretchy="false">)</mo></mrow></mrow></math><p class="note" style="margin:0">e<sub>u,i</sub> = the error; η = learning rate (0.02 here). The fit is reported as RMSE = √( Σ<sub>𝒦</sub> (r<sub>u,i</sub> − r̂<sub>u,i</sub>)² / |𝒦| ).</p></div>
+  </div>
+  <div class="play">
+    <canvas class="cv" id="cvMF" style="aspect-ratio:16/9" aria-label="Films in a two-dimensional latent space, with one user's vector and lines of equal predicted rating"></canvas>
+    <div class="side">
+      <div class="tabs" id="mfU"></div>
+      <div class="tbl-wrap"><table class="sm num" id="mfT"></table></div>
+      <div class="row" style="flex-wrap:wrap;align-items:center;gap:8px"><button class="btn" id="mfTrain">Train 50 epochs</button><button class="btn ghost" id="mfReset">Random start</button><label class="note" for="mfL" style="margin:0">λ = <b id="mfLv">0.05</b></label><input type="range" id="mfL" min="0" max="0.5" step="0.05" value="0.05" style="flex:1;min-width:80px"><span class="note" style="margin:0;white-space:nowrap">epochs <b id="mfE">0</b> · RMSE <b id="mfR">–</b></span></div>
+
+    </div>
+  </div>
+  <p class="note"><b>Reading the map:</b> squares are films (q<sub>i</sub>), the arrow is the chosen user (p<sub>u</sub>); the two axes are the learned factors, which have no fixed meaning. The further a film lies in the arrow's direction, the higher p<sub>u</sub><sup>⊤</sup>q<sub>i</sub>; films on one dashed line get the same prediction. Dashed box: not rated by this user. k = 2, SGD in your browser, opening after 300 epochs; RMSE is on the known ratings.</p>
+</section>
+
+<!-- ============ PART 3 ============ -->
+<div class="part-break"><span class="n">03</span><span class="eyebrow">Part 3</span><h2>Evaluating Recommenders</h2></div>
+
+<!-- source: new (spec: evaluation by time split, precision@k, recall@k) -->
+<section class="board" id="evalrec" data-part="Part 3 · Evaluation" data-nav="Precision@k and recall@k">
+  <span class="eyebrow">Offline evaluation · tick the hits</span>
+  <h2>Precision@k and Recall@k</h2>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">Split by time</span><p>Train on everything before a cut-off date; test on what each user did after it. A random split leaks the future into training.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Score the top k</span><div class="grid2" style="gap:6px"><math display="block"><mrow><mi>Precision@k</mi><mo>=</mo><mfrac><mrow><mo stretchy="false" lspace="0" rspace="0">|</mo><mrow><mrow><msub><mi>L</mi><mi>k</mi></msub><mrow><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow></mrow><mo>∩</mo><mrow><mi>T</mi><mrow><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow></mrow></mrow><mo stretchy="false" lspace="0" rspace="0">|</mo></mrow><mi>k</mi></mfrac></mrow></math><math display="block"><mrow><mi>Recall@k</mi><mo>=</mo><mfrac><mrow><mo stretchy="false" lspace="0" rspace="0">|</mo><mrow><mrow><msub><mi>L</mi><mi>k</mi></msub><mrow><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow></mrow><mo>∩</mo><mrow><mi>T</mi><mrow><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow></mrow></mrow><mo stretchy="false" lspace="0" rspace="0">|</mo></mrow><mrow><mo stretchy="false" lspace="0" rspace="0">|</mo><mrow><mi>T</mi><mrow><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false" lspace="0" rspace="0">|</mo></mrow></mfrac></mrow></math></div><p style="font-size:.86rem">L<sub>k</sub>(u) = the top k recommended to user u; T(u) = the items u used in the test period; |L<sub>k</sub>(u) ∩ T(u)| = the hits. Average over users.</p></div>
+  </div>
+  <div class="play">
+    <div class="side"><ol class="res" id="pkList"></ol></div>
+    <div class="side">
+      <div class="row"><label class="note" for="pkK">k = <b id="pkKv">5</b></label><input type="range" id="pkK" min="1" max="10" step="1" value="5" style="flex:1"></div>
+      <div class="row"><label class="note" for="pkR">test items of this user = <b id="pkRv">4</b></label><input type="range" id="pkR" min="1" max="10" step="1" value="4" style="flex:1"></div>
+      <div class="stats"><div class="stat"><div class="k">precision@k</div><div class="v" id="pkP">–</div></div><div class="stat"><div class="k">recall@k</div><div class="v" id="pkRc">–</div></div></div>
+      <p class="note">Tick a recommended film if the user watched it in the test period. A watch is <b>implicit feedback</b> (Part 2): a film left unticked was not watched, which does not prove the user would dislike it, so precision@k is a cautious estimate. An illustrative top-10 list for one user, written by hand (not computed from the earlier boards).</p>
+    </div>
+  </div>
+</section>
+
+<!-- source: new (spec: coverage, popularity bias, cold start) -->
+<section class="board" id="coverage" data-part="Part 3 · Evaluation" data-nav="Coverage and cold start">
+  <span class="eyebrow">Beyond accuracy</span>
+  <h2>Coverage, Popularity Bias and Cold Start</h2>
+  <div class="play">
+    <div class="side">
+      <div class="row" role="group" aria-label="Recommender"><button class="chip" data-cv="pop" aria-pressed="true">Most popular</button><button class="chip" data-cv="cf" aria-pressed="false">Item-based CF</button></div>
+      <p class="note" style="margin:0"><b>Bold</b> = one of the 3 most popular films (A, B, C). Compare how many top-3 slots they take under each recommender.</p>
+      <div class="tbl-wrap"><table class="sm" id="cvT"></table></div>
+      <div class="stats"><div class="stat"><div class="k">catalogue coverage</div><div class="v" id="cvC">–</div></div><div class="stat"><div class="k">top-3 slots taken by the 3 most popular films</div><div class="v" id="cvPop">–</div></div></div>
+    </div>
+    <div class="side">
+      <div class="card"><span class="tag" style="color:var(--c1)">Coverage</span><p>The share of the catalogue that appears in at least one user's top k:</p><math display="block"><mrow><mi>Coverage</mi><mo>=</mo><mfrac><mrow><mo stretchy="false" lspace="0" rspace="0">|</mo><mrow><munder><mo>⋃</mo><mi>u</mi></munder><mrow><msub><mi>L</mi><mi>k</mi></msub><mrow><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow></mrow></mrow><mo stretchy="false" lspace="0" rspace="0">|</mo></mrow><mrow><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>I</mi><mo stretchy="false" lspace="0" rspace="0">|</mo></mrow></mfrac></mrow></math><p style="font-size:.86rem">I = the catalogue; L<sub>k</sub>(u) = user u's top k.</p></div>
+      <div class="card"><span class="tag" style="color:var(--c4)">Popularity bias</span><p>Recommending what everyone already watches scores well offline but leaves most of the catalogue unseen.</p></div>
+      <div class="card"><span class="tag" style="color:var(--c5)">Cold start</span><p>A new item or a new user has no ratings, and <b>both</b> kinds of collaborative filtering need ratings. New item: user-based CF finds no neighbour who rated it, and item-based CF has no column to compare, so neither recommends the new Film I. New user: there are no ratings to find neighbours from or to weight. Part 4 shows one fix.</p></div>
+    </div>
+  </div>
+  <p class="note">An illustrative example with its own users and a 12-film catalogue (Film I is new, with no ratings yet). The top-3 lists are written by hand, not computed from the ratings on the earlier boards.</p>
+</section>
+
+<!-- ============ PART 4 · AI LAYER ============ -->
+<div class="part-break"><span class="n">04</span><span class="eyebrow">Part 4 · AI layer</span><h2>Embeddings and LLMs for Recommendation</h2></div>
+
+<!-- source: new (spec: node2vec idea only) -->
+<section class="board" id="node2vec" data-part="Part 4 · Embeddings and LLMs" data-nav="Graph embeddings">
+  <span class="eyebrow">AI as a method · new walks</span>
+  <h2>Graph Embeddings: the node2vec Idea</h2>
+  <p class="lead">Random walks again, as in personalized PageRank. Take random walks on the graph and treat each walk as a sentence, with nodes as words. Then embed the nodes the way word embeddings embed words (Lecture 2): nodes that appear on the same walks end up close together.</p>
+  <div class="grid2">
+    <div><div class="cvl">Input · the friendship graph (communities board)</div><canvas class="cv" id="cvN2G" style="aspect-ratio:16/10" aria-label="The friendship graph, click a node"></canvas></div>
+    <div><div class="cvl">Output · each node's embedding: 2 numbers = a point</div><canvas class="cv" id="cvN2V" style="aspect-ratio:16/10" aria-label="Each node placed at its two-number embedding, click a node"></canvas></div>
+  </div>
+  <div class="grid2" style="align-items:start">
+    <div class="agent" id="n2vWalks" style="margin:0"></div>
+    <div class="side">
+      <p class="note" id="n2vSel" style="margin:0"></p>
+      <p class="note" id="n2vNote" style="margin:0"></p>
+      <div class="btnrow"><button class="btn" id="n2vNew">New random walks</button></div>
+    </div>
+  </div>
+  <p class="note">Colours are the communities found by label propagation; the embedding never sees them, it only sees the walks. Only distances in the right plot matter: its two axes have no fixed meaning. Overlapping circles are nudged apart for display. A stand-in for node2vec's trained model: 120 walks of length 8, co-occurrence within 2 steps, PPMI weighting and a 2-D SVD, computed in your browser.</p>
+</section>
+
+<!-- source: new (spec: content-based recommendations with text embeddings, cold start) -->
+<section class="board" id="content" data-part="Part 4 · Embeddings and LLMs" data-nav="Text embeddings for cold start">
+  <span class="eyebrow">AI as a tool · a new film</span>
+  <h2>Content-Based Recommendation with Text Embeddings</h2>
+  <p class="lead"><b>Red Planet Run</b> is new: nobody has rated it, so collaborative filtering cannot place it. Its description can. A sentence-embedding model turns every film's description into a vector, and cosine similarity finds the films it resembles.</p>
+  <div class="play">
+    <div class="side">
+      <p class="mono note" id="ctNew"></p>
+      <ol class="res" id="ctSim"></ol>
+    </div>
+    <div class="side">
+      <div style="display:grid;gap:8px"><div class="formula" style="margin:0"><span class="cvl" style="margin:0">Similarity of descriptions</span><math display="block"><mrow><mrow><mi>sim</mi><mrow><mo stretchy="false">(</mo><mi>n</mi><mo>,</mo><mi>j</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mfrac><mrow><msup><msub><mi>e</mi><mi>n</mi></msub><mi>⊤</mi></msup><msub><mi>e</mi><mi>j</mi></msub></mrow><mrow><mrow><mo stretchy="false" lspace="0" rspace="0">‖</mo><msub><mi>e</mi><mi>n</mi></msub><mo stretchy="false" lspace="0" rspace="0">‖</mo></mrow><mrow><mo stretchy="false" lspace="0" rspace="0">‖</mo><msub><mi>e</mi><mi>j</mi></msub><mo stretchy="false" lspace="0" rspace="0">‖</mo></mrow></mrow></mfrac></mrow></math><p class="note" style="margin:0">e<sub>j</sub> = embedding of film j's description; n = the new film.</p></div><div class="formula" style="margin:0"><span class="cvl" style="margin:0">Predicted interest</span><math display="block"><mrow><msub><mover><mi>r</mi><mo>^</mo></mover><mrow><mi>u</mi><mo>,</mo><mi>n</mi></mrow></msub><mo>=</mo><mfrac><mrow><munder><mo>∑</mo><mrow><mi>j</mi><mo>∈</mo><msub><mi>I</mi><mi>u</mi></msub></mrow></munder><mrow><mi>sim</mi><mrow><mo stretchy="false">(</mo><mi>n</mi><mo>,</mo><mi>j</mi><mo stretchy="false">)</mo></mrow></mrow><msub><mi>r</mi><mrow><mi>u</mi><mo>,</mo><mi>j</mi></mrow></msub></mrow><mrow><munder><mo>∑</mo><mrow><mi>j</mi><mo>∈</mo><msub><mi>I</mi><mi>u</mi></msub></mrow></munder><mrow><mi>sim</mi><mrow><mo stretchy="false">(</mo><mi>n</mi><mo>,</mo><mi>j</mi><mo stretchy="false">)</mo></mrow></mrow></mrow></mfrac></mrow></math><p class="note" style="margin:0">I<sub>u</sub> = films u rated whose similarity to n is above 0.</p></div></div>
+      <div class="tbl-wrap"><table class="sm num" id="ctU"></table></div>
+    </div>
+  </div>
+  <p class="note">Embeddings: all-MiniLM-L6-v2 on the title and one-line description (descriptions written for this lecture).</p>
+</section>
+
+<!-- source: new (spec: LLM-based recommenders, illustrative) -->
+<section class="board" id="llmrec" data-part="Part 4 · Embeddings and LLMs" data-nav="LLM recommenders">
+  <span class="eyebrow">AI as a tool · check the answer</span>
+  <h2>LLM-Based Recommenders</h2>
+  <p class="lead">Describe a user's history in text and ask an LLM for suggestions. Then check the answer against the catalogue and against item-based CF on the same user.</p>
+  <div class="grid2">
+    <div class="side">
+      <div class="agent mono" id="llmPrompt"></div>
+      <div class="agent" id="llmAns"></div>
+      <p class="note">Illustrative example answer, written for this lecture; not the output of a particular model.</p>
+    </div>
+    <div class="side">
+      <div class="stats" id="llmStats"></div>
+      <div class="card bad"><span class="tag" style="color:var(--signal)">Risks</span><ul class="clean"><li><b>Not in the catalogue</b>: titles you cannot offer, or that do not exist.</li><li><b>Popularity bias</b>: famous titles crowd out the long tail.</li><li><b>Cost</b>: one model call per user per request.</li></ul></div>
+      <div class="card"><span class="tag" style="color:var(--c3)">Rule</span><p>Always compare with item-based CF on the same offline test.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- source: new quiz (scenarios for choosing a recommender) -->
+<section class="board" id="recquiz" data-part="Part 4 · Embeddings and LLMs" data-nav="Which recommender?">
+  <span class="eyebrow">Check yourself</span>
+  <h2>Which recommender would you start with?</h2>
+  <p class="lead">Six situations. Pick the approach to try first, before comparing it with the others.</p>
+  <div class="quiz qgrid" id="recQ"></div>
+  <p class="score" id="recScore"></p>
+</section>
+
+<!-- ============ PART 5 · LAB ============ -->
+<div class="part-break"><span class="n">05</span><span class="eyebrow">Part 5 · Lab, 45 minutes</span><h2>Recommend Movies Two Ways</h2></div>
+
+<!-- source: new (spec lab, in-class version) -->
+<section class="board" id="labbrief" data-part="Part 5 · Lab" data-nav="Lab brief">
+  <span class="eyebrow">Lab 11 · ungraded practice for the final exam</span>
+  <h2>Recommend movies two ways</h2>
+  <p class="lead">On a small subset of the MovieLens ratings, build item-based collaborative filtering and an embedding-based recommender. Split by time, and score both with precision@10 and coverage.</p>
+  <div class="bar" id="labBar">
+    <button class="seg" style="flex-basis:11.1%;background:var(--c1)" aria-pressed="true"><b>5 min</b><span>Brief</span></button>
+    <button class="seg" style="flex-basis:66.7%;background:var(--c3)" aria-pressed="false"><b>30 min</b><span>Guided work: two recommenders, one test</span></button>
+    <button class="seg" style="flex-basis:22.2%;background:var(--c4)" aria-pressed="false"><b>10 min</b><span>Share-out</span></button>
+  </div>
+  <div class="panel" id="labDetail"></div>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--c1)">Baseline</span><h3>Item-based CF</h3><p>Cosine similarity between films, prediction from the user's own ratings.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">AI method</span><h3>Embedding recommender</h3><p>Film vectors from their descriptions; recommend films close to the ones the user liked.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c4)">Score</span><h3>Precision@10 and coverage</h3><p>On the films each user watched after the cut-off date.</p></div>
+  </div>
+</section>
+
+<!-- source: new (same steps as the earlier Colab boards) -->
+<section class="board" id="labsetup" data-part="Part 5 · Lab" data-nav="Open the notebook in Colab">
+  <span class="eyebrow">Lab 11 · getting started</span>
+  <h2>Open the notebook in Google Colab</h2>
+  <p class="lead">Same steps as before. There is nothing to install.</p>
+  <ol class="lab">
+    <li><div><b>Open the Lab 11 link on Github.</b> The notebook opens in Colab.</div></li>
+    <li><div><b>File → Save a copy in Drive.</b> Work in your copy. Changes to the shared notebook are not saved.</div></li>
+    <li><div><b>Run the cells from top to bottom</b> with <kbd>Shift</kbd> + <kbd>Enter</kbd>, and replace each <span class="mono">___</span> with your own code.</div></li>
+  </ol>
+  <p class="note">No Google account? Download the Lab 11 from Github and open the notebook in Jupyter or VS Code.</p>
+</section>
+
+<!-- source: new (share-out display for the lab) -->
+<section class="board" id="labresults" data-part="Part 5 · Lab" data-nav="Class results">
+  <span class="eyebrow">Lab 11 · share-out</span>
+  <h2>Class Results: Precision@10 and Coverage</h2>
+  <p class="lead">Enter the class's typical values for each recommender.</p>
+  <div class="play">
+    <div class="side" id="lrCtl"></div>
+    <canvas class="cv" id="cvLr" aria-label="Precision at 10 and coverage for each recommender"></canvas>
+  </div>
+</section>
+
+<!-- ============ SUMMARY ============ -->
+<!-- source: spec learning outcomes, readings and exam scope -->
+<section class="board" id="summary" data-part="Summary" data-nav="Summary">
+  <span class="eyebrow">Summary</span>
+  <h2>Summary</h2>
+  <div class="grid4">
+    <div class="card"><span class="tag" style="color:var(--c1)">Graphs</span><p style="color:var(--ink)">Degree and paths; PageRank for important nodes, personalized PageRank for related ones; communities by modularity and label propagation.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Recommenders</span><p style="color:var(--ink)">The sparse user–item matrix; user-based and item-based CF; personalized PageRank on the user–film graph; matrix factorisation as dot products of latent vectors.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Evaluation</span><p style="color:var(--ink)">Split by time; precision@k, recall@k, coverage; watch popularity bias and cold start.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c5)">AI layer</span><p style="color:var(--ink)">Graph and text embeddings; LLM recommenders checked against the catalogue and against item-based CF.</p></div>
+  </div>
+  <p class="lab-s" style="color:var(--c3);font-weight:700">What you can do after today</p>
+  <div class="grid4">
+    <div class="card"><span class="tag" style="color:var(--c1)">Compute</span><p style="color:var(--ink)">Compute node importance (degree, PageRank) and find communities in a graph.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c2)">Build</span><p style="color:var(--ink)">Build user-based and item-based collaborative filtering, and explain matrix factorisation.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c3)">Evaluate</span><p style="color:var(--ink)">Evaluate recommenders offline: precision@k, recall@k, coverage.</p></div>
+    <div class="card"><span class="tag" style="color:var(--c4)">Compare</span><p style="color:var(--ink)">Compare embedding-based and LLM-based recommenders with a CF baseline.</p></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--c1)">Key readings</span><p style="color:var(--ink)">Leskovec, Rajaraman and Ullman, <i>Mining of Massive Datasets</i>, chapters 5 (link analysis) and 9 (recommendation systems). Koren, Bell and Volinsky (2009), matrix factorisation. Grover and Leskovec (2016), node2vec.</p></div>
+    <div class="card"><span class="tag" style="color:var(--signal)">Exam-relevant</span><p style="color:var(--ink)">PageRank iteration, user-based vs item-based CF by hand, the matrix factorisation idea, precision@k, recall@k, cold start.</p></div>
+  </div>
+  <div class="next"><span class="eyebrow">Next</span><h3>Lecture 12 · Anomalies, drift and responsible data mining (Friday)</h3><p>Anomaly detection, drift, privacy, fairness and AI agents. Course review in the last 20 minutes.</p></div>
+</section>
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+"use strict";
+// ===== shared lecture kit: utilities, nav, theme hooks, three.js + canvas helpers =====
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const themeHooks = [];
+function onTheme(f){ themeHooks.push(f); }
+function fireTheme(){ themeHooks.forEach(f => { try { f(); } catch(e){} }); }
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", fireTheme);
+new MutationObserver(fireTheme).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
+
+// seeded RNG so every class sees the same data
+function rng(seed){ let s = seed >>> 0; return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function gauss(r){ let u = 0, v = 0; while(!u) u = r(); while(!v) v = r(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+
+/* ---------------- navigation ---------------- */
+const boards = $$("section.board");
+const toc = $("#toc");
+let lastPart = "";
+boards.forEach(b => {
+  if (b.dataset.part !== lastPart){ lastPart = b.dataset.part; const li = document.createElement("li"); li.className = "part"; li.textContent = lastPart; toc.appendChild(li); }
+  const li = document.createElement("li"); const a = document.createElement("a");
+  a.href = "#" + b.id; a.textContent = b.dataset.nav; a.dataset.id = b.id; li.appendChild(a); toc.appendChild(li);
+});
+const links = $$("#toc a");
+let current = 0;
+const io = new IntersectionObserver(es => {
+  es.forEach(e => { if (e.isIntersecting){ current = boards.indexOf(e.target); links.forEach(l => l.classList.toggle("on", l.dataset.id === e.target.id)); const on = links[current]; if (on && innerWidth < 980) on.scrollIntoView({block:"nearest", inline:"center"}); } });
+}, {rootMargin:"-40% 0px -55% 0px"});
+boards.forEach(b => io.observe(b));
+addEventListener("keydown", e => {
+  if (e.target.closest("input,textarea,select") || e.metaKey || e.ctrlKey || e.altKey) return;
+  let n = null;
+  if (e.key === "ArrowRight" || e.key === "PageDown") n = Math.min(boards.length-1, current+1);
+  if (e.key === "ArrowLeft" || e.key === "PageUp") n = Math.max(0, current-1);
+  if (n === null) return;
+  e.preventDefault(); current = n;
+  boards[n].scrollIntoView({behavior: reduce ? "auto" : "smooth", block:"start"});
+});
+
+/* ---------------- three.js helpers ---------------- */
+const hasGL = typeof THREE !== "undefined";
+function dotTexture(){
+  const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d");
+  const grd = g.createRadialGradient(32,32,0,32,32,30); grd.addColorStop(0,"rgba(255,255,255,1)"); grd.addColorStop(.7,"rgba(255,255,255,1)"); grd.addColorStop(1,"rgba(255,255,255,0)");
+  g.fillStyle = grd; g.beginPath(); g.arc(32,32,30,0,Math.PI*2); g.fill();
+  const t = new THREE.CanvasTexture(c); return t;
+}
+function makeRenderer(host){
+  const r = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  r.setPixelRatio(Math.min(devicePixelRatio, 2)); host.prepend(r.domElement);
+  return r;
+}
+function visible(el, cb){ const o = new IntersectionObserver(es => es.forEach(e => cb(e.isIntersecting))); o.observe(el); }
+function noGL(host){ const p = document.createElement("p"); p.className = "note"; p.style.padding = "24px"; p.textContent = "This 3D view needs WebGL, which this browser has turned off."; host.appendChild(p); }
+
+/* ---------------- canvas helpers ---------------- */
+function setupCanvas(cv){
+  const ctx = cv.getContext("2d");
+  const fit = () => { const r = cv.getBoundingClientRect(); const d = Math.min(devicePixelRatio,2); cv.width = Math.max(1, r.width*d); cv.height = Math.max(1, r.height*d); ctx.setTransform(d,0,0,d,0,0); return r; };
+  return {ctx, fit};
+}
+function axes(ctx, w, h, pad, xl, yl, xt, yt){
+  ctx.strokeStyle = tok("--line"); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, h-pad.b); ctx.lineTo(w-pad.r, h-pad.b); ctx.stroke();
+  ctx.fillStyle = tok("--muted"); ctx.font = `12px ${tok("--mono")}`;
+  ctx.textAlign = "center"; ctx.fillText(xl, (pad.l + w - pad.r)/2, h-8);
+  xt.forEach(([v,x]) => ctx.fillText(v, x, h-pad.b+16));
+  ctx.textAlign = "right"; yt.forEach(([v,y]) => ctx.fillText(v, pad.l-6, y+4));
+  ctx.save(); ctx.translate(14, (pad.t + h - pad.b)/2); ctx.rotate(-Math.PI/2); ctx.textAlign = "center"; ctx.fillText(yl, 0, 0); ctx.restore();
+}
+const redraws = {};
+onTheme(() => Object.values(redraws).forEach(f => f()));
+
+
+function live(cv, key, paint){
+  const {ctx, fit} = setupCanvas(cv);
+  const draw = () => { const r = fit(); if (!r.width) return; ctx.clearRect(0,0,r.width,r.height); paint(ctx, r.width, r.height); };
+  redraws[key] = draw; new ResizeObserver(draw).observe(cv); return draw;
+}
+const at = (cv, e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+
+/* ---------------- generic tabsets ---------------- */
+$$(".tabset").forEach(root => {
+  const bs = $$("[data-tab]", root), ps = $$("[data-pane]", root);
+  const go = id => { bs.forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === id))); ps.forEach(p => p.hidden = p.dataset.pane !== id); root.dataset.show = id; };
+  bs.forEach(b => b.onclick = () => go(b.dataset.tab)); go(bs[0].dataset.tab);
+});
+
+/* ---------------- quiz helper ---------------- */
+function quiz(host, O, Q, scoreEl){
+  let answered = 0, right = 0;
+  const upd = () => { if (scoreEl) scoreEl.textContent = answered < Q.length ? `${answered} of ${Q.length} answered · ${right} correct` : `Done: ${right} of ${Q.length} correct`; };
+  Q.forEach(([q, a, why]) => {
+    const d = document.createElement("div"); d.className = "q";
+    d.innerHTML = `<p>${q}</p><div class="opts">${O.map((o,i)=>`<button data-i="${i}">${o}</button>`).join("")}</div><p class="fb"></p>`;
+    $$("button", d).forEach(b => b.onclick = () => {
+      if (d.classList.contains("done")) return;
+      const i = +b.dataset.i; b.classList.add("picked"); d.classList.add("done", i===a ? "right" : "wrong");
+      answered++; if (i===a) right++;
+      $(".fb", d).innerHTML = `<b>${i===a ? "Correct." : "Not quite: " + O[a] + "."}</b> ${why}`; upd();
+    });
+    host.appendChild(d);
+  });
+  upd();
+}
+
+/* ---------------- segmented bars (plan, assessment, lab) ---------------- */
+function segBar(bar, detail, D){
+  const bs = $$(".seg", $(bar));
+  const go = i => { bs.forEach((b,k) => b.setAttribute("aria-pressed", String(k===i))); $(detail).innerHTML = D[i]; };
+  bs.forEach((b,i) => b.onclick = () => go(i)); go(0);
+}
+
+
+const MOVIES = {"movies":[{"title":"Star Corridor","desc":"A crew of explorers flies a starship through a wormhole to find a new home for humanity."},{"title":"Orbit Nine","desc":"Astronauts on a damaged space station race to repair it before their oxygen runs out."},{"title":"The Last Tram","desc":"Two strangers fall in love on the last tram ride across Hong Kong Island."},{"title":"Rain on Nathan Road","desc":"A young couple tries to keep their romance alive while working long hours in Kowloon."},{"title":"Kitchen Wars","desc":"Rival chefs compete in a chaotic cooking show full of slapstick disasters."},{"title":"Uncle's Dim Sum","desc":"A family comedy about three generations running a struggling dim sum restaurant."},{"title":"Midnight Ferry","desc":"A detective follows a smuggling gang onto the last ferry of the night."},{"title":"The Silent Witness","desc":"An investigator solves a murder that only a deaf witness saw."},{"title":"Red Planet Run","desc":"A stranded astronaut must survive alone on Mars until a rescue mission arrives."}],"sim":[[1.0,0.34200000762939453,0.23199999332427979,0.17100000381469727,0.0820000022649765,0.23999999463558197,0.3440000116825104,0.1080000028014183,0.33000001311302185],[0.34200000762939453,1.0,0.2280000001192093,0.12200000137090683,0.15000000596046448,0.17499999701976776,0.11500000208616257,0.07900000363588333,0.48899999260902405],[0.23199999332427979,0.2280000001192093,1.0,0.38600000739097595,0.21299999952316284,0.26499998569488525,0.3659999966621399,0.14300000667572021,0.26899999380111694],[0.17100000381469727,0.12200000137090683,0.38600000739097595,1.0,0.1679999977350235,0.23600000143051147,0.1850000023841858,0.10000000149011612,0.1509999930858612],[0.0820000022649765,0.15000000596046448,0.21299999952316284,0.1679999977350235,1.0,0.37299999594688416,0.07000000029802322,0.06199999898672104,0.052000001072883606],[0.23999999463558197,0.17499999701976776,0.26499998569488525,0.23600000143051147,0.37299999594688416,1.0,0.18000000715255737,0.13500000536441803,0.11900000274181366],[0.3440000116825104,0.11500000208616257,0.3659999966621399,0.1850000023841858,0.07000000029802322,0.18000000715255737,1.0,0.35499998927116394,0.14300000667572021],[0.1080000028014183,0.07900000363588333,0.14300000667572021,0.10000000149011612,0.06199999898672104,0.13500000536441803,0.35499998927116394,1.0,0.16899999976158142],[0.33000001311302185,0.48899999260902405,0.26899999380111694,0.1509999930858612,0.052000001072883606,0.11900000274181366,0.14300000667572021,0.16899999976158142,1.0]]};
+/* ================= LECTURE 11 MODULES ================= */
+function chipGroup(btns, attr, cb){ btns.forEach(b => b.addEventListener("click", () => { btns.forEach(x => x.setAttribute(attr, String(x===b))); cb(b); })); }
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const f2 = v => (Math.abs(v) < 5e-4 ? "0.00" : v.toFixed(2)), f3 = v => v.toFixed(3);
+const stat = (k, v) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`;
+function arrow(ctx, x1, y1, x2, y2, r1, r2){
+  const L = Math.hypot(x2-x1, y2-y1), ux = (x2-x1)/L, uy = (y2-y1)/L;
+  const sx = x1 + ux*r1, sy = y1 + uy*r1, ex = x2 - ux*(r2+2), ey = y2 - uy*(r2+2);
+  ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(ex,ey); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ex,ey); ctx.lineTo(ex-ux*9-uy*4.5, ey-uy*9+ux*4.5); ctx.lineTo(ex-ux*9+uy*4.5, ey-uy*9-ux*4.5); ctx.closePath(); ctx.fill();
+}
+
+/* ---------------- today's plan ---------------- */
+segBar("#planBar", "#planDetail", [
+  "<h3>Classical core · about 65 minutes</h3><p style='margin-top:6px'>Today: graph mining (degree, paths, PageRank and personalized PageRank, communities), recommender systems (collaborative filtering, personalized PageRank on a user–film graph, matrix factorisation) and their offline evaluation.</p>",
+  "<h3>AI layer · about 30 minutes</h3><p style='margin-top:6px'>AI as a method and as a tool: graph embeddings (the node2vec idea), text embeddings for cold start, and LLM-based recommenders checked against a collaborative-filtering baseline.</p>",
+  "<h3>Break · 10 minutes</h3><p style='margin-top:6px'>A 10-minute break mid-session, every session.</p>",
+  "<h3>Lab · about 45 minutes</h3><p style='margin-top:6px'>A guided notebook: a 5-minute brief, 30 minutes of guided work and a 10-minute share-out. Today: item-based CF vs an embedding recommender on a small MovieLens subset. Labs are ungraded practice.</p>"
+]);
+
+/* ================= GRAPH: citation graph ================= */
+const GP = [[.08,.55],[.30,.18],[.30,.86],[.50,.36],[.52,.78],[.70,.14],[.72,.56],[.92,.32],[.93,.82]];
+const GE = [[8,6],[8,4],[7,6],[7,5],[6,3],[6,2],[5,3],[5,1],[4,2],[4,0],[3,0],[3,1],[2,0],[1,0]];
+const GN = GP.length, GOUT = Array(GN).fill(0), GIN = Array(GN).fill(0);
+GE.forEach(([a,b]) => { GOUT[a]++; GIN[b]++; });
+function drawGraph(ctx, W, H, size, col, lab){
+  const X = x => 30 + x*(W-60), Y = y => 24 + y*(H-48);
+  ctx.lineWidth = 1.4;
+  GE.forEach(([a,b]) => { ctx.strokeStyle = ctx.fillStyle = col.edge(a,b); arrow(ctx, X(GP[a][0]), Y(GP[a][1]), X(GP[b][0]), Y(GP[b][1]), size(a), size(b)); });
+  GP.forEach(([x,y],i) => { ctx.beginPath(); ctx.arc(X(x), Y(y), size(i), 0, 7); ctx.fillStyle = col.node(i); ctx.fill(); ctx.fillStyle = "#fff"; ctx.font = `700 12px ${tok("--mono")}`; ctx.textAlign = "center"; ctx.fillText(lab ? lab(i) : "P"+(i+1), X(x), Y(y)+4); });
+  return [X, Y];
+}
+(function deg(){
+  const cv = $("#cvG"); let sel = [8, 0], XY = null;
+  function path(s, t){
+    const prev = Array(GN).fill(-1), seen = Array(GN).fill(false), q = [s]; seen[s] = true;
+    while (q.length){ const u = q.shift(); if (u === t) break; GE.filter(e => e[0]===u).forEach(([,v]) => { if (!seen[v]){ seen[v] = true; prev[v] = u; q.push(v); } }); }
+    if (!seen[t]) return null; const p = [t]; while (p[0] !== s) p.unshift(prev[p[0]]); return p;
+  }
+  const draw = live(cv, "deg", (ctx, W, H) => {
+    const p = sel[1] >= 0 ? path(sel[0], sel[1]) : null, onP = (a,b) => p && p.some((x,k) => x===a && p[k+1]===b);
+    XY = drawGraph(ctx, W, H, () => 16, {edge:(a,b) => onP(a,b) ? tok("--c4") : tok("--muted"), node:i => i===sel[0] ? tok("--c4") : i===sel[1] ? tok("--c5") : tok("--c1")});
+    const i = sel[0];
+    $("#gStats").innerHTML = stat(`P${i+1} in-degree (cited by)`, GIN[i]) + stat(`P${i+1} out-degree (cites)`, GOUT[i]);
+    if (sel[1] < 0) $("#gPath").textContent = "Click a second paper to see the shortest path of citations between them.";
+    else if (!p) $("#gPath").innerHTML = `No path of citations from P${i+1} to P${sel[1]+1}: citations only point to older papers.`;
+    else $("#gPath").innerHTML = `Shortest path from P${i+1} to P${sel[1]+1}: <b>${p.map(x => "P"+(x+1)).join(" → ")}</b>, length ${p.length-1}.`;
+  });
+  cv.addEventListener("click", e => { const r = cv.getBoundingClientRect(), mx = e.clientX-r.left, my = e.clientY-r.top; const h = GP.findIndex(([x,y]) => Math.hypot(XY[0](x)-mx, XY[1](y)-my) < 20); if (h < 0) return; sel = sel[1] >= 0 ? [h, -1] : [sel[0], h === sel[0] ? -1 : h]; draw(); });
+})();
+
+/* ---------------- PageRank / PPR ---------------- */
+(function pr(){
+  let d = .85, mode = "pr";
+  function run(){
+    const src = 8, v = Array.from({length:GN}, (_,i) => mode === "pr" ? 1/GN : (i===src ? 1 : 0));
+    let p = v.slice(), it = 0;
+    for (; it < 200; it++){
+      const dang = p.reduce((s,x,i) => s + (GOUT[i] ? 0 : x), 0);
+      const q = v.map(x => (1-d)*x + d*dang*x);
+      GE.forEach(([a,b]) => q[b] += d*p[a]/GOUT[a]);
+      const ch = q.reduce((s,x,i) => s + Math.abs(x-p[i]), 0); p = q; if (ch < 1e-10) break;
+    }
+    return [p, it+1];
+  }
+  const draw = live($("#cvPR"), "pr", (ctx, W, H) => {
+    const [p, it] = run();
+    drawGraph(ctx, W, H, i => 10 + Math.sqrt(p[i])*55, {edge:() => tok("--muted"), node:i => mode==="ppr" && i===8 ? tok("--c4") : tok("--c1")});
+    const ord = p.map((x,i) => [i,x]).sort((a,b) => b[1]-a[1]);
+    $("#prT").innerHTML = `<thead><tr><th>paper</th><th>cited by</th><th>${mode==="pr" ? "PR" : "PPR from P9"}</th></tr></thead><tbody>${ord.map(([i,x]) => `<tr><td>P${i+1}</td><td>${GIN[i]}</td><td>${x.toFixed(4)}</td></tr>`).join("")}</tbody>`;
+    $("#prNote").textContent = (mode === "pr" ? `Converged after ${it} iterations. P1 cites nothing; its score is shared out to every paper.` : `Converged after ${it} iterations. P1 cites nothing; its score goes back to P9.`);
+  });
+  chipGroup($$("#pagerank [data-pm]"), "aria-pressed", b => { mode = b.dataset.pm; draw(); });
+  $("#prD").oninput = e => { d = +e.target.value; $("#prDv").textContent = d.toFixed(2); draw(); };
+})();
+
+/* ================= COMMUNITIES ================= */
+const CP = [[.10,.22],[.25,.10],[.30,.32],[.13,.45],[.55,.62],[.70,.48],[.82,.66],[.66,.84],[.52,.88],[.80,.12],[.93,.28],[.72,.24]];
+const CE = [[0,1],[0,2],[0,3],[1,2],[2,3],[1,3],[4,5],[4,7],[4,8],[5,6],[6,7],[7,8],[5,7],[9,10],[10,11],[9,11],[3,4],[2,11],[6,10]];
+const CG = [0,0,0,0,1,1,1,1,1,2,2,2];
+const CNb = CP.map((_,i) => CE.filter(e => e.includes(i)).map(e => e[0]===i ? e[1] : e[0]));
+function modularity(lab){
+  const m = CE.length, k = CNb.map(n => n.length); let Q = 0;
+  for (let i=0;i<CP.length;i++) for (let j=0;j<CP.length;j++){ if (lab[i] !== lab[j]) continue; const A = CNb[i].includes(j) ? 1 : 0; Q += A - k[i]*k[j]/(2*m); }
+  return Q/(2*m);
+}
+const PAL = ["--c5","--c3","--c4","--c2","--k2"];
+(function lp(){
+  const cv = $("#cvLP"), N = CP.length; let lab, it, R, ord, pos, chg, cur, msg, done, timer = null;
+  function reset(){ lab = CP.map((_,i) => i); it = 1; R = rng(11); ord = null; pos = 0; chg = 0; cur = -1; done = false; msg = "Every node starts with its own label. Press <b>Next node</b>."; if (timer){ clearTimeout(timer); timer = null; } }
+  function step(){
+    if (done) return;
+    if (pos === 0){ ord = CP.map((_,i) => i); for (let i=N-1;i>0;i--){ const j = Math.floor(R()*(i+1)); [ord[i],ord[j]] = [ord[j],ord[i]]; } chg = 0; }
+    const i = ord[pos], cnt = {}; CNb[i].forEach(j => cnt[lab[j]] = (cnt[lab[j]]||0) + 1);
+    const mx = Math.max(...Object.values(cnt)), best = Object.keys(cnt).filter(l => cnt[l] === mx).map(Number), old = lab[i];
+    const nl = best.includes(old) ? old : best[Math.floor(R()*best.length)];
+    lab[i] = nl; if (nl !== old) chg++; cur = i;
+    const nb = CNb[i].map(j => `${j+1}: L${lab[j]+1}`).join(", ");
+    msg = `<b>Round ${it}, node ${i+1}</b> (${pos+1} of ${N}). Neighbours ${nb}. Most common: ${best.map(l => "L" + (l+1)).join(" and ")} (${mx} of ${CNb[i].length})${best.length > 1 ? ", a tie" : ""}. ` + (nl === old ? `Node ${i+1} keeps L${old+1}.` : `Node ${i+1} changes L${old+1} → <b>L${nl+1}</b>.`);
+    pos++;
+    if (pos === N){ pos = 0;
+      if (chg === 0){ done = true; cur = -1; msg = `<b>Done.</b> No label changed in round ${it}, so the labels are stable: ${new Set(lab).size} communities, modularity Q = ${modularity(lab).toFixed(3)}.`; }
+      else { msg += ` End of round ${it}: ${chg} label${chg === 1 ? "" : "s"} changed, so another round follows.`; it++; }
+    }
+  }
+  const draw = live(cv, "lp", (ctx, W, H) => {
+    const X = x => 24 + x*(W-48), Y = y => 22 + y*(H-48);
+    const ids = [...new Set(lab)], size = l => lab.filter(x => x === l).length, multi = ids.filter(l => size(l) > 1).sort((a,b) => a-b), col = l => size(l) > 1 ? tok(PAL[multi.indexOf(l) % PAL.length]) : null;
+    CE.forEach(([a,b]) => { const hot = cur >= 0 && (a === cur || b === cur); ctx.strokeStyle = tok(hot ? "--ink" : "--muted"); ctx.lineWidth = hot ? 3 : 1.4; ctx.beginPath(); ctx.moveTo(X(CP[a][0]),Y(CP[a][1])); ctx.lineTo(X(CP[b][0]),Y(CP[b][1])); ctx.stroke(); });
+    CP.forEach(([x,y],i) => { const c = col(lab[i]);
+      if (i === cur){ ctx.beginPath(); ctx.arc(X(x),Y(y),21,0,7); ctx.strokeStyle = tok("--warn"); ctx.lineWidth = 5; ctx.stroke(); }
+      ctx.beginPath(); ctx.arc(X(x),Y(y),14,0,7);
+      if (c){ ctx.fillStyle = c; ctx.fill(); ctx.fillStyle = "#fff"; } else { ctx.fillStyle = tok("--surface"); ctx.fill(); ctx.strokeStyle = tok("--ink"); ctx.lineWidth = 1.6; ctx.stroke(); ctx.fillStyle = tok("--ink"); }
+      ctx.font = `700 11px ${tok("--mono")}`; ctx.textAlign = "center"; ctx.fillText(i+1, X(x), Y(y)+4);
+      const lt = "L" + (lab[i]+1); ctx.font = `600 11px ${tok("--mono")}`; const tw = ctx.measureText(lt).width + 6; ctx.fillStyle = tok("--surface"); ctx.fillRect(X(x) - tw/2, Y(y) + 19, tw, 14); ctx.fillStyle = c || tok("--muted"); ctx.fillText(lt, X(x), Y(y)+30); });
+    $("#lpIt").textContent = it; $("#lpC").textContent = ids.length; $("#lpQ").textContent = modularity(lab).toFixed(3); const sr = done || pos !== 0 || !ord ? it : it - 1; $("#lpChK").textContent = `changed in round ${sr}`; $("#lpCh").textContent = ord ? (done ? 0 : chg) : "–";
+    $("#lpLog").innerHTML = msg; $("#lpLog").className = "verdict small" + (done ? " ok" : "");
+    ["#lpStep","#lpRound","#lpRun"].forEach(b => $(b).disabled = done);
+  });
+  const stop = () => { if (timer){ clearTimeout(timer); timer = null; } };
+  $("#lpStep").onclick = () => { stop(); step(); draw(); };
+  $("#lpRound").onclick = () => { stop(); do { step(); } while (pos !== 0 && !done); draw(); };
+  $("#lpRun").onclick = () => { stop(); if (reduce){ while (!done) step(); draw(); return; } const tick = () => { step(); draw(); timer = done ? null : setTimeout(tick, 260); }; tick(); };
+  $("#lpReset").onclick = () => { stop(); reset(); draw(); };
+  reset();
+})();
+
+/* ================= RECOMMENDERS ================= */
+const USERS = ["Ann","Ben","Chloe","Dev","Emma","Fai"];
+const FILMS = MOVIES.movies.slice(0,8).map(m => m.title);
+const R0 = [[5,4,0,1,0,2,0,3],[4,5,1,0,2,0,4,0],[1,0,5,4,0,3,0,2],[0,2,4,5,3,0,1,0],[2,0,0,2,5,4,0,0],[0,4,2,0,0,1,5,4]];
+const col = j => R0.map(r => r[j]);
+const dotv = (a,b) => a.reduce((s,x,i) => s + x*b[i], 0), norm = a => Math.sqrt(dotv(a,a));
+const cosv = (a,b) => { const n = norm(a)*norm(b); return n ? dotv(a,b)/n : 0; };
+function pearson(a, b){
+  const idx = a.map((x,i) => x && b[i] ? i : -1).filter(i => i >= 0); if (idx.length < 2) return 0;
+  const ma = idx.reduce((s,i) => s+a[i], 0)/idx.length, mb = idx.reduce((s,i) => s+b[i], 0)/idx.length;
+  let n = 0, da = 0, db = 0; idx.forEach(i => { n += (a[i]-ma)*(b[i]-mb); da += (a[i]-ma)**2; db += (b[i]-mb)**2; });
+  return da && db ? n/Math.sqrt(da*db) : 0;
+}
+(function ui(){
+  $("#uiT").innerHTML = `<thead><tr><th></th>${FILMS.map(f => `<th>${f}</th>`).join("")}</tr></thead><tbody>${R0.map((r,u) => `<tr><td>${USERS[u]}</td>${r.map(x => x ? `<td>${x}</td>` : `<td style="color:var(--muted)">·</td>`).join("")}</tr>`).join("")}</tbody>`;
+  const known = R0.flat().filter(Boolean).length, all = R0.length*FILMS.length;
+  $("#uiStats").innerHTML = stat("cells (6 users × 8 films)", all) + stat("known ratings", known) + stat("empty cells = sparsity", `${all-known} of ${all} = ${Math.round((all-known)/all*100)}%`) + stat("mean rating", (R0.flat().filter(Boolean).reduce((a,b) => a+b, 0)/known).toFixed(2));
+})();
+function fillSel(sel, arr, v){ sel.innerHTML = arr.map((x,i) => `<option value="${i}"${i===v ? " selected" : ""}>${x}</option>`).join(""); }
+
+(function ucf(){
+  let sm = "cos";
+  fillSel($("#ucU"), USERS, 0); fillSel($("#ucI"), FILMS, 6);
+  function upd(){
+    const u = +$("#ucU").value, i = +$("#ucI").value, k = +$("#ucK").value;
+    const sims = USERS.map((_,v) => v === u ? null : (sm === "cos" ? cosv(R0[u], R0[v]) : pearson(R0[u], R0[v])));
+    const cands = USERS.map((_,v) => v).filter(v => v !== u && R0[v][i] && sims[v] > 0).sort((a,b) => sims[b]-sims[a]), top = cands.slice(0,k);
+    $("#ucT").innerHTML = `<thead><tr><th>user</th><th>sim(${USERS[u]}, v)</th><th>rated ${esc(FILMS[i])}</th></tr></thead><tbody>${USERS.map((n,v) => v===u ? "" : `<tr class="${top.includes(v) ? "hl" : ""}"><td>${n}</td><td>${f3(sims[v])}</td><td>${R0[v][i] || "·"}</td></tr>`).join("")}</tbody>`;
+    const den = top.reduce((s,v) => s + Math.abs(sims[v]), 0), num = top.reduce((s,v) => s + sims[v]*R0[v][i], 0);
+    $("#ucWork").innerHTML = (R0[u][i] ? `${USERS[u]} already rated this film ${R0[u][i]}★. The prediction below ignores it.<br>` : "") +
+      (top.length && den ? `Top ${top.length} neighbours who rated it: ${top.map(v => USERS[v]).join(", ")}<br>r̂ = (${top.map(v => `${f3(sims[v])}×${R0[v][i]}`).join(" + ")}) / (${top.map(v => f3(Math.abs(sims[v]))).join(" + ")})<br>= <b>${(num/den).toFixed(2)}</b> stars` : "No user with positive similarity rated this film: no prediction.");
+  }
+  ["#ucU","#ucI","#ucK"].forEach(s => $(s).onchange = upd);
+  chipGroup($$("#usercf [data-sm]"), "aria-pressed", b => { sm = b.dataset.sm; upd(); });
+  upd();
+})();
+
+const ISIM = FILMS.map((_,i) => FILMS.map((_,j) => cosv(col(i), col(j))));
+(function icf(){
+  fillSel($("#icU"), USERS, 0); fillSel($("#icI"), FILMS, 6);
+  function upd(){
+    const u = +$("#icU").value, i = +$("#icI").value, k = +$("#icK").value;
+    const cands = FILMS.map((_,j) => j).filter(j => j !== i && R0[u][j] && ISIM[i][j] > 0).sort((a,b) => ISIM[i][b]-ISIM[i][a]), top = cands.slice(0,k);
+    $("#icT").innerHTML = `<thead><tr><th>film j</th><th>sim(i, j)</th><th>${USERS[u]} rated</th></tr></thead><tbody>${FILMS.map((f,j) => j===i ? "" : `<tr class="${top.includes(j) ? "hl" : ""}"><td>${esc(f)}</td><td>${f3(ISIM[i][j])}</td><td>${R0[u][j] || "·"}</td></tr>`).join("")}</tbody>`;
+    const den = top.reduce((s,j) => s + Math.abs(ISIM[i][j]), 0), num = top.reduce((s,j) => s + ISIM[i][j]*R0[u][j], 0);
+    $("#icWork").innerHTML = (R0[u][i] ? `${USERS[u]} already rated this film ${R0[u][i]}★. The prediction below ignores it.<br>` : "") +
+      (top.length && den ? `Top ${top.length} similar films ${USERS[u]} rated: ${top.map(j => esc(FILMS[j])).join(", ")}<br>r̂ = (${top.map(j => `${f3(ISIM[i][j])}×${R0[u][j]}`).join(" + ")}) / (${top.map(j => f3(Math.abs(ISIM[i][j]))).join(" + ")})<br>= <b>${(num/den).toFixed(2)}</b> stars` : "No similar film rated by this user: no prediction.");
+  }
+  ["#icU","#icI","#icK"].forEach(s => $(s).onchange = upd);
+  upd();
+})();
+
+/* ---------------- recommending with personalized PageRank (random walk with restart on the user-film graph) ---------------- */
+(function pprRec(){
+  const NU = USERS.length, NF = FILMS.length, N = NU + NF, d = .85, W = r => r >= 3 ? 1 : 0;
+  const adj = Array.from({length:N}, () => []); R0.forEach((r,u) => r.forEach((x,i) => { const w = x ? W(x) : 0; if (w > 0){ adj[u].push([NU+i, w]); adj[NU+i].push([u, w]); } }));
+  const ppr = s0 => { let p = Array(N).fill(0); p[s0] = 1; for (let it=0; it<500; it++){ const q = Array(N).fill(0); q[s0] += 1-d; let dang = 0;
+    p.forEach((x,v) => { const tw = adj[v].reduce((t,e) => t + e[1], 0); if (!tw) dang += x; else adj[v].forEach(([w,ww]) => q[w] += d*x*ww/tw); }); q[s0] += d*dang; p = q; } return p; };
+  const ucfPred = (u,i,k=2) => { const sims = USERS.map((_,v) => v === u ? 0 : cosv(R0[u], R0[v])); const c = USERS.map((_,v) => v).filter(v => v !== u && R0[v][i] && sims[v] > 0).sort((a,b) => sims[b]-sims[a]).slice(0,k); const den = c.reduce((t,v) => t + sims[v], 0); return den ? c.reduce((t,v) => t + sims[v]*R0[v][i], 0)/den : null; };
+  const icfPred = (u,i,k=2) => { const c = FILMS.map((_,j) => j).filter(j => j !== i && R0[u][j] && ISIM[i][j] > 0).sort((a,b) => ISIM[i][b]-ISIM[i][a]).slice(0,k); const den = c.reduce((t,j) => t + ISIM[i][j], 0); return den ? c.reduce((t,j) => t + ISIM[i][j]*R0[u][j], 0)/den : null; };
+  let u = 0, P = ppr(0);
+  const draw = live($("#cvPRR"), "prr", (ctx, Wd, H) => {
+    const ux = Wd*.18, fx = Wd*.74, uy = k => 44 + k*(H-70)/(NU-1), fy = k => 40 + k*(H-58)/(NF-1);
+    const pos = v => v < NU ? [ux, uy(v)] : [fx, fy(v-NU)];
+    const unseen = FILMS.map((_,i) => i).filter(i => !R0[u][i]), best = unseen.slice().sort((a,b) => P[NU+b]-P[NU+a])[0];
+    R0.forEach((r,a) => r.forEach((x,i) => { const w = x ? W(x) : 0; if (!w) return; const [x1,y1] = pos(a), [x2,y2] = pos(NU+i); ctx.strokeStyle = tok("--muted"); ctx.globalAlpha = .55; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); }));
+    ctx.globalAlpha = 1;
+    const mx = Math.max(...P.filter((_,v) => v !== u));
+    for (let v=0; v<N; v++){ const [x,y] = pos(v), isU = v < NU, r = v === u ? 13 : 5 + 11*Math.sqrt(P[v]/mx);
+      ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fillStyle = tok(v === u ? "--c4" : isU ? "--c3" : "--c5"); ctx.fill();
+      if (!isU && v-NU === best && P[v] > 0){ ctx.beginPath(); ctx.arc(x, y, r+6, 0, 7); ctx.strokeStyle = tok("--warn"); ctx.lineWidth = 4; ctx.stroke(); }
+      if (!isU && !R0[u][v-NU] && v-NU !== best){ ctx.beginPath(); ctx.arc(x, y, r+5, 0, 7); ctx.setLineDash([3,3]); ctx.strokeStyle = tok("--ink"); ctx.lineWidth = 1.2; ctx.stroke(); ctx.setLineDash([]); }
+      ctx.fillStyle = tok("--ink"); ctx.font = `${v === u ? 700 : 500} 12px ${tok("--body")}`; ctx.textAlign = isU ? "right" : "left";
+      ctx.fillText(isU ? USERS[v] : FILMS[v-NU], isU ? x - r - 8 : x + r + 9, y + 4); }
+    ctx.font = `11px ${tok("--mono")}`; ctx.fillStyle = tok("--muted"); ctx.textAlign = "center"; ctx.fillText("users", ux, 12); ctx.fillText("films", fx, 12);
+  });
+  function render(){
+    P = ppr(u);
+    const unseen = FILMS.map((_,i) => i).filter(i => !R0[u][i]).sort((a,b) => P[NU+b]-P[NU+a] || a-b);
+    $("#prrT").innerHTML = `<thead><tr><th>Film ${USERS[u]} has not rated</th><th>PPR from ${USERS[u]}</th><th>User-based CF r̂</th><th>Item-based CF r̂</th></tr></thead><tbody>` + unseen.map((i,k) => { const c = ucfPred(u,i), ic = icfPred(u,i); return `<tr class="${k === 0 && P[NU+i] > 0 ? "hl" : ""}"><td>${esc(FILMS[i])}</td><td>${P[NU+i].toFixed(3)}</td><td>${c === null ? "–" : c.toFixed(2) + "★"}</td><td>${ic === null ? "–" : ic.toFixed(2) + "★"}</td></tr>`; }).join("") + `</tbody>`;
+    const best = f => unseen.slice().sort((a,b) => (f(u,b) ?? -1) - (f(u,a) ?? -1))[0];
+    const top = unseen[0], cf = best(ucfPred), ic = best(icfPred), zero = unseen.filter(i => P[NU+i] < 1e-9);
+    $("#prrCap").innerHTML = `PPR's pick for ${USERS[u]}: <b>${esc(FILMS[top])}</b> (ringed). Highest prediction: user-based CF <b>${esc(FILMS[cf])}</b>, item-based CF <b>${esc(FILMS[ic])}</b>. ` +
+      (top === cf && top === ic ? "All three agree." : top === cf ? (() => { const jj = FILMS.map((_,j) => j).filter(j => j !== ic && R0[u][j] && ISIM[ic][j] > 0).sort((a,b) => ISIM[ic][b]-ISIM[ic][a]).slice(0,2).sort((a,b) => R0[u][b]-R0[u][a])[0], vv = USERS.map((_,v) => v).filter(v => v !== u && R0[v][ic]).sort((a,b) => cosv(R0[u],R0[b]) - cosv(R0[u],R0[a]))[0]; return `Item-based CF disagrees: ${esc(FILMS[ic])} is rated like ${esc(FILMS[jj])}, which ${USERS[u]} gave ${R0[u][jj]}★, but ${USERS[vv]}, the user most like ${USERS[u]} who rated it, gave it ${R0[vv][ic]}★. Comparing films and comparing users can disagree.`; })() : "User-based CF picks differently: it weighs other users' ratings, not paths of likes.") +
+      (zero.length ? ` ${zero.map(i => esc(FILMS[i])).join(", ")} score${zero.length === 1 ? "s" : ""} 0 in PPR: no path of liked films leads there, while CF still predicts a rating.` : "");
+    draw();
+  }
+  $("#prrU").innerHTML = USERS.map((n,i) => `<button class="chip" aria-pressed="${i === 0}" data-u="${i}">${n}</button>`).join("");
+  chipGroup($$("#prrU button"), "aria-pressed", b => { u = +b.dataset.u; render(); });
+  render();
+})();
+
+/* ---------------- matrix factorisation ---------------- */
+(function mf(){
+  const K = 2; let P, Q, ep, lam = .05;
+  const cells = []; R0.forEach((r,u) => r.forEach((x,i) => { if (x) cells.push([u,i,x]); }));
+  function reset(){ const R = rng(7); P = USERS.map(() => [1 + .3*gauss(R), 1 + .3*gauss(R)]); Q = FILMS.map(() => [1 + .3*gauss(R), 1 + .3*gauss(R)]); ep = 0; }
+  const pred = (u,i) => P[u][0]*Q[i][0] + P[u][1]*Q[i][1];
+  const rmse = () => Math.sqrt(cells.reduce((s,[u,i,x]) => s + (x-pred(u,i))**2, 0)/cells.length);
+  function train(n){ const R = rng(100 + ep), lr = .02; for (let e=0;e<n;e++){ const ord = cells.slice(); for (let a=ord.length-1;a>0;a--){ const b = Math.floor(R()*(a+1)); [ord[a],ord[b]] = [ord[b],ord[a]]; }
+    ord.forEach(([u,i,x]) => { const err = x - pred(u,i); for (let f=0;f<K;f++){ const pu = P[u][f], qi = Q[i][f]; P[u][f] += lr*(err*qi - lam*pu); Q[i][f] += lr*(err*pu - lam*qi); } }); ep++; } }
+  let su = 0;
+  const draw = live($("#cvMF"), "mf", (ctx, W, H) => {
+    const pts = P.concat(Q), m = Math.max(...pts.map(p => Math.max(Math.abs(p[0]), Math.abs(p[1])))) * 1.12;
+    const x0 = Math.min(-.3, ...pts.map(p => p[0]-.3)), x1 = Math.max(...pts.map(p => p[0])) + .9, y0 = Math.min(-.3, ...pts.map(p => p[1]-.3)), y1 = Math.max(...pts.map(p => p[1])) + .3;
+    const sc = Math.min((W-50)/(x1-x0), (H-40)/(y1-y0)), X = x => 30 + (x-x0)*sc, Y = y => H-20 - (y-y0)*sc;
+    ctx.save(); ctx.beginPath(); ctx.rect(1,1,W-2,H-2); ctx.clip();
+    ctx.strokeStyle = tok("--line"); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X(x0), Y(0)); ctx.lineTo(X(x1), Y(0)); ctx.moveTo(X(0), Y(y0)); ctx.lineTo(X(0), Y(y1)); ctx.stroke();
+    const p = P[su], n = Math.hypot(p[0], p[1]), ux = p[0]/n, uy = p[1]/n, L = 3*(x1-x0+y1-y0);
+    ctx.font = `600 11px ${tok("--mono")}`;
+    for (let r=1; r<=5; r++){ const cx = ux*r/n, cy = uy*r/n;
+      ctx.strokeStyle = tok("--c4"); ctx.globalAlpha = .55; ctx.setLineDash([5,4]); ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(X(cx - uy*L), Y(cy + ux*L)); ctx.lineTo(X(cx + uy*L), Y(cy - ux*L)); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+      const yt = y1 - .05, xt = Math.abs(ux) > 1e-6 ? (r/n - uy*yt)/ux : cx;
+      ctx.fillStyle = tok("--c4"); ctx.textAlign = "center";
+      if (xt > x0 && xt < x1) ctx.fillText(r + "★", X(xt), Y(yt) + 12); else { const xr = x1 - .1, yr = Math.abs(uy) > 1e-6 ? (r/n - ux*xr)/uy : cy; ctx.textAlign = "right"; ctx.fillText(r + "★", X(xr), Y(yr) - 4); } }
+    ctx.strokeStyle = tok("--c4"); ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(p[0]), Y(p[1])); ctx.stroke();
+    const ang = Math.atan2(-(Y(p[1])-Y(0)), X(p[0])-X(0)); ctx.fillStyle = tok("--c4"); ctx.beginPath(); ctx.moveTo(X(p[0]), Y(p[1])); ctx.lineTo(X(p[0]) - 12*Math.cos(ang-.4), Y(p[1]) + 12*Math.sin(ang-.4)); ctx.lineTo(X(p[0]) - 12*Math.cos(ang+.4), Y(p[1]) + 12*Math.sin(ang+.4)); ctx.closePath(); ctx.fill();
+    ctx.font = `700 12px ${tok("--body")}`; ctx.textAlign = "left"; ctx.textAlign = "right"; ctx.fillText(USERS[su] + "'s vector p", X(p[0]*.55) - 6, Y(p[1]*.55) + 16); ctx.textAlign = "left";
+    Q.forEach((q,i) => { const rated = R0[su][i]; ctx.fillStyle = tok("--c5"); ctx.globalAlpha = rated ? 1 : 1; ctx.fillRect(X(q[0])-6, Y(q[1])-6, 12, 12);
+      if (!rated){ ctx.strokeStyle = tok("--ink"); ctx.lineWidth = 1.2; ctx.setLineDash([3,3]); ctx.strokeRect(X(q[0])-9, Y(q[1])-9, 18, 18); ctx.setLineDash([]); }
+      ctx.fillStyle = tok("--ink"); ctx.font = `12px ${tok("--body")}`; ctx.fillText(FILMS[i], X(q[0])+11, Y(q[1])+4); });
+    ctx.restore();
+    $("#mfE").textContent = ep; $("#mfR").textContent = rmse().toFixed(3);
+    $("#mfT").innerHTML = `<thead><tr><th>film</th><th>${USERS[su]}'s rating</th><th>p<sub>u</sub><sup>⊤</sup>q<sub>i</sub></th></tr></thead><tbody>` + FILMS.map((f,i) => [f,i]).sort((a,b) => pred(su,b[1]) - pred(su,a[1])).map(([f,i]) => `<tr class="${R0[su][i] ? "" : "hl"}"><td>${esc(f)}</td><td>${R0[su][i] ? R0[su][i] + "★" : "not rated"}</td><td>${pred(su,i).toFixed(2)}</td></tr>`).join("") + `</tbody>`;
+  });
+  $("#mfU").innerHTML = USERS.map((n,i) => `<button class="chip" aria-pressed="${i === 0}" data-u="${i}">${n}</button>`).join("");
+  chipGroup($$("#mfU button"), "aria-pressed", b => { su = +b.dataset.u; draw(); });
+  $("#mfTrain").onclick = () => { train(50); draw(); };
+  $("#mfReset").onclick = () => { reset(); draw(); };
+  $("#mfL").oninput = e => { lam = +e.target.value; $("#mfLv").textContent = lam.toFixed(2); reset(); train(300); draw(); };
+  reset(); train(300);
+})();
+
+/* ---------------- precision@k and recall@k ---------------- */
+(function pk(){
+  const L = [1,2,3,4,5,6,7,8,9,10].map(x => "Film " + x);
+  const hit = new Set([0,2,5,8]);
+  $("#pkList").innerHTML = L.map((t,i) => `<li><label class="hitrow"><input type="checkbox" data-i="${i}"${hit.has(i) ? " checked" : ""}><span>${i+1}. ${t}</span></label><span class="sc"></span></li>`).join("");
+  function upd(){
+    const k = +$("#pkK").value, R = +$("#pkR").value;
+    $$("#pkList li").forEach((li,i) => li.style.opacity = i < k ? 1 : .4);
+    const h = [...hit].filter(i => i < k).length;
+    $("#pkKv").textContent = k; $("#pkRv").textContent = R;
+    $("#pkP").textContent = `${h}/${k} = ${(h/k).toFixed(2)}`; $("#pkRc").textContent = `${h}/${R} = ${Math.min(1,h/R).toFixed(2)}`;
+  }
+  $$("#pkList input").forEach(c => c.onchange = () => { const i = +c.dataset.i; c.checked ? hit.add(i) : hit.delete(i); upd(); });
+  $("#pkK").oninput = $("#pkR").oninput = upd; upd();
+})();
+
+/* ---------------- coverage and popularity ---------------- */
+(function cov(){
+  const C = "ABCDEFGHIJKL".split("").map(x => "Film " + x), CU = [1,2,3,4,5,6].map(x => "User " + x);
+  const LISTS = {
+    pop: [[2,3,4],[0,2,3],[1,3,4],[0,1,4],[1,2,3],[0,2,4]],
+    cf:  [[3,7,10],[2,5,9],[1,6,11],[0,9,5],[6,9,7],[11,10,4]],
+  };
+  let m = "pop";
+  function upd(){
+    const Ls = LISTS[m];
+    $("#cvT").innerHTML = `<thead><tr><th>user</th><th>top 3</th></tr></thead><tbody>${Ls.map((l,u) => `<tr><td>${CU[u]}</td><td>${l.map(i => i < 3 ? `<b>${C[i]}</b>` : C[i]).join(", ")}</td></tr>`).join("")}</tbody>`;
+    const dist = new Set(Ls.flat()), all = Ls.flat();
+    $("#cvC").textContent = `${dist.size}/${C.length} = ${Math.round(dist.size/C.length*100)}%`;
+    $("#cvPop").textContent = `${all.filter(i => i < 3).length} of ${all.length}`;
+  }
+  chipGroup($$("#coverage [data-cv]"), "aria-pressed", b => { m = b.dataset.cv; upd(); });
+  upd();
+})();
+
+/* ================= AI LAYER ================= */
+/* ---------------- node2vec idea: walks + PPMI + SVD ---------------- */
+(function n2v(){
+  const n = CP.length; let seed = 1, E = null, walks = [];
+  function sym2(M){ // top-2 eigenvectors of a symmetric matrix by power iteration with deflation
+    const A = M.map(r => r.slice()), out = [];
+    for (let c=0;c<2;c++){
+      let v = Array.from({length:n}, (_,i) => Math.sin(i*1.7 + c + 1)), lam = 0;
+      for (let t=0;t<300;t++){ const w = A.map(r => r.reduce((s,x,j) => s + x*v[j], 0)); const nw = Math.hypot(...w) || 1; lam = w.reduce((s,x,i) => s + x*v[i], 0); v = w.map(x => x/nw); }
+      out.push([lam, v]); for (let i=0;i<n;i++) for (let j=0;j<n;j++) A[i][j] -= lam*v[i]*v[j];
+    }
+    return out;
+  }
+  function build(){
+    const R = rng(seed); walks = [];
+    for (let rep=0; rep<10; rep++) for (let s=0; s<n; s++){ const w = [s]; while (w.length < 8){ const nb = CNb[w[w.length-1]]; w.push(nb[Math.floor(R()*nb.length)]); } walks.push(w); }
+    const C = Array.from({length:n}, () => Array(n).fill(0));
+    walks.forEach(w => w.forEach((a,i) => { for (let j=Math.max(0,i-2); j<=Math.min(w.length-1,i+2); j++) if (j!==i) C[a][w[j]]++; }));
+    const tot = C.flat().reduce((a,b) => a+b, 0), rs = C.map(r => r.reduce((a,b) => a+b, 0));
+    const M = C.map((r,i) => r.map((x,j) => x ? Math.max(0, Math.log(x*tot/(rs[i]*rs[j]))) : 0));
+    const ev = sym2(M); E = Array.from({length:n}, (_,i) => [ev[0][1][i]*Math.sqrt(Math.max(ev[0][0],0)), ev[1][1][i]*Math.sqrt(Math.max(ev[1][0],0))]);
+  }
+  let sel = 0;
+  const nearest = a => [...Array(n).keys()].filter(b => b !== a).sort((b,c) => Math.hypot(E[a][0]-E[b][0], E[a][1]-E[b][1]) - Math.hypot(E[a][0]-E[c][0], E[a][1]-E[c][1])).slice(0,3);
+  const node = (ctx, x, y, i, hi) => { if (hi){ ctx.beginPath(); ctx.arc(x, y, 20, 0, 7); ctx.strokeStyle = tok("--warn"); ctx.lineWidth = 5; ctx.stroke(); } ctx.beginPath(); ctx.arc(x, y, 13, 0, 7); ctx.fillStyle = tok(PAL[CG[i]]); ctx.fill(); ctx.fillStyle = "#fff"; ctx.font = `700 11px ${tok("--mono")}`; ctx.textAlign = "center"; ctx.fillText(i+1, x, y+4); };
+  let GX, VX;
+  const drawG = live($("#cvN2G"), "n2g", (ctx, W, H) => {
+    const X = x => 24 + x*(W-48), Y = y => 22 + y*(H-44); GX = CP.map(([x,y]) => [X(x), Y(y)]);
+    const nb = new Set(nearest(sel));
+    ctx.strokeStyle = tok("--muted"); ctx.lineWidth = 1.4; CE.forEach(([a,b]) => { ctx.beginPath(); ctx.moveTo(...GX[a]); ctx.lineTo(...GX[b]); ctx.stroke(); });
+    GX.forEach(([x,y],i) => node(ctx, x, y, i, i === sel));
+  });
+  const draw = live($("#cvN2V"), "n2v", (ctx, W, H) => {
+    const xs = E.map(e => e[0]), ys = E.map(e => e[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const X = x => 30 + (x-x0)/((x1-x0)||1)*(W-60), Y = y => 26 + (y-y0)/((y1-y0)||1)*(H-52);
+    VX = E.map(e => [X(e[0]), Y(e[1])]);
+    for (let it=0; it<80; it++) for (let a=0;a<n;a++) for (let b=a+1;b<n;b++){ const dx = VX[b][0]-VX[a][0], dy = VX[b][1]-VX[a][1], dd = Math.hypot(dx,dy) || .01; if (dd < 29){ const push = (29-dd)/2, ux = dd > .02 ? dx/dd : Math.cos(a+b), uy = dd > .02 ? dy/dd : Math.sin(a+b); VX[a][0] -= ux*push; VX[a][1] -= uy*push; VX[b][0] += ux*push; VX[b][1] += uy*push; } }
+    const nb = nearest(sel);
+    ctx.strokeStyle = tok("--warn"); ctx.lineWidth = 2; ctx.setLineDash([4,3]); nb.forEach(b => { ctx.beginPath(); ctx.moveTo(...VX[sel]); ctx.lineTo(...VX[b]); ctx.stroke(); }); ctx.setLineDash([]);
+    VX.forEach(([x,y],i) => node(ctx, x, y, i, i === sel));
+    const d = (a,b) => Math.hypot(E[a][0]-E[b][0], E[a][1]-E[b][1]); let wi = 0, wn = 0, bi = 0, bn = 0;
+    for (let a=0;a<n;a++) for (let b=a+1;b<n;b++){ if (CG[a]===CG[b]){ wi += d(a,b); wn++; } else { bi += d(a,b); bn++; } }
+    $("#n2vWalks").innerHTML = "&gt; three of the 120 walks, read like sentences:<br>" + [0, 41, 87].map(k => walks[k].map(x => x+1).join(" → ")).join("<br>");
+    $("#n2vSel").innerHTML = `<b>Node ${sel+1}</b> (ringed; click any node): embedding (${E[sel].map(v => v.toFixed(2)).join(", ")}). Its 3 nearest nodes in the embedding: <b>${nb.map(b => b+1).join(", ")}</b> (dashed lines), ${nb.every(b => CG[b] === CG[sel]) ? "all in its own community" : "mostly in its own community"}.`;
+    $("#n2vNote").innerHTML = `Average distance in the embedding: <b>${(wi/wn).toFixed(2)}</b> within a community, <b>${(bi/bn).toFixed(2)}</b> between communities.`;
+  });
+  const pick = (cv, pts) => cv.addEventListener("click", e => { const r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top; const k = pts().findIndex(([x,y]) => Math.hypot(x-mx, y-my) < 18); if (k >= 0){ sel = k; drawG(); draw(); } });
+  pick($("#cvN2G"), () => GX); pick($("#cvN2V"), () => VX);
+  $("#n2vNew").onclick = () => { seed++; build(); drawG(); draw(); };
+  build();
+})();
+
+/* ---------------- content-based recommendation for cold start ---------------- */
+(function ct(){
+  const S = MOVIES.sim[8].slice(0,8), M = MOVIES.movies;
+  $("#ctNew").innerHTML = `<b>${M[8].title}</b>: ${esc(M[8].desc)}`;
+  const ord = S.map((s,j) => [s,j]).sort((a,b) => b[0]-a[0]);
+  $("#ctSim").innerHTML = ord.map(([s,j]) => `<li><span>${esc(M[j].title)}</span><span class="sc">${s.toFixed(2)}</span><i style="width:${Math.max(0,s)*100}%"></i></li>`).join("");
+  const sc = R0.map(r => { let n = 0, d = 0; r.forEach((x,j) => { if (x && S[j] > 0){ n += S[j]*x; d += S[j]; } }); return d ? n/d : 0; });
+  const top = sc.map((s,u) => [s,u]).sort((a,b) => b[0]-a[0]).slice(0,2).map(x => x[1]);
+  $("#ctU").innerHTML = `<thead><tr><th>user</th><th>predicted interest (stars)</th></tr></thead><tbody>${sc.map((s,u) => `<tr class="${top.includes(u) ? "hl" : ""}"><td>${USERS[u]}</td><td>${s.toFixed(2)}</td></tr>`).join("")}</tbody>`;
+})();
+
+/* ---------------- LLM-based recommender (illustrative) ---------------- */
+(function llm(){
+  const u = 0, rated = R0[u].map((x,j) => [x,j]).filter(x => x[0]).sort((a,b) => b[0]-a[0]);
+  const cat = MOVIES.movies.map(m => m.title);
+  $("#llmPrompt").innerHTML = `&gt; Prompt: "I rated these films: ${rated.map(([x,j]) => `${esc(FILMS[j])} ${x}/5`).join(", ")}. Suggest 5 more films I would like from this catalogue: ${cat.map(esc).join(", ")}."`;
+  const ANS = ["Interstellar","Red Planet Run","The Martian","Midnight Ferry","Gravity"];
+  $("#llmAns").innerHTML = "&gt; Answer:<br>" + ANS.map((t,i) => `${i+1}. ${t}${cat.includes(t) ? "" : ' <span style="color:var(--signal)">· not in the catalogue</span>'}`).join("<br>");
+  const inCat = ANS.filter(t => cat.includes(t)).length;
+  const un = FILMS.map((_,i) => i).filter(i => !R0[u][i]);
+  const cf = un.map(i => { const top = FILMS.map((_,j) => j).filter(j => j !== i && R0[u][j] && ISIM[i][j] > 0).sort((a,b) => ISIM[i][b]-ISIM[i][a]).slice(0,2); const d = top.reduce((s,j) => s + ISIM[i][j], 0); return [i, d ? top.reduce((s,j) => s + ISIM[i][j]*R0[u][j], 0)/d : 0]; }).sort((a,b) => b[1]-a[1]);
+  $("#llmStats").innerHTML = stat("suggestions in the catalogue", `${inCat} of ${ANS.length}`) + stat("item-based CF for Ann (k = 2)", cf.map(([i,s]) => `${FILMS[i]} ${s.toFixed(1)}★`).join("<br>"));
+  $("#llmStats").style.gridTemplateColumns = "minmax(0,1fr)";
+})();
+
+/* ---------------- which recommender? ---------------- */
+quiz($("#recQ"), ["Item-based CF","Content-based (text embeddings)","LLM-based"], [
+  ["A streaming site with 10 million users, 50,000 films and years of viewing history.", 0, "Plenty of interactions: item-based CF is cheap, proven, and the baseline to beat."],
+  ["A bookshop adds 200 new titles this week; nobody has bought any of them yet.", 1, "Cold start: new items have no interactions, but they have descriptions."],
+  ["A news site where each article is only relevant for a day, so it never collects many clicks.", 1, "Items die before CF can learn them; their text is available at once."],
+  ["A small travel catalogue where users describe their ideal trip in their own words.", 2, "Free-text needs and a small catalogue suit an LLM, but check every answer against the catalogue."],
+  ["A supermarket app with purchase baskets from 2 million loyalty-card holders.", 0, "Dense purchase history: items bought by the same people are similar."],
+  ["You must show a regulator exactly why an item was recommended, and get the same answer every time.", 0, "\"People who bought X also bought Y\" is reproducible and easy to explain."],
+], $("#recScore"));
+
+/* ================= LAB ================= */
+segBar("#labBar", "#labDetail", [
+  "<h3>Brief · 5 minutes</h3><p style='margin-top:6px'>Open the prepared notebook in Google Colab (see the next page). It loads a small MovieLens subset, splits it by time, and gives you the scoring code.</p>",
+  "<h3>Guided work · 30 minutes</h3><ol class='clean' style='margin-top:6px'><li>Build item-based CF: cosine similarity between films, predictions from each user's own ratings.</li><li>Build an embedding recommender: recommend films whose description vectors are close to the films the user liked.</li><li>Score both on the test period: precision@10 and coverage.</li><li>Optional: paste the prepared message for 5 users into your own chat LLM (or use the ready-made answer in the notebook folder), and score its 10 recommendations per user the same way.</li></ol>",
+  "<h3>Share-out · 10 minutes</h3><p style='margin-top:6px'>We collect precision@10 and coverage for each recommender. Which one is more accurate, and which covers more of the catalogue?</p>"
+]);
+(function lr(){
+  const M = [["Item-based CF","--c1"],["Embeddings","--c3"],["LLM (optional)","--c5"]], v = M.map(() => [null, null]);
+  $("#lrCtl").innerHTML = M.map(([n,c],i) => `<div class="card"><span class="tag" style="color:var(${c})">${n}</span><div class="row"><label class="note" for="lrP${i}">precision@10 <b id="lrPv${i}">–</b></label><input type="range" id="lrP${i}" min="0" max="1" step="0.01" value="0" style="flex:1"></div><div class="row"><label class="note" for="lrC${i}">coverage <b id="lrCv${i}">–</b></label><input type="range" id="lrC${i}" min="0" max="100" step="1" value="0" style="flex:1"></div></div>`).join("") + `<div class="btnrow"><button class="btn ghost" id="lrClear">Clear</button></div>`;
+  const draw = live($("#cvLr"), "lr", (ctx, w, h) => {
+    const pad = {l:44, r:14, t:30, b:34}, gw = (w-pad.l-pad.r)/2, Y = x => h-pad.b - x*(h-pad.t-pad.b);
+    ctx.strokeStyle = tok("--line"); ctx.fillStyle = tok("--muted"); ctx.font = `11px ${tok("--mono")}`; ctx.textAlign = "right";
+    [0,.25,.5,.75,1].forEach(y => { ctx.beginPath(); ctx.moveTo(pad.l, Y(y)); ctx.lineTo(w-pad.r, Y(y)); ctx.stroke(); ctx.fillText(y.toFixed(2), pad.l-6, Y(y)+4); });
+    ["precision@10","coverage (share of the catalogue)"].forEach((t,g) => { ctx.textAlign = "center"; ctx.fillStyle = tok("--muted"); ctx.fillText(t, pad.l + g*gw + gw/2, h-pad.b+16); });
+    M.forEach(([n,c],i) => v[i].forEach((x,g) => { if (x === null) return; const val = g ? x/100 : x, bw = gw*.22, x0 = pad.l + g*gw + gw*.12 + i*(bw+6); ctx.fillStyle = tok(c); ctx.fillRect(x0, Y(val), bw, Y(0)-Y(val)); }));
+    ctx.textAlign = "left"; M.forEach(([n,c],i) => { ctx.fillStyle = tok(c); ctx.fillRect(pad.l + i*130, 8, 12, 12); ctx.fillStyle = tok("--ink"); ctx.fillText(n, pad.l + i*130 + 18, 18); });
+  });
+  M.forEach((_,i) => { $("#lrP"+i).oninput = e => { v[i][0] = +e.target.value; $("#lrPv"+i).textContent = v[i][0].toFixed(2); draw(); }; $("#lrC"+i).oninput = e => { v[i][1] = +e.target.value; $("#lrCv"+i).textContent = v[i][1] + "%"; draw(); }; });
+  $("#lrClear").onclick = () => { M.forEach((_,i) => { v[i] = [null, null]; $("#lrP"+i).value = 0; $("#lrC"+i).value = 0; $("#lrPv"+i).textContent = "–"; $("#lrCv"+i).textContent = "–"; }); draw(); };
+})();
+
+/* ---------------- presentation mode: one board per screen ---------------- */
+(function present(){
+  const root = document.documentElement, mainEl = $("main");
+  const slides = $$("main > section.board, main > .part-break");
+  if (!slides.length) return;
+  const ico = {
+    play:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>',
+    prev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+    next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>',
+    fs:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+    fsx:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>',
+    close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+  };
+  const mk = (tag, cls, html, label) => { const e = document.createElement(tag); e.className = cls; if (html) e.innerHTML = html; if (label){ e.setAttribute("aria-label", label); e.title = label; } return e; };
+  const startBtn = mk("button", "present-btn", ico.play + "<span>Present</span>", "Present: one board at a time, full screen (P)");
+  const prog = mk("div", "deck-ui deck-progress");
+  const sidePrev = mk("button", "deck-ui deck-side prev", ico.prev, "Previous board (←)");
+  const sideNext = mk("button", "deck-ui deck-side next", ico.next, "Next board (→)");
+  const bar = mk("div", "deck-ui deck-bar"); bar.setAttribute("role", "toolbar"); bar.setAttribute("aria-label", "Presentation controls");
+  const bPrev = mk("button", "", ico.prev, "Previous board (←)"), bNext = mk("button", "", ico.next, "Next board (→)");
+  const count = mk("span", "deck-count"); count.setAttribute("aria-live", "polite");
+  const bFs = mk("button", "", ico.fs, "Full screen (F)"), bExit = mk("button", "", ico.close, "End presentation (Esc)");
+  bar.append(bPrev, count, bNext, bFs, bExit);
+  document.body.append(startBtn, prog, sidePrev, sideNext, bar);
+  const spacer = mk("div", "deck-ui deck-spacer"); mainEl.appendChild(spacer);
+  const keysHint = $(".rail .keys");
+  if (keysHint) keysHint.innerHTML = 'Press <kbd>P</kbd> to present one board at a time, then <kbd>←</kbd> <kbd>→</kbd>. <kbd>F</kbd> toggles full screen.';
+
+  let idx = 0, on = false, fsByUs = false;
+  const label = el => el.dataset.nav || (el.querySelector("h2") ? el.querySelector("h2").textContent : "");
+  const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+  function enterFs(){ const f = root.requestFullscreen || root.webkitRequestFullscreen; if (!f || fsEl()) return; try { const p = f.call(root); fsByUs = true; if (p && p.catch) p.catch(() => { fsByUs = false; }); } catch(e){ fsByUs = false; } }
+  function exitFs(){ const f = document.exitFullscreen || document.webkitExitFullscreen; if (f && fsEl()){ try { const p = f.call(document); if (p && p.catch) p.catch(() => {}); } catch(e){} } }
+  function fsIcon(){ const isFs = !!fsEl(); bFs.innerHTML = isFs ? ico.fsx : ico.fs; bFs.title = isFs ? "Exit full screen (F)" : "Full screen (F)"; bFs.setAttribute("aria-label", bFs.title); }
+
+  function fit(){
+    if (!on) return;
+    const el = slides[idx], vw = innerWidth, vh = innerHeight;
+    const narrow = vw < 700, pad = narrow ? 18 : 84, barH = 70, topPad = 22;
+    const W = Math.min(1180, vw - 2*pad);
+    root.style.setProperty("--deck-w", W + "px");
+    root.style.setProperty("--deck-s", 1);
+    const h = el.offsetHeight;
+    // phones: keep full size and scroll; larger screens: scale the board to fit the screen
+    let s = narrow ? 1 : Math.max(0.6, Math.min(1.6, (vw - 2*pad) / W, (vh - barH - topPad) / h));
+    const top = Math.max(topPad, (vh - barH - h*s) / 2 + 6);
+    root.style.setProperty("--deck-s", s.toFixed(4));
+    root.style.setProperty("--deck-top", top + "px");
+    spacer.style.top = (top + h*s + barH + 10) + "px";
+    // canvases size themselves from their on-screen box, so nudge them to redraw at the new scale
+    $$("canvas.cv, .cv", el).forEach(c => { c.style.width = "calc(100% - 1px)"; requestAnimationFrame(() => { c.style.width = ""; }); });
+  }
+  function show(i){
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((el, k) => el.classList.toggle("is-current", k === idx));
+    mainEl.scrollTop = 0;
+    count.textContent = `${idx + 1} / ${slides.length} · ${label(slides[idx])}`;
+    prog.style.width = ((idx + 1) / slides.length * 100) + "%";
+    bPrev.disabled = sidePrev.disabled = idx === 0;
+    bNext.disabled = sideNext.disabled = idx === slides.length - 1;
+    const b = boards.indexOf(slides[idx]); if (b >= 0) current = b;
+    requestAnimationFrame(fit);
+  }
+  function start(){
+    if (on) return;
+    on = true; root.classList.add("presenting");
+    let i = slides.indexOf(boards[current]); if (i < 0) i = 0;
+    enterFs(); show(i);
+  }
+  function stop(){
+    if (!on) return;
+    on = false; root.classList.remove("presenting");
+    slides.forEach(el => el.classList.remove("is-current"));
+    if (fsByUs) exitFs(); fsByUs = false;
+    const el = slides[idx];
+    requestAnimationFrame(() => el.scrollIntoView({block: "start"}));
+  }
+  startBtn.onclick = start;
+  bPrev.onclick = sidePrev.onclick = () => show(idx - 1);
+  bNext.onclick = sideNext.onclick = () => show(idx + 1);
+  bExit.onclick = stop;
+  bFs.onclick = () => { if (fsEl()) { fsByUs = false; exitFs(); } else enterFs(); };
+  const onFs = () => { fsIcon(); if (on && !fsEl() && fsByUs){ fsByUs = false; stop(); } else requestAnimationFrame(fit); };
+  document.addEventListener("fullscreenchange", onFs); document.addEventListener("webkitfullscreenchange", onFs);
+  addEventListener("resize", () => requestAnimationFrame(fit));
+  new ResizeObserver(() => { if (on) requestAnimationFrame(fit); }).observe(mainEl);
+  slides.forEach(el => new ResizeObserver(() => { if (on && el.classList.contains("is-current")) fit(); }).observe(el));
+
+  // keys: capture phase so the scrolling navigation never sees them while presenting
+  addEventListener("keydown", e => {
+    const t = e.target, typing = t.closest && t.closest("input,textarea,select,[contenteditable]");
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!on){
+      if (!typing && (e.key === "p" || e.key === "P")){ e.preventDefault(); start(); }
+      return;
+    }
+    if (typing) return;
+    const onBtn = t.closest && t.closest("button,a,summary");
+    let handled = true;
+    if (e.key === "ArrowRight" || e.key === "PageDown" || (e.key === " " && !onBtn) || (e.key === "Enter" && !onBtn)) show(idx + 1);
+    else if (e.key === "ArrowLeft" || e.key === "PageUp" || e.key === "Backspace") show(idx - 1);
+    else if (e.key === "Home") show(0);
+    else if (e.key === "End") show(slides.length - 1);
+    else if (e.key === "Escape") stop();
+    else if (e.key === "f" || e.key === "F") bFs.onclick();
+    else if (e.key === "p" || e.key === "P") stop();
+    else handled = false;
+    if (handled){ e.preventDefault(); e.stopImmediatePropagation(); e.stopPropagation(); }
+  }, true);
+
+  // swipe on touch screens, but not on demos that use dragging
+  let sx = 0, sy = 0, swipe = false;
+  mainEl.addEventListener("touchstart", e => { if (!on || e.touches.length !== 1) return; swipe = !e.target.closest("canvas,.scene,input,select,button,svg,.tbl-wrap"); sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, {passive: true});
+  mainEl.addEventListener("touchend", e => { if (!on || !swipe) return; const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy; if (Math.abs(dx) > 60 && Math.abs(dy) < 50) show(idx + (dx < 0 ? 1 : -1)); }, {passive: true});
+})();
+})();
+</script>
+
+</body>
+</html>
